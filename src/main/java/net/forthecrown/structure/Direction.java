@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.util.Index;
 import org.apache.commons.lang3.Validate;
+import org.bukkit.Axis;
 import org.bukkit.block.BlockFace;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -44,7 +45,7 @@ public enum Direction {
     }
 
     public boolean isRotatable() {
-        return this != UP && this != DOWN;
+        return getAxis() != Axis.Y;
     }
 
     public Direction rotate(Rotation rotation) throws IllegalArgumentException {
@@ -89,29 +90,5 @@ public enum Direction {
 
     public BlockFace asBlockFace() {
         return BlockFace.valueOf(name());
-    }
-
-    /* ----------------------------- SUB CLASSES ------------------------------ */
-
-    public enum Axis {
-        X,
-        Y,
-        Z;
-
-        public double choose(double x, double y, double z) {
-            return switch (this) {
-                case X -> x;
-                case Y -> y;
-                case Z -> z;
-            };
-        }
-
-        public int choose(int x, int y, int z) {
-            return switch (this) {
-                case X -> x;
-                case Y -> y;
-                case Z -> z;
-            };
-        }
     }
 }

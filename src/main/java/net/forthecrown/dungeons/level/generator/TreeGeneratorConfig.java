@@ -182,7 +182,7 @@ public class TreeGeneratorConfig {
 
         private int requiredRooms = 3;
 
-        private int maxGrowthAttempts = 25;
+        private int maxGrowthAttempts = 35;
         private Vector3i location = Vector3i.ZERO;
         private float chestRate = 0.3f;
         private Random random = new Random();

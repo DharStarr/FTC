@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
 import lombok.Getter;
+import lombok.Setter;
 import net.forthecrown.core.Crown;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Bounds3i;
@@ -32,7 +33,8 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
 
     public static final String
             TAG_PIECES = "pieces",
-            TAG_ROOT = "root";
+            TAG_ROOT = "root",
+            TAG_BOSS_ROOM = "bossRoom";
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
@@ -45,6 +47,9 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
     /** The root room from which all other rooms have sprung */
     @Getter
     private DungeonRoom root;
+
+    @Getter @Setter
+    private DungeonRoom bossRoom;
 
     /** Bounds of the entire level */
     @Getter
@@ -139,6 +144,10 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         ListTag pieces = savePieces();
         tag.put(TAG_PIECES, pieces);
         tag.putUUID(TAG_ROOT, root.getId());
+
+        if (bossRoom != null) {
+            tag.putUUID(TAG_BOSS_ROOM, bossRoom.getId());
+        }
     }
 
     public void load(CompoundTag tag) {
@@ -147,6 +156,10 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         root = null;
 
         loadPieces(tag.getList(TAG_PIECES, Tag.TAG_COMPOUND), tag.getUUID(TAG_ROOT));
+
+        if (tag.contains(TAG_BOSS_ROOM)) {
+            setBossRoom((DungeonRoom) pieceLookup.get(tag.getUUID(TAG_BOSS_ROOM)));
+        }
     }
 
     // Note on piece serialization:

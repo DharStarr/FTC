@@ -1,15 +1,19 @@
 package net.forthecrown.core;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import net.forthecrown.text.format.PeriodFormat;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,6 +25,8 @@ import java.util.concurrent.TimeUnit;
  * </p>
  */
 public class DayChange {
+    private static final Logger LOGGER = Crown.logger();
+
     private static final DayChange INSTANCE = new DayChange();
 
     @Getter
@@ -33,14 +39,14 @@ public class DayChange {
     }
 
     private void changeDay() {
-        Crown.logger().info("Updating date");
+        LOGGER.info("Updating date");
 
         ZonedDateTime time = ZonedDateTime.now();
         listeners.forEach(r -> {
             try {
                 r.onDayChange(time);
             } catch (Throwable e){
-                Crown.logger().error("Could not update date of " + r.getClass().getSimpleName(), e);
+                LOGGER.error("Could not update date of " + r.getClass().getSimpleName(), e);
             }
         });
     }
@@ -51,7 +57,7 @@ public class DayChange {
         // Find difference between now and tomorrow
         long difference = Time.timeUntil(getNextDayChange());
 
-        Crown.logger().info("DayUpdate scheduled, executing in: {}", PeriodFormat.of(difference));
+        LOGGER.info("DayUpdate scheduled, executing in: {}", PeriodFormat.of(difference));
 
         // Convert to ticks for bukkit scheduler
         difference = Time.millisToTicks(difference);
@@ -60,7 +66,11 @@ public class DayChange {
         // 24 hours, aka once a day. It probably won't get ran
         // a second time cuz of daily restart, but whatever lol
         // future-proof :D
-        updateTask = Tasks.runTimer(this::changeDay, difference, Time.millisToTicks(TimeUnit.DAYS.toMillis(1)));
+        updateTask = Tasks.runTimer(
+                this::changeDay,
+                difference,
+                Time.millisToTicks(TimeUnit.DAYS.toMillis(1))
+        );
     }
 
     public static long getNextDayChange() {
@@ -76,7 +86,7 @@ public class DayChange {
         return time.toInstant().toEpochMilli();
     }
 
-    public void addListener(DayChangeListener runnable){
-        listeners.add(runnable);
+    public void addListener(DayChangeListener runnable) {
+        listeners.add(Objects.requireNonNull(runnable));
     }
 }

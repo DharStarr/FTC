@@ -30,10 +30,10 @@ public class Slot {
      */
     public static final int ROW_SIZE = 6;
 
-    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
-
     /** Slot 0 constant */
     public static final Slot ZERO = new Slot(0, 0);
+
+    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
     /** The slot's column (x) position */
     private final byte column;

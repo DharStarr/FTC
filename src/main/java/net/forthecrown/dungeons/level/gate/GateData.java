@@ -6,13 +6,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.spongepowered.math.vector.Vector3i;
 
-public record GateData(Direction direction, Vector3i parentOffset, Opening opening) {
+public record GateData(Direction direction, Vector3i parentOffset, boolean stairs, Opening opening) {
     public static final Opening DEFAULT_OPENING = new Opening(12, 21);
 
     public static final String
             TAG_OPENING = "opening",
             TAG_CORRECT = "autocorrect_placement",
             TAG_WIDTH = "width",
+            TAG_STAIR = "connects_to_stairs",
             TAG_HEIGHT = "height";
 
     public AbsoluteGateData toAbsolute(DungeonPiece parent) {
@@ -21,6 +22,7 @@ public record GateData(Direction direction, Vector3i parentOffset, Opening openi
         return new AbsoluteGateData(
                 direction.rotate(rot),
                 parent.getPivotPosition().add(rot.rotate(parentOffset)),
+                stairs,
                 opening
         );
     }

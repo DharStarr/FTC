@@ -10,8 +10,9 @@ import net.minecraft.nbt.Tag;
 import org.spongepowered.math.vector.Vector3i;
 
 import static net.forthecrown.dungeons.level.gate.GateData.TAG_OPENING;
+import static net.forthecrown.dungeons.level.gate.GateData.TAG_STAIR;
 
-public record AbsoluteGateData(Direction direction, Vector3i center, GateData.Opening opening) {
+public record AbsoluteGateData(Direction direction, Vector3i center, boolean stairs, GateData.Opening opening) {
     private static final String
             TAG_DIRECTION = "direction",
             TAG_CENTER = "center";
@@ -31,7 +32,7 @@ public record AbsoluteGateData(Direction direction, Vector3i center, GateData.Op
             dir = direction.rotate(transform.getRotation());
         }
 
-        return new AbsoluteGateData(dir, transform.apply(center), opening);
+        return new AbsoluteGateData(dir, transform.apply(center), stairs, opening);
     }
 
     public CompoundTag save() {
@@ -50,7 +51,8 @@ public record AbsoluteGateData(Direction direction, Vector3i center, GateData.Op
         Direction dir = TagUtil.readEnum(Direction.class, tag.get(TAG_DIRECTION));
         Vector3i center = Vectors.read3i(tag.get(TAG_CENTER));
         GateData.Opening opening = GateData.Opening.load(tag.get(TAG_OPENING));
+        boolean stairs = tag.getBoolean(TAG_STAIR);
 
-        return new AbsoluteGateData(dir, center, opening);
+        return new AbsoluteGateData(dir, center, stairs, opening);
     }
 }

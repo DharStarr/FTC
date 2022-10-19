@@ -69,7 +69,7 @@ dependencies {
     libJar('Dynmap')
 
     // SpongePowered math library
-    implementation(files('/libs/math-2.0.2-SNAPSHOT.jar'))
+    implementation "org.spongepowered:math:2.1.0-SNAPSHOT"
 }
 
 void libJar(String s) {
@@ -128,7 +128,7 @@ void consumeProperties(Consumer<Properties> propertiesConsumer) {
 }
 
 assemble {
-    archivesBaseName = 'ForTheCrown-Plugin' + (devBuild ? "-debug" : "")
+    archivesBaseName = 'ForTheCrown-' + (devBuild ? "Debug" : "Plugin")
     dependsOn(reobfJar)
 }
 

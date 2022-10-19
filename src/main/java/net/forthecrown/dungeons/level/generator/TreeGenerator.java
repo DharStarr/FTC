@@ -24,6 +24,7 @@ public class TreeGenerator {
     private static final Logger LOGGER = Crown.logger();
 
     public static final int MAX_OVERLAP = 2;
+    public static final int POTENTIAL_LEVELS = 200;
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
@@ -36,6 +37,10 @@ public class TreeGenerator {
     private final Deque<SectionGenerator> genQueue = new ArrayDeque<>();
 
     private final List<LevelGenResult> generationResults = new ObjectArrayList<>();
+
+    private final Comparator<LevelGenResult> comparator = Comparator.comparing(this::isValidLevel)
+            .thenComparing(LevelGenResult::closedEndConnectors)
+            .thenComparing(value -> ((double) value.nonConnectorRooms) / value.totalRoomCount);
 
     /* ----------------------------- CONSTRUCTOR ------------------------------ */
 
@@ -63,15 +68,15 @@ public class TreeGenerator {
     public DungeonLevel generate() {
         createPotentialLevels();
 
-        generationResults.sort(this::compare);
+        generationResults.sort(comparator);
         return generationResults.get(0).level();
     }
 
     private void createPotentialLevels() {
-        int attempts = 0;
+        int created = 0;
 
-        while (attempts < config.getMaxGrowthAttempts()) {
-            attempts++;
+        while (created < POTENTIAL_LEVELS) {
+            created++;
 
             reset();
 
@@ -92,11 +97,10 @@ public class TreeGenerator {
     }
 
     boolean isValidLevel(LevelGenResult result) {
-        if (result.nonConnectorRooms < config.getRequiredRooms()) {
-            return false;
-        }
-
-        if (!depthRange.contains(result.endDepthStats.getMax())) {
+        if (result.nonConnectorRooms < config.getRequiredRooms()
+                || !depthRange.contains(result.endDepthStats.getMax())
+                || result.level.getBossRoom() == null
+        ) {
             return false;
         }
 
@@ -107,24 +111,6 @@ public class TreeGenerator {
     static final int FIRST_BETTER = -1;
     static final int SECOND_BETTER = 1;
     static final int EQUAL = 0;
-
-    int compare(LevelGenResult first, LevelGenResult second) {
-        boolean firstValid = isValidLevel(first);
-        boolean secondValid = isValidLevel(second);
-
-        if (!secondValid && firstValid) {
-            return FIRST_BETTER;
-        }
-
-        if (secondValid && !firstValid) {
-            return SECOND_BETTER;
-        }
-
-        double nonConnectorRate1 = ((double) first.totalRoomCount) / first.nonConnectorRooms;
-        double nonConnectorRate2 = ((double) second.totalRoomCount) / second.nonConnectorRooms;
-
-        return Double.compare(nonConnectorRate2, nonConnectorRate1);
-    }
 
     private LevelGenResult compileResult() {
         ValidationVisitor walker = new ValidationVisitor();
@@ -141,7 +127,8 @@ public class TreeGenerator {
                 walker.nonConnectorRooms,
                 stats,
                 walker.endGates,
-                walker.totalRoomCount
+                walker.totalRoomCount,
+                walker.closedEndConnectors
         );
     }
 
@@ -215,6 +202,13 @@ public class TreeGenerator {
 
                 parent.failedTypes.add(gate.getParent().getType());
                 parent.origin.clearChildren();
+
+                var parentRoot = parent.sectionRoot();
+                if (parentRoot == null) {
+                    parentRoot = parent;
+                }
+
+                parentRoot.roomCount--;
 
                 genQueue.addFirst(parent);
             }
@@ -386,6 +380,7 @@ public class TreeGenerator {
             if (isValidPlacement(room)) {
                 g.setOpen(true);
                 g.addChild(room);
+                level.setBossRoom(room);
 
                 LOGGER.info("Appended boss room!");
                 return;
@@ -401,7 +396,8 @@ public class TreeGenerator {
                           int nonConnectorRooms,
                           IntSummaryStatistics endDepthStats,
                           List<DungeonGate> endGates,
-                          int totalRoomCount
+                          int totalRoomCount,
+                          int closedEndConnectors
     ) {}
 
     static class ValidationVisitor implements PieceVisitor {
@@ -409,16 +405,25 @@ public class TreeGenerator {
 
         private int nonConnectorRooms;
         private int totalRoomCount;
+        private int closedEndConnectors;
 
         @Override
         public Result onGate(DungeonGate gate) {
             // Close gates that have no children
-            if (!gate.hasChildren()) {
-                endGates.add(gate);
+            if (gate.hasChildren()) {
+                return Result.CONTINUE;
+            }
 
-                if (gate.isOpen()) {
-                    gate.setOpen(false);
-                }
+            endGates.add(gate);
+
+            if (gate.isOpen()) {
+                gate.setOpen(false);
+            }
+
+            if (gate.getParent() instanceof DungeonRoom room
+                    && room.getType().hasFlags(Rooms.FLAG_CONNECTOR)
+            ) {
+                closedEndConnectors++;
             }
 
             return Result.CONTINUE;

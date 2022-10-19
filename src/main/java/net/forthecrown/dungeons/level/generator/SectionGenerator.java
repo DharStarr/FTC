@@ -38,6 +38,8 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
     protected final int sectionDepth;
     protected final int optimalDepth;
     protected final Range<Integer> depthRange;
+    protected final int maxRooms;
+    protected int roomCount;
 
     protected final DungeonGate origin;
     protected final @Nullable SectionGenerator parent;
@@ -64,6 +66,7 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
             depthRange = parent.depthRange;
             sectionDepth = parent.sectionDepth + 1;
             optimalDepth = parent.optimalDepth;
+            maxRooms = parent.maxRooms;
         } else {
             depthRange = createDepthRange(config);
 
@@ -76,21 +79,13 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
                 );
             }
 
+            maxRooms = depthRange.getMaximum() * 2;
             sectionDepth = DungeonPiece.STARTING_DEPTH;
         }
 
         fillPotentials()
                 .filter(pair -> {
                     if ((pair.value().getFlags() & (Rooms.FLAG_ROOT | Rooms.FLAG_BOSS_ROOM)) != 0) {
-                        return false;
-                    }
-
-                    DungeonRoom parentRoom = (DungeonRoom) origin.getParent();
-
-                    // 2 stair pieces cannot be right after each other
-                    if (parentRoom.getType().hasFlags(Rooms.FLAG_STAIRS)
-                            && pair.value().hasFlags(Rooms.FLAG_STAIRS)
-                    ) {
                         return false;
                     }
 
@@ -107,6 +102,18 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
 
         if (depth > config.getMaxDepth()) {
             return StepResult.failure(MAX_DEPTH);
+        }
+
+        var root = sectionRoot();
+
+        if (root == null) {
+            root = (T) this;
+        }
+
+        if (root.roomCount + 1 > root.maxRooms) {
+            // Return max section depth here to tell the generator
+            // to switch this section to a different type
+            return StepResult.failure(MAX_SECTION_DEPTH);
         }
 
         // Make as many attempts as possible to find correct room
@@ -142,6 +149,11 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
                     GateData gate = gIt.next();
                     DungeonRoom room = next.create();
 
+                    // Stair gates cannot connect to each other
+                    if (gate.stairs() && origin.getTargetGate().stairs()) {
+                        continue;
+                    }
+
                     NodeAlign.align(room, origin.getTargetGate(), gate);
 
                     // If invalid, move onto next type
@@ -166,9 +178,6 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
                                 || rand.nextFloat() <= config.getRoomOpenChance())
                                 && !exits.isEmpty()
                         ) {
-                            Crown.logger().info("exit size={}", exits.size());
-                            Crown.logger().info("struct={}", next.getStructureName());
-
                             int keepOpen = exits.size() == 1 ? 1 : config.getRandom().nextInt(1, exits.size());
 
                             // Keep random amount of gates open
@@ -181,6 +190,9 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
                             .filter(DungeonGate::isOpen)
                             .map(this::createCopy)
                             .collect(ObjectArrayList.toList());
+
+                    root.roomCount++;
+                    roomCount++;
 
                     return StepResult.success(childSections, room);
                 }
@@ -220,7 +232,7 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
                 .collect(ObjectArrayList.toList());
     }
 
-    public T sectionParent() {
+    public @Nullable T sectionParent() {
         // If parent exists and is not a different type of
         // section, return parent casted
         if (parent != null
@@ -232,7 +244,7 @@ public abstract class SectionGenerator<T extends SectionGenerator<T>> {
         return null;
     }
 
-    public T sectionRoot() {
+    public @Nullable T sectionRoot() {
         T root = sectionParent();
 
         while (root != null && root.sectionParent() != null) {

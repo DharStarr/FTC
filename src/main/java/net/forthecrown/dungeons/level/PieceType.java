@@ -13,8 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static net.forthecrown.dungeons.level.gate.GateData.TAG_CORRECT;
-import static net.forthecrown.dungeons.level.gate.GateData.TAG_OPENING;
+import static net.forthecrown.dungeons.level.gate.GateData.*;
 
 @RequiredArgsConstructor
 public abstract class PieceType<T extends DungeonPiece> {
@@ -38,10 +37,8 @@ public abstract class PieceType<T extends DungeonPiece> {
                     .stream()
                     // Filter non gate functions
                     .filter(info -> {
-                        return switch (info.getFacing()) {
-                            case SOUTH, NORTH, EAST, WEST -> info.getFunctionKey().equals(LevelFunctions.CONNECTOR);
-                            default -> false;
-                        };
+                        return info.getFacing().isRotatable()
+                                && info.getFunctionKey().equals(LevelFunctions.CONNECTOR);
                     })
 
                     // Load gate data
@@ -49,21 +46,32 @@ public abstract class PieceType<T extends DungeonPiece> {
                         GateData.Opening opening = GateData.DEFAULT_OPENING;
                         Vector3i offset = info.getOffset();
                         boolean applyCorrection = true;
+                        boolean stairs = false;
 
                         if (info.getTag() != null && !info.getTag().isEmpty()) {
                             var tag = info.getTag();
                             opening = GateData.Opening.load(tag.get(TAG_OPENING));
 
+                            // If value not given or value is positive, otherwise,
+                            // meaning the value is given and set to false, so set
+                            // variable to false too
                             applyCorrection = !tag.contains(TAG_CORRECT)
                                     || tag.getBoolean(TAG_CORRECT);
+
+                            stairs = !tag.contains(TAG_STAIR)
+                                    || tag.getBoolean(TAG_STAIR);
                         }
 
+                        // Correction here means to move the entrance out block outward
+                        // and downward to compensate for the fact the function block is
+                        // placed on the floor not inside it and isn't one block outside
+                        // the structure itself
                         if (applyCorrection) {
                             offset = offset.add(info.getFacing().getMod())
                                     .sub(0, 1, 0);
                         }
 
-                        return new GateData(info.getFacing(), offset, opening);
+                        return new GateData(info.getFacing(), offset, stairs, opening);
                     })
 
                     // Populate list
