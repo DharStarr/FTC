@@ -116,6 +116,23 @@ public abstract class UseCmdCommand<T extends CommandUsable> extends FtcCommand 
                                 })
                         )
 
+                        .then(literal("remove")
+                                .requires(source -> source.hasPermission(Permissions.ADMIN))
+
+                                .executes(c -> {
+                                    var value = argument.get(c, "usable");
+                                    argument.getManager().remove(value);
+
+                                    c.getSource().sendAdmin(
+                                            Text.format("Removed {0, class, -simple} named '{1}'",
+                                                    argument.getTypeClass(),
+                                                    value.getName()
+                                            )
+                                    );
+                                    return 0;
+                                })
+                        )
+
                         .then(literal("edit")
                                 .requires(source -> source.hasPermission(Permissions.ADMIN))
 

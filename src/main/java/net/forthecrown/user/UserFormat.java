@@ -96,7 +96,7 @@ public class UserFormat {
 
     public void format(TextWriter writer) {
         if (hasFlag(FOR_HOVER)) {
-            writer.line(user.getTabName().colorIfAbsent(NamedTextColor.YELLOW));
+            writer.line(user.getTabName().colorIfAbsent(NamedTextColor.GOLD));
         } else {
             writeHeader(writer);
         }

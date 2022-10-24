@@ -37,7 +37,11 @@ public class AutoSellListener implements Listener {
         var stack = item.getItemStack();
         var mat = stack.getType();
 
-        if (!earnings.getAutoSelling().contains(stack.getType())) {
+        if (!earnings.getAutoSelling().contains(stack.getType())
+                // Don't sell named items or items with lore if the
+                // user doesn't want to
+                || !ItemSeller.matchesFilters(user, mat, stack)
+        ) {
             return;
         }
 

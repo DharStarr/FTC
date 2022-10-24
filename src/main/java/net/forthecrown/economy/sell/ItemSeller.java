@@ -171,16 +171,7 @@ public final class ItemSeller {
             var index = it.nextIndex();
             var item = it.next();
 
-            if (item.getType() != material) {
-                continue;
-            }
-
-            var meta = item.getItemMeta();
-
-            // Filter out items using the user's preferences
-            if ((meta.hasLore() && !includeLore)
-                    || (meta.hasDisplayName() && includeNamed)
-            ) {
+            if (!matchesFilters(user, material, item)) {
                 continue;
             }
 
@@ -200,6 +191,27 @@ public final class ItemSeller {
         );
 
         return new ItemSeller(user, sell, material, items, false);
+    }
+
+    /**
+     * Tests if the given item stack is a valid item for selling selection
+     * given the current user's preferences and if it matches the given material
+     * @param user The user selling the item
+     * @param material The material to sell
+     * @param itemStack The item to test
+     * @return True, if the item can be sold, false otherwise
+     */
+    public static boolean matchesFilters(User user, Material material, ItemStack itemStack) {
+        if (ItemStacks.isEmpty(itemStack)
+                || itemStack.getType() != material
+        ) {
+            return false;
+        }
+
+        var meta = itemStack.getItemMeta();
+
+        return (!meta.hasLore() || user.get(Properties.SELLING_LORE_ITEMS))
+                && (!meta.hasDisplayName() || user.get(Properties.SELLING_NAMED_ITEMS));
     }
 
     /**

@@ -108,7 +108,7 @@ class UserTitlesNode extends UserCommandNode {
                                             titles.setTier(tier);
 
                                             c.getSource().sendAdmin(
-                                                    Text.format("Added tier {0} to {1, user}",
+                                                    Text.format("Set {1, user}'s tier to {0}",
                                                             tier, user
                                                     )
                                             );

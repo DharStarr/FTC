@@ -7,17 +7,16 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.EnumArgument;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.RomanNumeral;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.math.WorldVec3i;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextReplacementConfig;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -443,13 +442,6 @@ public class ComponentFormat implements ComponentLike {
 
                 Class c = arg instanceof Class<?> ? (Class) arg : arg.getClass();
                 boolean simple = style.isBlank() || style.contains("-simple");
-
-                // Ensure that only a valid input has been
-                // given
-                Validate.isTrue(
-                        simple || style.contains("-long"),
-                        "Invalid style: '%s'", style
-                );
 
                 return Component.text(
                         simple ? c.getSimpleName() : c.getName()

@@ -151,7 +151,7 @@ public class MobHealthBar implements Listener {
                     return;
                 }
 
-                entity.teleport(entity.getLocation().add(0, 0.035D, 0));
+                entity.teleport(entity.getLocation().add(0, 0.05D, 0));
             }
         }, 1, 1);
     }

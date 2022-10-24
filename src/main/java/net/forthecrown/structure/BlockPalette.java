@@ -55,6 +55,7 @@ public class BlockPalette {
         this.size = area.size();
 
         Vector3d origin = area.min().toDouble();
+        int blocks = 0;
 
         for (var b: area) {
             if (!config.includeBlock(b)) {
@@ -82,6 +83,7 @@ public class BlockPalette {
             Vector3i offset = Vectors.from(b).sub(origin.toInt());
 
             posList.add(Vectors.toLong(offset));
+            ++blocks;
         }
 
         for (var e: area.getEntities()) {
@@ -92,6 +94,8 @@ public class BlockPalette {
             EntityInfo info = EntityInfo.of(origin, e);
             this.entities.add(info);
         }
+
+        FTC.getLogger().info("Scanned {} blocks and {} entities", blocks, entities.size());
     }
 
     public void place(StructurePlaceConfig config) {

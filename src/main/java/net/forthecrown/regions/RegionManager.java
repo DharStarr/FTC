@@ -1,9 +1,10 @@
 package net.forthecrown.regions;
 
+import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.AutoSave;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.FtcDynmap;
-import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
 import net.minecraft.nbt.CompoundTag;
@@ -84,7 +85,7 @@ public class RegionManager extends SerializableObject.NbtDat {
         region.setProperty(RegionProperty.PAID_REGION, special);
 
         boolean hasName = region.hasName();
-        boolean nullNew = Util.isNullOrBlank(newName);
+        boolean nullNew = Strings.isNullOrEmpty(newName);
 
         String oldName = region.getName();
         region.setName(newName);
@@ -93,19 +94,31 @@ public class RegionManager extends SerializableObject.NbtDat {
         if (hasName) {
             byName.remove(oldName.toLowerCase());
 
-            if (nullNew && !region.hasProperty(RegionProperty.FORBIDS_MARKER)) {
-                FtcDynmap.getMarker(region).deleteMarker();
+            if (nullNew || region.hasProperty(RegionProperty.FORBIDS_MARKER)) {
+                Marker marker = FtcDynmap.getMarker(region);
+
+                if (marker != null) {
+                    marker.deleteMarker();
+                }
             }
         }
-
 
         //Set the name and add it with the new name to the tracker
         if (!nullNew) {
             byName.put(newName.toLowerCase(), region);
 
             if (!region.hasProperty(RegionProperty.FORBIDS_MARKER)) {
-                Marker marker = FtcDynmap.createMarker(region);
-                marker.setLabel(newName);
+                Marker marker = FtcDynmap.getMarker(region);
+
+                if (marker == null) {
+                    marker = FtcDynmap.createMarker(region);
+                }
+
+                if (marker == null) {
+                    FTC.getLogger().warn("Couldn't get or create marker for region '{}'", newName);
+                } else {
+                    marker.setLabel(newName);
+                }
             }
         }
 
