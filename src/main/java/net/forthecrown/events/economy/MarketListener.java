@@ -2,9 +2,10 @@ package net.forthecrown.events.economy;
 
 import net.forthecrown.commands.click.ClickableTextNode;
 import net.forthecrown.commands.click.ClickableTexts;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.Main;
 import net.forthecrown.economy.market.MarketShop;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.Markets;
 import net.forthecrown.economy.market.ShopEntrance;
 import net.forthecrown.text.format.UnitFormat;
 import net.forthecrown.user.User;
@@ -49,7 +50,7 @@ public class MarketListener implements Listener {
         }
 
         String shopName = container.get(ShopEntrance.NOTICE_KEY, PersistentDataType.STRING);
-        MarketManager markets = Crown.getEconomy().getMarkets();
+        MarketManager markets = Main.getEconomy().getMarkets();
         MarketShop shop = markets.get(shopName);
 
         openPurchaseBook(markets, shop, user);
@@ -71,7 +72,7 @@ public class MarketListener implements Listener {
                                 .hoverEvent(Component.text("Cannot afford ").append(UnitFormat.rhines(shop.getPrice())));
                     }
 
-                    if (!MarketManager.canChangeStatus(u)) {
+                    if (!Markets.canChangeStatus(u)) {
                         purchase = purchase.color(NamedTextColor.GOLD)
                                 .hoverEvent(Component.text("Cannot currently purchase shop"));
                     }

@@ -1,7 +1,7 @@
 package net.forthecrown.events.economy;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.Main;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.text.Messages;
 import net.forthecrown.economy.shops.SignShop;
@@ -21,7 +21,7 @@ public class ShopDestroyListener implements Listener {
             return;
         }
 
-        SignShop shop = Crown.getEconomy()
+        SignShop shop = Main.getEconomy()
                 .getShops()
                 .getShop(event.getBlock());
 

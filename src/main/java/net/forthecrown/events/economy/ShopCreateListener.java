@@ -2,10 +2,7 @@ package net.forthecrown.events.economy;
 
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.FtcFlags;
-import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.*;
 import net.forthecrown.economy.shops.ShopManager;
 import net.forthecrown.economy.shops.ShopType;
 import net.forthecrown.economy.shops.SignShop;
@@ -114,7 +111,7 @@ public class ShopCreateListener implements Listener {
                 return;
             }
 
-            ShopManager shopManager = Crown.getEconomy().getShops();
+            ShopManager shopManager = Main.getEconomy().getShops();
 
             //creates the signshop
             SignShop shop = shopManager.createSignShop(sign.getLocation(), shopType, price, player.getUniqueId());
