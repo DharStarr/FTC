@@ -187,7 +187,7 @@ public abstract class DataUpdater {
      * @param args Any arguments to give to the format
      */
     @FormatMethod
-    protected static void consoleCommand(@FormatString String format, Object... args) {
+    public static void consoleCommand(@FormatString String format, Object... args) {
         Bukkit.dispatchCommand(
                 Bukkit.getConsoleSender(),
                 format.formatted(args)

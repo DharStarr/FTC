@@ -547,6 +547,7 @@ public class User implements ForwardingAudience.Single,
 
         PlayerRidingListener.stopRiding(getPlayer());
         UserManager.get().getOnline().remove(getUniqueId());
+        TabList.update();
     }
 
     /**

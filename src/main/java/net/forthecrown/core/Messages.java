@@ -1292,11 +1292,11 @@ public interface Messages {
     static Component edSign(Player placer, WorldVec3i signPos, List<Component> lines) {
         return format(
                 """
-                {0, user} placed a sign at {1, location, -world -clickable}:
-                1) {2}
-                2) {3}
-                3) {4}
-                4) {5}
+                &7{0, user} placed a sign at {1, location, -world -clickable}:
+                &71)&r {2}
+                &72)&r {3}
+                &73)&r {4}
+                &74)&r {5}
                 """,
                 placer,
                 signPos,
@@ -1316,7 +1316,7 @@ public interface Messages {
      * @return The formatted message
      */
     static Component edChat(Component msg, Mute mute) {
-        return format("{0}{1}", msg, mute);
+        return format("{0}{1}", mute.getPrefix(), msg);
     }
 
     static Component edOreMining(Player player, Block block, int veinCount) {
@@ -1844,10 +1844,10 @@ public interface Messages {
 
     Component DYNMAP_HELP_MESSAGE = Component.text("The server's dynmap:", NamedTextColor.GRAY)
             .append(Component.newline())
-            .append(Component.text("mc.forthecrown.net:3140/")
+            .append(Component.text("mc.forthecrown.net:8155/")
                     .color(NamedTextColor.AQUA)
-                    .clickEvent(ClickEvent.openUrl("http://mc.forthecrown.net:3140/"))
-                    .hoverEvent(Messages.CLICK_ME)
+                    .clickEvent(ClickEvent.openUrl("http://mc.forthecrown.net:8155/"))
+                    .hoverEvent(CLICK_ME)
             );
 
     Component POLEHELP_MESSAGE = Component.text()

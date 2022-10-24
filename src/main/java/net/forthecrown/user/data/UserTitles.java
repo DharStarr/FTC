@@ -3,6 +3,7 @@ package net.forthecrown.user.data;
 import com.google.gson.JsonElement;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
+import net.forthecrown.datafix.DataUpdater;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
@@ -10,9 +11,6 @@ import net.forthecrown.user.UserOfflineException;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.luckperms.api.LuckPermsProvider;
-import net.luckperms.api.query.Flag;
-import net.luckperms.api.query.QueryMode;
-import net.luckperms.api.query.QueryOptions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
@@ -268,6 +266,7 @@ public class UserTitles extends UserComponent {
 
         var values = RankTier.values();
         ArrayUtils.reverse(values);
+
         var lp = LuckPermsProvider.get();
         var lpUser = lp.getUserManager().getUser(user.getUniqueId());
 
@@ -277,37 +276,27 @@ public class UserTitles extends UserComponent {
         }
 
         for (RankTier tier : values) {
-            if (hasTier(lpUser, tier)) {
+            if (user.hasPermission("group." + tier.getLuckPermsGroup())) {
                 if (hasTier(tier)) {
                     continue;
                 }
 
+                FTC.getLogger().info("Adding tier {} to {}", tier, user.getName());
                 addTier(tier);
                 return;
             } else {
-                if (!hasTier(tier)) {
+                if (hasTier(tier)) {
+                    DataUpdater.consoleCommand(
+                            "lp user %s parent add %s",
+                            user.getName(), tier.getLuckPermsGroup()
+                    );
+
                     continue;
                 }
 
-                setTier(tier, true);
+                addTier(tier);
             }
         }
-    }
-
-    private boolean hasTier(net.luckperms.api.model.user.User lpUser, RankTier tier) {
-        var groups = lpUser.getInheritedGroups(
-                QueryOptions.builder(QueryMode.NON_CONTEXTUAL)
-                        .flag(Flag.RESOLVE_INHERITANCE, true)
-                        .build()
-        );
-
-        for (var g: groups) {
-            if (g.getName().equals(tier.getLuckPermsGroup())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

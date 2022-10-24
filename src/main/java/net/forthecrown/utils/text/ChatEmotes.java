@@ -23,7 +23,7 @@ public final class ChatEmotes {
     public static final Map<String, Component> TOKEN_2_EMOTE = new HashMap<>();
 
     static void init() {
-        register("shrug",       "¯\\\\_(ツ)_/¯");
+        register("shrug",       "¯\\_(ツ)_/¯");
         register("ughcry",      "(ಥ﹏ಥ)");
         register("hug",         "༼ つ ◕_◕ ༽つ");
         register("hugcry",      "༼ つ ಥ_ಥ ༽つ");

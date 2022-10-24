@@ -289,7 +289,13 @@ public class PopulationRegion implements RegionAccess {
     }
 
     public boolean hasValidInvite(UUID uuid) {
-        long l = invites.get(uuid).rightLong();
+        var invite = invites.get(uuid);
+
+        if (invite == null) {
+            return false;
+        }
+
+        long l = invite.rightLong();
 
         if (Time.isPast(l)) {
             invites.remove(uuid);

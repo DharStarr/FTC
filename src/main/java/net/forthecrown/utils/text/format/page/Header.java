@@ -6,6 +6,8 @@ import net.forthecrown.utils.ArrayIterator;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ArrayUtils;
 
+import static net.kyori.adventure.text.Component.space;
+
 /**
  * A page header. These headers are made up of several {@link PageElement}s.
  * These elements are stored in arrays based on their type, the types are
@@ -62,6 +64,7 @@ public class Header<T> implements PageElement<T> {
     public Header() {
         // Add page border automatically
         repeating(Messages.PAGE_BORDER);
+        repeating(space());
     }
 
     // --- STATIC CONSTRUCTORS ---
@@ -83,7 +86,7 @@ public class Header<T> implements PageElement<T> {
      */
     public static <T> Header<T> of(Component title) {
         return Header.<T>create()
-                .repeating(Component.space())
+                .repeating(space())
                 .title(title);
     }
 

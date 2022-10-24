@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 public class CommandDeposit extends FtcCommand {
 
@@ -37,6 +38,8 @@ public class CommandDeposit extends FtcCommand {
      * Main Author: Julie
      */
 
+    private static final Pattern WORTH_PATTERN = Pattern.compile("Worth [0-9]+ Rhine(s|)");
+
     @Override
     protected void createCommand(BrigadierCommand command) {
         command
@@ -57,14 +60,17 @@ public class CommandDeposit extends FtcCommand {
 
     private int getSingleItemValue(ItemStack itemStack) {
         try {
-            Component component = itemStack.getItemMeta().lore().get(0);
+            Component component = itemStack.getItemMeta()
+                    .lore()
+                    .get(0);
+
             String lore = Text.plain(component)
-                    .replaceAll("[\\D]", "")
+                    .replaceAll("\\D+", "")
                     .trim();
 
             return Integer.parseInt(lore);
         } catch (NumberFormatException e) {
-            return 0;
+            return -1;
         }
     }
 
@@ -75,26 +81,13 @@ public class CommandDeposit extends FtcCommand {
         while (it.hasNext()) {
             var item = it.next();
 
-            if (ItemStacks.isEmpty(item)) {
-                continue;
-            }
-
-            if (item.getType() != FtcItems.COIN_MATERIAL) {
-                continue;
-            }
-
-            if (!item.hasItemMeta()
-                    || !item.getItemMeta()
-                    .lore()
-                    .get(0)
-                    .contains(Component.text("Worth "))
-            ) {
+            if (!isCoin(item)) {
                 continue;
             }
 
             int coinValue = getSingleItemValue(item);
 
-            if (coinValue == 0) {
+            if (coinValue == -1) {
                 continue;
             }
 
@@ -112,5 +105,25 @@ public class CommandDeposit extends FtcCommand {
         user.addBalance(earned);
         user.sendMessage(Messages.deposit(coins, earned));
         return 0;
+    }
+
+    private boolean isCoin(ItemStack item) {
+        if (ItemStacks.isEmpty(item)
+                || item.getType() != FtcItems.COIN_MATERIAL
+        ) {
+            return false;
+        }
+
+        var meta = item.getItemMeta();
+        var lore = meta.lore();
+
+        if (lore == null || lore.isEmpty()) {
+            return false;
+        }
+
+        String plain = Text.plain(lore.get(0));
+
+        return WORTH_PATTERN.matcher(plain.trim())
+                .matches();
     }
 }

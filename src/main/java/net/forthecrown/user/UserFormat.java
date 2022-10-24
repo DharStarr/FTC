@@ -6,22 +6,22 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.book.builder.TextInfo;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketDisplay;
 import net.forthecrown.economy.market.Markets;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.format.PeriodFormat;
-import net.forthecrown.utils.text.format.UnitFormat;
-import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.user.data.RankTitle;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserInteractions;
 import net.forthecrown.user.data.UserTitles;
 import net.forthecrown.user.property.Properties;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.PeriodFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -34,7 +34,7 @@ import static net.kyori.adventure.text.Component.text;
 public class UserFormat {
     /* ----------------------------- CONSTANTS ------------------------------ */
 
-    private static final Component BORDER = text("    ",
+    private static final Component BORDER = text("        ",
             NamedTextColor.GOLD, TextDecoration.STRIKETHROUGH
     );
 

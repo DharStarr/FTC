@@ -32,7 +32,6 @@ public class UserMapCommand extends FtcCommand {
         this.displayProvider = displayProvider;
 
         setAliases(aliases);
-
         register();
     }
 
