@@ -3,7 +3,7 @@ package net.forthecrown.dungeons.usables;
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.dungeons.boss.DrawnedBoss;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.EnumArgument;

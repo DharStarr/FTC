@@ -9,12 +9,12 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.arguments.Readers;
 import net.forthecrown.commands.arguments.SuggestionFunction;
 import net.forthecrown.commands.manager.FtcSuggestions;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.grenadier.Suggester;
-import net.forthecrown.text.ChatEmotes;
+import net.forthecrown.utils.text.ChatEmotes;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @Getter
 @RequiredArgsConstructor(staticName = "of")
 public class MessageSuggestions  {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
     private static final String GRADIENT_START = "<gradient";
 
     private final CommandSender sender;

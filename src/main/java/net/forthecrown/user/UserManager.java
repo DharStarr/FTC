@@ -4,29 +4,33 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import net.forthecrown.core.AutoSave;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
 public final class UserManager implements SerializableObject {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
-    static UserManager inst;
+    private static final UserManager INSTANCE = new UserManager();
 
     /**
      * Map of all loaded users
      */
-    final Map<UUID, User> loadedUsers = new Object2ObjectOpenHashMap<>();
+    final Map<UUID, User> loaded = new Object2ObjectOpenHashMap<>();
+
+    /** Map of online user's UUIDs to user */
+    final Map<UUID, User> online = new Object2ObjectOpenHashMap<>();
 
     /**
      * User profile map.
@@ -82,26 +86,21 @@ public final class UserManager implements SerializableObject {
         userLookup = new UserLookup(directory.resolve("profiles.json"));
 
         // Create user data maps
-        balances = new UserScoreMap(directory.resolve("balances.json"), () -> Vars.startRhines);
+        balances = new UserScoreMap(directory.resolve("balances.json"), () -> GeneralConfig.startRhines);
         playTime = new UserScoreMap(directory.resolve("playtime.json"));
         votes    = new UserScoreMap(directory.resolve("votes.json"));
         gems     = new UserScoreMap(directory.resolve("gems.json"));
-
-        AutoSave.get()
-                .addCallback(this::save);
-
-        // Reload tells all the just created
-        // objects to load their data
-        reload();
     }
 
     public static UserManager get() {
-        return inst;
+        return INSTANCE;
     }
 
     // Called in BootStrap via reflection
     private static void init() {
-        inst = new UserManager();
+        get().reload();
+        AutoSave.get()
+                .addCallback(get()::save);
     }
 
     /**
@@ -161,7 +160,17 @@ public final class UserManager implements SerializableObject {
      * Reloads all currently loaded users
      */
     public void reloadUsers() {
-        loadedUsers.values().forEach(User::reload);
+        loaded.values().forEach(User::reload);
+    }
+
+    public User getUser(UserLookupEntry profile) {
+        Objects.requireNonNull(profile, "Null player profile given!");
+        UUID base = profile.getUniqueId();
+
+        return getLoaded().computeIfAbsent(base, uuid -> {
+            var main = alts.getMain(uuid);
+            return main != null ? new UserAlt(uuid, main) : new User(uuid);
+        });
     }
 
     /**
@@ -171,7 +180,8 @@ public final class UserManager implements SerializableObject {
      * @param uuid The ID to remove, aka, unload
      */
     public void remove(UUID uuid) {
-        loadedUsers.remove(uuid);
+        loaded.remove(uuid);
+        online.remove(uuid);
     }
 
     /**
@@ -197,23 +207,22 @@ public final class UserManager implements SerializableObject {
      */
     public CompletableFuture<List<User>> getAllUsers() {
         return CompletableFuture.supplyAsync(() -> {
-            List<User> users = new ObjectArrayList<>();
             AtomicBoolean shouldRunValidationLoop = new AtomicBoolean(false);
 
-            this.getUserLookup()
+            List<User> users = getUserLookup()
                     .entryStream()
-                    .forEach(entry -> {
-                        OfflinePlayer p = Bukkit.getOfflinePlayer(entry.getUniqueId());
-
-                        if (!p.hasPlayedBefore()) {
-                            LOGGER.info("Found invalid player: {}, '{}', while running getAllUsers", p.getUniqueId(), p.getName());
+                    .filter(entry -> {
+                        if (!Users.hasVanillaData(entry.getUniqueId())) {
+                            LOGGER.info("Found invalid player: {}, while running getAllUsers", entry.getUniqueId());
 
                             shouldRunValidationLoop.set(true);
-                            return;
+                            return false;
                         }
 
-                        users.add(Users.get(entry));
-                    });
+                        return true;
+                    })
+                    .map(this::getUser)
+                    .collect(ObjectArrayList.toList());
 
             if (shouldRunValidationLoop.get()) {
                 userLookup.clearInvalid();

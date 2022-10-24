@@ -2,10 +2,9 @@ package net.forthecrown.core.admin;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
-import net.forthecrown.core.Permissions;
+import net.forthecrown.core.*;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.user.User;
 import net.kyori.adventure.text.Component;
@@ -63,7 +62,7 @@ public enum PunishType {
         public void onPunishmentEnd(User user, Punisher punisher) {
             // If user is online, move them out of jail
             if (user.isOnline()) {
-                user.getPlayer().teleport(Crown.config().getServerSpawn());
+                user.getPlayer().teleport(GeneralConfig.getServerSpawn());
             }
 
             // Remove the user from the jail
@@ -77,7 +76,7 @@ public enum PunishType {
             var cellOptional = Registries.JAILS.get(k);
 
             if (cellOptional.isEmpty()) {
-                Crown.logger().warn("Cannot jail {}, unknown jail name: '{}'",
+                FTC.getLogger().warn("Cannot jail {}, unknown jail name: '{}'",
                         user.getName(), k
                 );
                 return;
@@ -125,7 +124,7 @@ public enum PunishType {
 
         @Override
         public String defaultReason() {
-            return Vars.defaultBanReason;
+            return GeneralConfig.defaultBanReason;
         }
     },
 
@@ -162,7 +161,7 @@ public enum PunishType {
 
         @Override
         public String defaultReason() {
-            return Vars.defaultBanReason;
+            return GeneralConfig.defaultBanReason;
         }
     };
 
@@ -209,7 +208,7 @@ public enum PunishType {
      * Most instances of {@link PunishType} return
      * null for this method, except for {@link #BAN}
      * and {@link #IP_BAN} which will return
-     * {@link Vars#defaultBanReason}
+     * {@link GeneralConfig#defaultBanReason}
      *
      * @return The punishment's default reason.
      */

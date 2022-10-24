@@ -2,9 +2,7 @@ package net.forthecrown.economy.sell;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.core.Crown;
 import net.forthecrown.utils.inventory.menu.Slot;
-import org.apache.logging.log4j.Logger;
 import org.bukkit.Material;
 
 import java.io.BufferedReader;
@@ -59,8 +57,6 @@ import java.nio.file.Path;
  * empty, but a column with '-' as the value is explicitly empty
  */
 public class PriceMapReader {
-    private static final Logger LOGGER = Crown.logger();
-
     /**
      * Column separator character: '|'
      */
@@ -82,7 +78,6 @@ public class PriceMapReader {
             throw new IllegalStateException(e);
         }
 
-        LOGGER.info("Read price map: '{}'", path);
         return map;
     }
 

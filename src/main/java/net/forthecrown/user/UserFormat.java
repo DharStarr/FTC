@@ -6,17 +6,17 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.book.builder.TextInfo;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketDisplay;
-import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.Markets;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.format.PeriodFormat;
-import net.forthecrown.text.format.UnitFormat;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.PeriodFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.user.data.RankTitle;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserInteractions;
@@ -96,7 +96,7 @@ public class UserFormat {
 
     public void format(TextWriter writer) {
         if (hasFlag(FOR_HOVER)) {
-            writer.line(user.getTabName());
+            writer.line(user.getTabName().colorIfAbsent(NamedTextColor.YELLOW));
         } else {
             writeHeader(writer);
         }
@@ -124,7 +124,6 @@ public class UserFormat {
         );
 
         this.headerSize = TextInfo.getPxWidth(Text.plain(header));
-
         writer.line(header);
     }
 
@@ -179,7 +178,7 @@ public class UserFormat {
         UserManager manager = UserManager.get();
         int rhines = user.getBalance();
 
-        if (rhines != Vars.startRhines) {
+        if (rhines != GeneralConfig.startRhines) {
             writer.field("Rhines", UnitFormat.rhines(rhines));
         }
 
@@ -253,10 +252,10 @@ public class UserFormat {
             ));
         }
 
-        if (MarketManager.ownsShop(user)) {
+        if (Markets.ownsShop(user)) {
             writer.field("Owned Shop",
                     MarketDisplay.displayName(
-                            Crown.getEconomy()
+                            Economy.get()
                                     .getMarkets()
                                     .get(user.getUniqueId())
                     )

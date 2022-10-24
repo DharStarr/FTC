@@ -3,7 +3,7 @@ package net.forthecrown.useables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.EntityIdentifier;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.NamespacedKey;

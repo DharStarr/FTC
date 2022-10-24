@@ -3,10 +3,10 @@ package net.forthecrown.commands.economy;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.RankTitle;
 
@@ -64,7 +64,7 @@ public class CommandBecomeBaron extends FtcCommand {
                             // Validate user can purchase baron
                             validate(user);
 
-                            user.removeBalance(Vars.baronPrice);
+                            user.removeBalance(GeneralConfig.baronPrice);
                             user.getTitles().addTitle(RankTitle.BARON);
                             user.getTitles().addTitle(RankTitle.BARONESS);
 
@@ -75,7 +75,7 @@ public class CommandBecomeBaron extends FtcCommand {
     }
 
     private static void validate(User user) throws CommandSyntaxException {
-        var baronPrice = Vars.baronPrice;
+        var baronPrice = GeneralConfig.baronPrice;
 
         if(user.getTitles().hasTitle(RankTitle.BARON)) {
             throw Exceptions.ALREADY_BARON;

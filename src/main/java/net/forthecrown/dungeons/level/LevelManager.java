@@ -1,18 +1,20 @@
-package net.forthecrown.dungeons;
+package net.forthecrown.dungeons.level;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.core.AutoSave;
-import net.forthecrown.core.DayChange;
-import net.forthecrown.dungeons.level.DungeonLevel;
+import net.forthecrown.dungeons.level.gate.DungeonGate;
+import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.io.PathUtil;
+import net.forthecrown.utils.io.SerializationHelper;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.WatchService;
 
 @Getter
-public class Dungeons {
-    private static final Dungeons inst = new Dungeons();
+public class LevelManager {
+    private static final LevelManager inst = new LevelManager();
 
     private final Path directory;
 
@@ -21,27 +23,73 @@ public class Dungeons {
 
     private final LevelArchiveStorage archiveStorage;
 
-    public Dungeons() {
+    private BukkitTask tickTask;
+    private final PieceVisitor tickVisitor = new PieceVisitor() {
+        @Override
+        public Result onGate(DungeonGate gate) {
+            gate.onTick();
+            return Result.CONTINUE;
+        }
+
+        @Override
+        public Result onRoom(DungeonRoom room) {
+            room.onTick();
+            return Result.CONTINUE;
+        }
+    };
+
+    public LevelManager() {
         this.directory = PathUtil.getPluginDirectory("dungeons");
         archiveStorage = new LevelArchiveStorage(directory.resolve("archive"));
     }
 
-    public static Dungeons get() {
+    public static LevelManager get() {
         return inst;
     }
 
     private static void init() {
-        // TODO: load current level, register save callback, and potentially add to day change listener
         get().load();
 
         AutoSave.get().addCallback(get()::save);
     }
 
+    public Path getLevelPath() {
+        return directory.resolve("level.dat");
+    }
+
+    public void beginTicking() {
+        tickTask = Tasks.cancel(tickTask);
+        tickTask = Tasks.runTimer(this::tick, 1, 1);
+    }
+
+    public void tick() {
+        if (getCurrentLevel() == null) {
+            tickTask = Tasks.cancel(tickTask);
+            return;
+        }
+
+        getCurrentLevel()
+                .getRoot()
+                .visit(tickVisitor);
+    }
+
     public void load() {
-        Path levelPath = directory.resolve("level.dat");
+        Path levelPath = getLevelPath();
+
+        if (!Files.exists(levelPath)) {
+            return;
+        }
+
+        DungeonLevel level = new DungeonLevel();
+        SerializationHelper.readTagFile(levelPath, level::load);
     }
 
     public void save() {
+        if (currentLevel == null) {
+            PathUtil.safeDelete(getLevelPath());
+            return;
+        }
 
+        SerializationHelper.writeTagFile(getLevelPath(), currentLevel::save);
     }
 }

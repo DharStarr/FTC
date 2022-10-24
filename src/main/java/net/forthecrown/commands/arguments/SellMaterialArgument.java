@@ -8,7 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.sell.ItemSellData;
 import net.forthecrown.grenadier.CmdUtil;
 import net.forthecrown.grenadier.CompletionProvider;
@@ -25,7 +25,7 @@ public class SellMaterialArgument implements ArgumentType<Material>, VanillaMapp
     public Material parse(StringReader reader) throws CommandSyntaxException {
         Material material = parser.parse(reader);
 
-        if (!Crown.getEconomy()
+        if (!Economy.get()
                 .getSellShop()
                 .getPriceMap()
                 .contains(material)
@@ -40,7 +40,7 @@ public class SellMaterialArgument implements ArgumentType<Material>, VanillaMapp
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         var token = builder.getRemainingLowerCase();
 
-        var priceMap = Crown.getEconomy()
+        var priceMap = Economy.get()
                 .getSellShop()
                 .getPriceMap();
 

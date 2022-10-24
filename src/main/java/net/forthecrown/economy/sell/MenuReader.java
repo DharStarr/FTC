@@ -3,14 +3,15 @@ package net.forthecrown.economy.sell;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.text.Text;
-import net.forthecrown.utils.io.JsonWrapper;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNodeItem;
 import net.forthecrown.utils.inventory.menu.Menus;
 import net.forthecrown.utils.inventory.menu.Slot;
+import net.forthecrown.utils.io.JsonUtils;
+import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Material;
 
@@ -124,7 +125,8 @@ public class MenuReader {
         // accepts strings as valid input for text deserialization
         // That being said we do have to wrap them, so they don't
         // become italic and pink by default lol
-        var name = Text.wrapForItems(itemJson.getComponent(KEY_HEADER_NAME));
+        var name = Text.wrapForItems(itemJson.getComponent(KEY_HEADER_NAME))
+                .color(NamedTextColor.AQUA);
 
         List<Component> lore = new ArrayList<>();
 
@@ -133,7 +135,10 @@ public class MenuReader {
             var arr = itemJson.getArray(KEY_HEADER_LORE);
 
             for (var e: arr) {
-                lore.add(Text.wrapForItems(JsonUtils.readText(e)));
+                lore.add(
+                        Text.wrapForItems(JsonUtils.readText(e))
+                                .color(NamedTextColor.GRAY)
+                );
             }
         }
 

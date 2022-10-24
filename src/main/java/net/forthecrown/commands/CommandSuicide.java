@@ -5,7 +5,7 @@ import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import org.bukkit.entity.Player;
 
-import static net.forthecrown.text.Messages.CMD_SUICIDE;
+import static net.forthecrown.core.Messages.CMD_SUICIDE;
 
 public class CommandSuicide extends FtcCommand {
     public CommandSuicide(){

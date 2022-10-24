@@ -1,6 +1,6 @@
 package net.forthecrown.cosmetics.deaths;
 
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.cosmetics.Cosmetic;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.utils.inventory.menu.Slot;

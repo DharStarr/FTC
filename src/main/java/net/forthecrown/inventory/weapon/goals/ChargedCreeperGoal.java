@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class ChargedCreeperGoal implements WeaponKillGoal {
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "charged_creeper";
     }
 }

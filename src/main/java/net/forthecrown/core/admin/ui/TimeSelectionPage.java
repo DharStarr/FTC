@@ -2,8 +2,8 @@ package net.forthecrown.core.admin.ui;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;
 import net.forthecrown.utils.inventory.menu.MenuNode;
@@ -13,7 +13,7 @@ import org.bukkit.Material;
 
 import java.util.concurrent.TimeUnit;
 
-import static net.forthecrown.text.Text.format;
+import static net.forthecrown.utils.text.Text.format;
 import static net.forthecrown.core.admin.Punishments.INDEFINITE_EXPIRY;
 import static net.forthecrown.core.admin.ui.AdminUI.*;
 import static net.forthecrown.utils.inventory.menu.Menus.DEFAULT_INV_SIZE;

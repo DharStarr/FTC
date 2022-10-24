@@ -1,7 +1,7 @@
 package net.forthecrown.events.player;
 
 import net.forthecrown.core.AfkKicker;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;

@@ -29,7 +29,7 @@ public class CommandTpDeny extends FtcCommand {
                             TeleportRequest request = user.getInteractions().getIncoming(target);
 
                             if (request == null) {
-                                throw Exceptions.noOutgoing(target);
+                                throw Exceptions.noIncoming(target);
                             }
 
                             request.deny();

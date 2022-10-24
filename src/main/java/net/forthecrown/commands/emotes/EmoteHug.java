@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.function.Consumer;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class EmoteHug extends CommandEmote {
     private static final int HUG_TICKS = 100;

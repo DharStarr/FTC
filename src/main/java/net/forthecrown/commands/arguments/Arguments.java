@@ -17,8 +17,6 @@ import java.util.List;
 public interface Arguments {
     ChatArgument CHAT = new ChatArgument();
 
-    GlobalVarArgument COM_VAR = new GlobalVarArgument();
-
     HolidayArgument HOLIDAY = new HolidayArgument();
 
     HomeArgument HOME = new HomeArgument();

@@ -1,10 +1,11 @@
 package net.forthecrown.user;
 
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserInteractions;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.Validate;
@@ -17,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Utility class for methods related to users
@@ -43,7 +43,7 @@ public final class Users {
      * @return The loaded user, null, if the User attached to the given UUID is not loaded
      */
     public static User getLoadedUser(UUID base) {
-        return UserManager.get().loadedUsers.get(base);
+        return UserManager.get().getLoaded().get(base);
     }
 
     /**
@@ -71,16 +71,7 @@ public final class Users {
      * @throws IllegalArgumentException If the given profile is null
      */
     public static User get(UserLookupEntry profile) throws IllegalArgumentException {
-        Validate.notNull(profile, "Null player profile given!");
-
-        UUID base = profile.getUniqueId();
-
-        return UserManager.get().loadedUsers.computeIfAbsent(base, uuid -> {
-            var alts = UserManager.get().getAlts();
-            var main = alts.getMain(uuid);
-
-            return main != null ? new UserAlt(uuid, main) : new User(uuid);
-        });
+        return UserManager.get().getUser(profile);
     }
 
     /**
@@ -116,10 +107,11 @@ public final class Users {
      * @return All online users
      */
     public static Set<User> getOnline() {
-        return Bukkit.getOnlinePlayers()
-                .stream()
-                .map(player -> getLoadedUser(player.getUniqueId()))
-                .collect(Collectors.toSet());
+        return new ObjectOpenHashSet<>(
+                UserManager.get()
+                        .getOnline()
+                        .values()
+        );
     }
 
     /**
@@ -128,7 +120,10 @@ public final class Users {
      * All users are saved before being potentially unloaded
      */
     public static void unloadOffline() {
-        var it = UserManager.get().loadedUsers.entrySet().iterator();
+        var it = UserManager.get()
+                .getLoaded()
+                .entrySet()
+                .iterator();
 
         while (it.hasNext()) {
             User u = it.next().getValue();
@@ -214,18 +209,23 @@ public final class Users {
         target.sendMessage(Messages.nowMarried(user));
         user.sendMessage(Messages.nowMarried(target));
 
-        Bukkit.getServer()
-                .sendMessage(
-                        Text.format("&e{0, user}&r is now married to &e{1, user}&r{2}",
-                                user, target,
+        Bukkit.getServer().sendMessage(
+                Text.format("&e{0, user}&r is now married to &e{1, user}&r{2}",
+                        user, target,
 
-                                Util.RANDOM.nextInt(0, 1000) != 1 ?
-                                        Component.text("!") :
-                                        Component.text("... I give it a week", NamedTextColor.GRAY)
+                        Util.RANDOM.nextInt(0, 1000) != 1 ?
+                                Component.text("!")
+                                : Component.text("... I give it a week", NamedTextColor.GRAY)
                         )
                 );
     }
 
+    /**
+     * Tests if the given player ID has a vanilla data file
+     * @param uuid The ID of the player to test
+     * @return True, if the player has a vanilla data
+     *         file, false if it does not
+     */
     public static boolean hasVanillaData(UUID uuid) {
         Path path = Paths.get("world", "playerdata", uuid.toString() + ".dat");
         return Files.exists(path);

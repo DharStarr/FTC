@@ -15,7 +15,7 @@ import static net.forthecrown.core.registry.Registries.SERVER_ICONS;
  * Dynamically/randomly changes the server icon
  */
 public class ServerIcons {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     /**
      * A count of how many pride icons there are lmao
@@ -96,7 +96,7 @@ public class ServerIcons {
         }
 
         // Debug mode -> debug icon
-        if (Crown.inDebugMode()) {
+        if (FTC.inDebugMode()) {
             return get(TAG_DEBUG);
         }
 
@@ -116,6 +116,6 @@ public class ServerIcons {
     }
 
     public static CachedServerIcon get(String tag) {
-        return SERVER_ICONS.get(tag).orElse(Bukkit.getServerIcon());
+        return SERVER_ICONS.get(tag).orElseGet(Bukkit::getServerIcon);
     }
 }

@@ -2,14 +2,11 @@ package net.forthecrown.commands.markets;
 
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
-import net.forthecrown.economy.market.MarketScan;
-import net.forthecrown.economy.market.MarketShop;
-import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.economy.market.*;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 
 import static net.forthecrown.economy.market.MarketEviction.SOURCE_AUTOMATIC;
@@ -44,11 +41,11 @@ public class CommandMarketAppeal extends FtcCommand {
                 .executes(c -> {
                     User user = getUserSender(c);
 
-                    if (!MarketManager.ownsShop(user)) {
+                    if (!Markets.ownsShop(user)) {
                         throw Exceptions.NO_SHOP_OWNED;
                     }
 
-                    MarketManager markets = Crown.getEconomy().getMarkets();
+                    MarketManager markets = Economy.get().getMarkets();
                     MarketShop shop = markets.get(user.getUniqueId());
 
                     if (!shop.markedForEviction()) {
@@ -61,11 +58,11 @@ public class CommandMarketAppeal extends FtcCommand {
                         throw Exceptions.NON_AUTO_APPEAL;
                     }
 
-                    MarketScan scan = MarketScan.create(markets.getWorld(), shop);
+                    MarketScan scan = MarketScan.create(Markets.getWorld(), shop);
                     int total = scan.stockedCount() + scan.unstockedCount();
-                    float required = Vars.markets_minStockRequired * total;
+                    float required = MarketConfig.minStockRequired * total;
 
-                    if (total < Vars.markets_minShopAmount) {
+                    if (total < MarketConfig.minShopAmount) {
                         user.sendMessage(Messages.cannotAppeal(Messages.tooLittleShops()));
                         return 0;
                     }

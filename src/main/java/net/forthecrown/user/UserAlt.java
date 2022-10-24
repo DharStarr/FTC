@@ -1,7 +1,5 @@
 package net.forthecrown.user;
 
-import net.forthecrown.core.Crown;
-
 import java.util.UUID;
 
 public class UserAlt extends User {

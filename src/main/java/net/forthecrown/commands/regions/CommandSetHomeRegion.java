@@ -1,6 +1,6 @@
 package net.forthecrown.commands.regions;
 
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;

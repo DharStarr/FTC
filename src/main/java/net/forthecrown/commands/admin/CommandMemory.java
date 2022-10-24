@@ -1,7 +1,7 @@
 package net.forthecrown.commands.admin;
 
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;

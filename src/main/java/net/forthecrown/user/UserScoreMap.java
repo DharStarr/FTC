@@ -1,16 +1,17 @@
 package net.forthecrown.user;
 
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIterators;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.format.page.PageEntryIterator;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.SerializableObject;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.math.GenericMath;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -60,13 +61,13 @@ public class UserScoreMap extends SerializableObject.Json implements Iterable<Us
     /**
      * Sets the uuid's value.
      * <p>
-     * This method will also clamp the given value to
-     * {@link #MINIMUM_VALUE} and {@link Vars#maxMoneyAmount}
+     * This method will also ensure that the given amount
+     * is equal to or greater than 0.
      * @param uuid The UUID to set the value of
      * @param amount the amount to set the uuid's value to
      */
     public void set(UUID uuid, int amount) {
-        amount = GenericMath.clamp(amount, MINIMUM_VALUE, Vars.maxMoneyAmount);
+        amount = Math.max(MINIMUM_VALUE, amount);
 
         var entry = entries.get(uuid);
 

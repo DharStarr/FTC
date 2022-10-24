@@ -10,11 +10,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.FtcDiscord;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.MailMessage;
@@ -45,6 +44,7 @@ import java.util.function.Consumer;
 import static net.forthecrown.core.FtcDiscord.C_MARKETS;
 import static net.forthecrown.economy.market.MarketEviction.SOURCE_AUTOMATIC;
 import static net.forthecrown.economy.market.MarketEviction.SOURCE_UNKNOWN;
+import static net.forthecrown.economy.market.MarketReset.TEMPLATE_DEPTH;
 import static net.forthecrown.user.data.UserTimeTracker.UNSET;
 
 /**
@@ -124,7 +124,7 @@ public class MarketShop {
 
     /**
      * The market's price, {@link #UNSET_PRICE} if unset, calling {@link #getPrice()}
-     * when the price is unset will return {@link Vars#defaultMarketPrice}
+     * when the price is unset will return {@link MarketConfig#defaultPrice}
      */
     private int price = UNSET_PRICE;
 
@@ -189,18 +189,18 @@ public class MarketShop {
     /**
      * Gets this shop's price, if this market's
      * {@link #price} field is equal to {@link #UNSET_PRICE}
-     * then this method will return {@link Vars#defaultMarketPrice}
+     * then this method will return {@link MarketConfig#defaultPrice}
      * instead.
      *
      * @return The shop's effective price
      */
     public int getPrice() {
-        return price == UNSET_PRICE ? Vars.defaultMarketPrice : price;
+        return price == UNSET_PRICE ? MarketConfig.defaultPrice : price;
     }
 
     /** Sets the shop's price */
     public void setPrice(int price) {
-        this.price = Mth.clamp(price, UNSET_PRICE, Vars.maxMoneyAmount);
+        this.price = Mth.clamp(price, UNSET_PRICE, MarketConfig.defaultPrice);
     }
 
     /**
@@ -233,13 +233,11 @@ public class MarketShop {
      */
     public boolean reset() {
         //Figure out positions for pasting
-        var markets = Crown.getEconomy().getMarkets();
-
         if (reset == null) {
             return false;
         }
 
-        reset.place(markets.getWorld());
+        reset.place(Markets.getWorld());
         return true;
     }
 
@@ -252,7 +250,7 @@ public class MarketShop {
         UserMarketData ownership = user.getMarketData();
 
         //If they already own a shop
-        if (MarketManager.ownsShop(user)) {
+        if (Markets.ownsShop(user)) {
             throw Exceptions.MARKET_ALREADY_OWNER;
         }
 
@@ -262,7 +260,7 @@ public class MarketShop {
         }
 
         //Check if they can even buy it
-        MarketManager.checkCanPurchase(ownership);
+        Markets.checkCanPurchase(ownership);
         int price = getPrice();
 
         //Check if they can afford it
@@ -293,8 +291,8 @@ public class MarketShop {
     public void claim(User user) throws IllegalArgumentException {
         Validate.isTrue(!hasOwner(), "Market already has owner");
 
-        var markets = Crown.getEconomy().getMarkets();
-        var world = markets.getWorld();
+        var markets = Economy.get().getMarkets();
+        var world = Markets.getWorld();
 
         var timeTracker = user.getTimeTracker();
         timeTracker.setCurrent(TimeField.MARKET_LAST_ACTION);
@@ -319,7 +317,7 @@ public class MarketShop {
 
         MarketReset reset = new MarketReset(
                 wgMin,
-                wgMin.sub(0, 40, 0),
+                wgMin.sub(0, TEMPLATE_DEPTH, 0),
                 wgMax.sub(wgMin)
         );
 
@@ -343,7 +341,7 @@ public class MarketShop {
      */
     public void unclaim(boolean complete) throws IllegalArgumentException {
         Validate.isTrue(hasOwner(), "Market has no owner");
-        var world = Crown.getEconomy().getMarkets().getWorld();
+        var world = Markets.getWorld();
 
         if (isMerged()) {
             unmerge();
@@ -352,7 +350,7 @@ public class MarketShop {
         User owner = ownerUser();
         owner.setTimeToNow(TimeField.MARKET_LAST_ACTION);
 
-        Crown.getEconomy().getMarkets().onShopUnclaim(this);
+        Economy.get().getMarkets().onShopUnclaim(this);
 
         setPurchaseDate(UNSET);
         setOwner(null);
@@ -433,7 +431,7 @@ public class MarketShop {
      * @return This shop's merged shop, or null, if not merged
      */
     public MarketShop getMerged() {
-        return Util.isNullOrBlank(mergedName) ? null : Crown.getEconomy().getMarkets().get(mergedName);
+        return Util.isNullOrBlank(mergedName) ? null : Economy.get().getMarkets().get(mergedName);
     }
 
     /**
@@ -512,7 +510,7 @@ public class MarketShop {
     public void removeEntrance(int index) {
         var entrance = entrances.remove(index);
 
-        var world = Crown.getEconomy().getMarkets().getWorld();
+        var world = Markets.getWorld();
         entrance.removeSign(world);
         entrance.removeNotice(world);
     }
@@ -615,7 +613,7 @@ public class MarketShop {
      * eviction process.
      * <p>
      * This will first test if the user has been online in
-     * the past {@link Vars#markets_maxOfflineTime} time, if
+     * the past {@link MarketConfig#maxOfflineTime} time, if
      * not, then it begins the eviction with the
      * {@link Messages#MARKET_EVICT_INACTIVE} message as the
      * reason for the eviction.
@@ -623,7 +621,7 @@ public class MarketShop {
      * If the aforementioned test passes, then this will scan
      * the shop's signshops, if there is not enough of them,
      * or if the rate of stocked shop to unstocked shop is
-     * higher than {@link Vars#markets_minStockRequired}, then
+     * higher than {@link MarketConfig#minStockRequired}, then
      * this begins the automatic eviction.
      *
      * @param markets The markets manager
@@ -640,10 +638,10 @@ public class MarketShop {
 
         // If owner has been offline for a long time
         if (lastOnline != UNSET
-                && Time.isPast(lastOnline + Vars.markets_maxOfflineTime)
+                && Time.isPast(lastOnline + MarketConfig.maxOfflineTime)
         ) {
             beginEviction(
-                    System.currentTimeMillis() + Vars.markets_evictionDelay,
+                    System.currentTimeMillis() + MarketConfig.evictionDelay,
                     Messages.MARKET_EVICT_INACTIVE,
                     SOURCE_AUTOMATIC
             );
@@ -651,7 +649,7 @@ public class MarketShop {
             return;
         }
 
-        MarketScan scan = MarketScan.create(markets.getWorld(), this);
+        MarketScan scan = MarketScan.create(Markets.getWorld(), this);
         scans.add(0, scan);
 
         // There's got to be at least MAX_SCANS weeks worth of
@@ -669,11 +667,11 @@ public class MarketShop {
 
         for (var s: scans) {
             int totalShops = s.stockedCount() + s.unstockedCount();
-            double requiredStock = totalShops * GenericMath.clamp(Vars.markets_minStockRequired, 0, 1);
+            double requiredStock = totalShops * GenericMath.clamp(MarketConfig.minStockRequired, 0, 1);
 
             // If there is enough shops and if enough are in stock
             // skip this scan
-            if (totalShops >= Vars.markets_minShopAmount && s.stockedCount() >= requiredStock) {
+            if (totalShops >= MarketConfig.minShopAmount && s.stockedCount() >= requiredStock) {
                 return;
             }
 
@@ -682,7 +680,7 @@ public class MarketShop {
                 continue;
             }
 
-            if (totalShops < Vars.markets_minShopAmount) {
+            if (totalShops < MarketConfig.minShopAmount) {
                 failedAmount++;
             }
         }
@@ -691,7 +689,7 @@ public class MarketShop {
                 Messages.MARKET_EVICT_STOCK
                 : Messages.tooLittleShops();
 
-        beginEviction(System.currentTimeMillis() + Vars.markets_evictionDelay, reason, SOURCE_AUTOMATIC);
+        beginEviction(System.currentTimeMillis() + MarketConfig.evictionDelay, reason, SOURCE_AUTOMATIC);
     }
 
     /**

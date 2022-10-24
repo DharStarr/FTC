@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.TagUtil;

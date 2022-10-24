@@ -3,20 +3,20 @@ package net.forthecrown.commands.tpa;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.Worlds;
 import net.forthecrown.core.config.EndConfig;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.TeleportRequest;
 import net.forthecrown.user.User;
-import net.forthecrown.user.property.Properties;
 import net.forthecrown.user.data.UserInteractions;
+import net.forthecrown.user.property.Properties;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 
 import static net.forthecrown.commands.manager.Exceptions.*;
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class CommandTpask extends FtcCommand {
 
@@ -63,22 +63,24 @@ public class CommandTpask extends FtcCommand {
     }
 
     public static void checkPreconditions(User sender, User target, boolean tpaHere) throws CommandSyntaxException {
-        if(sender.equals(target)) {
+        if (sender.equals(target)) {
             throw CANNOT_TP_SELF;
         }
 
-        if(!sender.get(Properties.TPA)) {
+        if (!sender.get(Properties.TPA)) {
             throw TPA_DISABLED_SENDER;
         }
 
-        if(!target.get(Properties.TPA)) {
+        if (!target.get(Properties.TPA)) {
             throw tpaDisabled(target);
         }
 
         UserInteractions i = sender.getInteractions();
         UserInteractions iTo = target.getInteractions();
 
-        if(i.getOutgoing(target) != null || iTo.getIncoming(sender) != null) {
+        if (i.getOutgoing(target) != null
+                || iTo.getIncoming(sender) != null
+        ) {
             throw requestAlreadySent(target);
         }
 
@@ -110,6 +112,6 @@ public class CommandTpask extends FtcCommand {
     }
 
     public static boolean isInvalidWorld(World world) {
-        return Crown.config().isIllegalWorld(world);
+        return GeneralConfig.illegalWorlds.contains(world.getName());
     }
 }

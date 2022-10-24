@@ -2,7 +2,7 @@ package net.forthecrown.commands.admin;
 
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.Announcer;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.kyori.adventure.text.Component;
@@ -40,7 +40,7 @@ public class CommandBroadcast extends FtcCommand {
         command
                 .then(argument("message", Arguments.CHAT)
                         .executes(c -> {
-                            Crown.getAnnouncer().announce(c.getArgument("message", Component.class));
+                            Announcer.get().announce(c.getArgument("message", Component.class));
                             return 0;
                         })
                 );

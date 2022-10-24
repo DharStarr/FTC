@@ -48,7 +48,7 @@ public class EntityInfo {
         return withTag(
                 (CompoundTag) DataFixers.getDataFixer()
                         .update(
-                                References.ENTITY,
+                                References.ENTITY_TREE,
                                 new Dynamic<>(NbtOps.INSTANCE, tag),
                                 oldVersion, newVersion
                         )

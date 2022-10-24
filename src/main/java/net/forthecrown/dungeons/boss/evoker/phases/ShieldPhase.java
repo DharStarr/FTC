@@ -56,7 +56,7 @@ public class ShieldPhase implements AttackPhase {
 
     @Override
     public void onTick(EvokerBoss boss, BossContext context) {
-        int maxTicks = EvokerVars.vulnerable_length;
+        int maxTicks = EvokerConfig.vulnerable_length;
         tick++;
 
         if (tick > maxTicks) {

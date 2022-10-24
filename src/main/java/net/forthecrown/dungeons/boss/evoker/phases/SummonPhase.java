@@ -7,7 +7,7 @@ import net.forthecrown.dungeons.boss.components.MinionSpawnerComponent;
 import net.forthecrown.dungeons.boss.evoker.BossMessage;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
 import net.forthecrown.dungeons.boss.evoker.EvokerEffects;
-import net.forthecrown.dungeons.boss.evoker.EvokerVars;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.Util;
 import net.minecraft.world.phys.Vec3;
@@ -98,7 +98,7 @@ public class SummonPhase implements AttackPhase {
         }
 
         spawnTick++;
-        if (spawnTick <= EvokerVars.ticksBetweenSpawns) {
+        if (spawnTick <= EvokerConfig.ticksBetweenSpawns) {
             return;
         }
 

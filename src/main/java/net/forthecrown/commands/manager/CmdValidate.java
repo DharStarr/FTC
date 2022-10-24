@@ -1,7 +1,7 @@
 package net.forthecrown.commands.manager;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.format.page.PageEntryIterator;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
 
 public final class CmdValidate {
     private CmdValidate() {}

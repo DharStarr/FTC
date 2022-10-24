@@ -3,7 +3,7 @@ package net.forthecrown.commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
@@ -28,7 +28,7 @@ public class CommandList extends FtcCommand {
                     Set<User> users = Users.getOnline();
 
                     // If we should hide vanished
-                    if(!c.getSource().hasPermission(Permissions.VANISH_SEE)) {
+                    if (!c.getSource().hasPermission(Permissions.VANISH_SEE)) {
                         users.removeIf(user -> user.get(Properties.VANISHED));
                     }
 

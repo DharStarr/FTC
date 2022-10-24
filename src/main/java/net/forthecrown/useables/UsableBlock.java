@@ -3,7 +3,7 @@ package net.forthecrown.useables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;

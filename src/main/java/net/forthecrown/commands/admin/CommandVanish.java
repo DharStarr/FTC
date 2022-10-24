@@ -6,7 +6,7 @@ import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.property.Properties;
 import net.kyori.adventure.text.Component;

@@ -4,9 +4,13 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
+import net.forthecrown.regions.PopulationRegion;
+import net.forthecrown.regions.RegionManager;
+import net.forthecrown.regions.RegionPos;
+import net.forthecrown.core.Messages;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
+import net.forthecrown.user.Users;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,27 +46,30 @@ public class CommandInvite extends FtcCommand {
                 .then(argument("users", Arguments.USERS)
                         .executes(c -> {
                             User user = getUserSender(c);
+                            RegionPos homePos = user.getHomes().getHomeRegion();
+
+                            if (homePos == null) {
+                                throw Exceptions.NO_HOME_REGION;
+                            }
+
+                            PopulationRegion region = RegionManager.get()
+                                    .get(homePos);
+
                             Collection<User> users = new ArrayList<>(Arguments.getUsers(c, "users"));
+
                             users.removeIf(t -> {
-                                if (!t.isOnline()) {
+                                if (!t.isOnline()
+                                        || region.hasValidInvite(t.getUniqueId())
+                                ) {
                                     return true;
                                 }
 
-                                var inter = user.getInteractions();
-                                if (inter.hasInvited(t.getUniqueId())) {
-                                    return true;
-                                }
-
-                                if (inter.isBlockedPlayer(t.getUniqueId())) {
-                                    return true;
-                                }
-
-                                return t.getInteractions().isBlockedPlayer(user.getUniqueId());
+                                return Users.areBlocked(user, t);
                             });
 
                             boolean selfRemoved = users.remove(user);
                             if (users.isEmpty()) {
-                                if(selfRemoved) {
+                                if (selfRemoved) {
                                     throw Exceptions.CANNOT_INVITE_SELF;
                                 }
 
@@ -73,14 +80,11 @@ public class CommandInvite extends FtcCommand {
                             for (User target: users) {
                                 inviteCount++;
 
-                                //Add the invites
-                                user.getInteractions().addSentInvitation(target.getUniqueId());
-                                target.getInteractions().addReceivedInvitation(user.getUniqueId());
+                                region.invite(user.getUniqueId(), target.getUniqueId());
 
                                 user.sendMessage(Messages.senderInvited(target));
                                 target.sendMessage(Messages.targetInvited(user));
                             }
-
 
                             if (inviteCount > 1) {
                                 user.sendMessage(Messages.invitedTotal(inviteCount));

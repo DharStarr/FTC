@@ -13,13 +13,13 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.manager.CmdValidate;
 import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.grenadier.CmdUtil;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.useables.UsageInstance;
 import net.forthecrown.useables.UsageType;
 import net.forthecrown.useables.UsageTypeHolder;
@@ -130,7 +130,7 @@ public class UsableArgumentNode<T extends UsageInstance, H extends UsageTypeHold
 
                 .then(argument("type_input", StringArgumentType.greedyString())
                         .suggests((context, builder) -> {
-                            Crown.logger().info("input='{}'", context.getInput());
+                            FTC.getLogger().info("input='{}'", context.getInput());
 
                             var parsed = getParsedType(context);
                             return parsed.getSuggests().getSuggestions(context, builder);

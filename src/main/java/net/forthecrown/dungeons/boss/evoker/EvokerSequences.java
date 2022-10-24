@@ -47,7 +47,7 @@ public final class EvokerSequences {
 
     public static TickSequence createDeath(EvokerBoss boss) {
         TickSequence result = new TickSequence();
-        final int interval = EvokerVars.deathAnimLength / 2;
+        final int interval = EvokerConfig.deathAnimLength / 2;
 
         result.addNode(() -> boss.broadcast(false, DEATH_START), 0);
         result.addNode(() -> boss.broadcast(false, DEATH_MIDDLE), interval);

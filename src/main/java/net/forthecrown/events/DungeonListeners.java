@@ -1,6 +1,6 @@
 package net.forthecrown.events;
 
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.dungeons.DungeonAreas;
 import net.forthecrown.dungeons.boss.SkalatanBoss;
 import net.forthecrown.dungeons.enchantments.FtcEnchants;

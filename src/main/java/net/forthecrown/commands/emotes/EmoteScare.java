@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class EmoteScare extends CommandEmote {
 

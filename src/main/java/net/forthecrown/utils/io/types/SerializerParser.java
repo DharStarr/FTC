@@ -1,4 +1,4 @@
-package net.forthecrown.vars.types;
+package net.forthecrown.utils.io.types;
 
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.arguments.ArgumentType;

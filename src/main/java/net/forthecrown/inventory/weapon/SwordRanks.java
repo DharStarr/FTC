@@ -141,7 +141,7 @@ public class SwordRanks {
 
         // --- RANK  9 ---
         SwordRank.builder(9)
-                .addGoal(new HouseReforgeGoal())
+                .addGoal(new EntityGoal(10, EntityType.ENDER_DRAGON))
                 .register(ranks);
 
         ModifierFunction
@@ -159,6 +159,8 @@ public class SwordRanks {
                                 "proven themselves to the Crown..."
                         )
                 )
+                .addGoal(new EntityGoal(10, EntityType.WARDEN))
+
                 .addUpgrade(new EnchantUpgrade(Enchantment.LOOT_BONUS_MOBS, 5))
                 .addUpgrade(new ModifierUpgrade(speed.apply(10), attack.apply(10)))
 

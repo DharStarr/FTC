@@ -15,6 +15,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.util.Objects;
+
 @Getter
 @RequiredArgsConstructor
 public class WorldVec3i implements JsonSerializable {
@@ -23,7 +25,7 @@ public class WorldVec3i implements JsonSerializable {
     private final Vector3i pos;
 
     public WorldVec3i(World world, int x, int y, int z) {
-        this.world = world;
+        this.world = Objects.requireNonNull(world, "world was null");
         this.pos = Vector3i.from(x, y, z);
     }
 

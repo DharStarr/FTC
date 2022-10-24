@@ -1,9 +1,14 @@
 package net.forthecrown.utils.inventory;
 
+import com.mojang.serialization.Dynamic;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.utils.AbstractListIterator;
+import net.forthecrown.utils.Util;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.References;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.Inventory;
@@ -13,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -52,6 +58,10 @@ import java.util.function.Consumer;
 public final class ItemStacks {
     private ItemStacks() {}
 
+    /* ----------------------------- CONSTANTS ------------------------------ */
+
+    public static final String TAG_DATA_VERSION = "dataVersion";
+
     /* ----------------------------- TAGS ------------------------------ */
 
     /**
@@ -64,9 +74,7 @@ public final class ItemStacks {
             Field f = getTagField();
             f.setAccessible(true);
 
-            Map<String, Tag> metaTags = (Map<String, Tag>) f.get(meta);
-            metaTags.putAll(tag.tags);
-
+            Map<String, Tag> metaTags = new HashMap<>(tag.tags);
             f.set(meta, metaTags);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException("Couldn't set internalTag in ItemMeta", e);
@@ -186,6 +194,8 @@ public final class ItemStacks {
      */
     public static CompoundTag save(ItemStack item) {
         CompoundTag tag = new CompoundTag();
+        tag.putInt(TAG_DATA_VERSION, Util.getDataVersion());
+
         return CraftItemStack.asNMSCopy(item).save(tag);
     }
 
@@ -195,6 +205,19 @@ public final class ItemStacks {
      * @return The loaded item stack
      */
     public static ItemStack load(CompoundTag tag) {
+        if (tag.contains(TAG_DATA_VERSION)) {
+            int version = tag.getInt(TAG_DATA_VERSION);
+
+            tag = (CompoundTag) DataFixers.getDataFixer()
+                    .update(
+                            References.ITEM_STACK,
+                            new Dynamic<>(NbtOps.INSTANCE, tag),
+                            version,
+                            Util.getDataVersion()
+                    )
+                    .getValue();
+        }
+
         return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of(tag));
     }
 

@@ -21,7 +21,7 @@ public final class EvokerEffects {
             .count(5);
 
     public static void impactEffect(World world, Vector3d pos) {
-        for (int i = 0; i < EvokerVars.impact_stepCount; i++) {
+        for (int i = 0; i < EvokerConfig.impact_stepCount; i++) {
             int finalI = i;
 
             Tasks.runLater(() -> drawImpact(world, pos, finalI), i * 10L);
@@ -34,8 +34,8 @@ public final class EvokerEffects {
         drawImpact(
                 world, pos,
                 0.2D,
-                EvokerVars.impact_radiusStart + (step * EvokerVars.impact_radiusStep),
-                (short) (step * EvokerVars.impact_stepParticles)
+                EvokerConfig.impact_radiusStart + (step * EvokerConfig.impact_radiusStep),
+                (short) (step * EvokerConfig.impact_stepParticles)
         );
     }
 
@@ -55,7 +55,7 @@ public final class EvokerEffects {
 
     public static void summoningEffect(World w, Vector3d pos, double height, double width) {
         flameEffect(w, pos, height);
-        drawImpact(w, pos, 0.2D, (width / 2) + 0.5, EvokerVars.impact_stepParticles);
+        drawImpact(w, pos, 0.2D, (width / 2) + 0.5, EvokerConfig.impact_stepParticles);
         summoningSound(w, pos);
     }
 
@@ -79,7 +79,7 @@ public final class EvokerEffects {
     }
 
     public static void shockwave(World world, Vector3d pos) {
-        shockwave(world, pos, EvokerVars.pushAway_radius, true);
+        shockwave(world, pos, EvokerConfig.pushAway_radius, true);
     }
 
     public static void shockwave(World world, Vector3d pos, int radius, boolean bigExplosion) {

@@ -2,11 +2,11 @@ package net.forthecrown.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.utils.Tasks;
 import org.bukkit.scheduler.BukkitTask;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 /**
  * A request from user to another for one to teleport to
@@ -59,7 +59,7 @@ public class TeleportRequest {
     /**
      * Adds this request to both users' teleport request lists
      * and starts the expiry task to cancel this request after
-     * {@link Vars#tpaExpiryTime} ticks.
+     * {@link GeneralConfig#tpaExpiryTime} ticks.
      */
     public void run() {
         //Add the request
@@ -67,7 +67,7 @@ public class TeleportRequest {
         target.getInteractions().addIncoming(this);
 
         //Start the countdown
-        expiryTask = Tasks.runLaterAsync(this::stop, Vars.tpaExpiryTime);
+        expiryTask = Tasks.runLaterAsync(this::stop, GeneralConfig.tpaExpiryTime);
     }
 
     /**

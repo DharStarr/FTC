@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 
 public class CommandFtcTest extends FtcCommand {
 

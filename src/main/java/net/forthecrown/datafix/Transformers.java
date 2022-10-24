@@ -1,6 +1,6 @@
 package net.forthecrown.datafix;
 
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * <code>static void run()</code> method to initiate the transformer
  */
 public class Transformers {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     // A list of all current data transformers
     private static final DataUpdater[] CURRENT_TRANSFORMERS = {
@@ -95,6 +95,8 @@ public class Transformers {
     }
 
     public static void runCurrent() {
+        FTC.getLogger().info("Running current data updaters!");
+
         for (var c: CURRENT_TRANSFORMERS) {
             runTransformer(c);
         }

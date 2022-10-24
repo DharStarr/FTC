@@ -1,6 +1,6 @@
 package net.forthecrown.utils.world;
 
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.VanillaAccess;
 import net.forthecrown.utils.io.PathUtil;
@@ -68,7 +68,7 @@ public class WorldReCreator {
     }
 
     public static void kickPlayers(World w) {
-        Location hazel = Crown.config().getServerSpawn();
+        Location hazel = GeneralConfig.getServerSpawn();
 
         for (Player p : w.getPlayers()) {
             p.teleport(hazel);

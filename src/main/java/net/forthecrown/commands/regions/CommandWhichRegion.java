@@ -7,7 +7,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.regions.PopulationRegion;
 import net.forthecrown.regions.RegionManager;
 import net.forthecrown.regions.RegionPos;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 
 public class CommandWhichRegion extends FtcCommand {

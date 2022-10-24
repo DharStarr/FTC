@@ -1,18 +1,10 @@
 package net.forthecrown.dungeons.boss.evoker;
 
-import net.forthecrown.core.Main;
-import net.forthecrown.vars.Var;
+import lombok.experimental.UtilityClass;
+import net.forthecrown.core.config.ConfigData;
 
-@Var(namePrefix = "evoker_")
-public final class EvokerVars {
-    private EvokerVars() {}
-
-    // --- PREFIX CONSTANTS ---
-
-    private static final String PREFIX_EFFECT = "effect_";
-    private static final String PREFIX_PHASE = "phase_";
-
-    // --- GENERAL VARS ---
+@ConfigData(filePath = "evoker.json")
+public @UtilityClass class EvokerConfig {
 
     public static double
             deathPhaseHealth                = 10.0D;
@@ -28,9 +20,6 @@ public final class EvokerVars {
             bossTeam                        = "DungeonEvokerBoss",
             mobTeam                         = "DungeonMobTeam";
 
-    // --- PHASES ---
-
-    @Var(namePrefix = PREFIX_PHASE)
     public static double
             shulker_particleDistance  = 0.2D,
 
@@ -40,7 +29,6 @@ public final class EvokerVars {
 
             shulker_firingSpeed       = 0.75D;
 
-    @Var(namePrefix = PREFIX_PHASE)
     public static int
             normal_length             = 400,
 
@@ -59,26 +47,14 @@ public final class EvokerVars {
             ghast_length              = 400,
             ghast_health              = 2000;
 
-
-    // --- EFFECTS ---
-
-    @Var(namePrefix = PREFIX_EFFECT)
     public static short
             impact_stepParticles = 7;
 
-    @Var(namePrefix = PREFIX_EFFECT)
     public static int
             pushAway_radius = 3,
             impact_stepCount = 5;
 
-    @Var(namePrefix = PREFIX_EFFECT)
     public static double
             impact_radiusStart = 1.25D,
             impact_radiusStep = 0.25D;
-
-    // --- INITIALIZER FUNCTION ---
-
-    static void init() {
-        Main.getVars().register();
-    }
 }

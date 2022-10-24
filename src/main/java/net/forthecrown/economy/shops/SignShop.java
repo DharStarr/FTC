@@ -2,8 +2,8 @@ package net.forthecrown.economy.shops;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.utils.LocationFileName;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
@@ -187,7 +187,9 @@ public class SignShop implements InventoryHolder {
      *                    its items or not, that will happen regardless
      */
     public void destroy(boolean removeBlock) {
-        Crown.getEconomy().getShops().removeShop(this);
+        Economy.get()
+                .getShops()
+                .removeShop(this);
 
         // if inventory not empty -> drop contents
         if (!inventory.isEmpty()) {
@@ -347,7 +349,7 @@ public class SignShop implements InventoryHolder {
     public void delayUnload() {
         Tasks.cancel(unloadTask);
 
-        unloadTask = Tasks.runLater(this::onUnload, Time.millisToTicks(Vars.shopUnloadDelay));
+        unloadTask = Tasks.runLater(this::onUnload, Time.millisToTicks(GeneralConfig.shopUnloadDelay));
     }
 
     /**
@@ -360,7 +362,10 @@ public class SignShop implements InventoryHolder {
 
         // Save block data and update block
         update();
-        Crown.getEconomy().getShops().removeShop(this);
+
+        Economy.get()
+                .getShops()
+                .removeShop(this);
     }
 
     /**

@@ -3,17 +3,18 @@ package net.forthecrown.commands.markets;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.market.Markets;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 
-import static net.forthecrown.text.Messages.STRUST_BLOCKED_SENDER;
-import static net.forthecrown.text.Messages.STRUST_BLOCKED_TARGET;
+import static net.forthecrown.core.Messages.STRUST_BLOCKED_SENDER;
+import static net.forthecrown.core.Messages.STRUST_BLOCKED_TARGET;
 
 public class CommandShopTrust extends FtcCommand {
 
@@ -49,7 +50,11 @@ public class CommandShopTrust extends FtcCommand {
                             User user = getUserSender(c);
                             User target = Arguments.getUser(c, "user");
 
-                            if (!MarketManager.ownsShop(user)) {
+                            if (user.equals(target)) {
+                                throw Exceptions.format("Cannot trust self");
+                            }
+
+                            if (!Markets.ownsShop(user)) {
                                 throw Exceptions.NO_SHOP_OWNED;
                             }
 
@@ -60,7 +65,7 @@ public class CommandShopTrust extends FtcCommand {
                                 return 0;
                             }
 
-                            MarketManager region = Crown.getEconomy().getMarkets();
+                            MarketManager region = Economy.get().getMarkets();
                             MarketShop shop = region.get(user.getUniqueId());
 
                             boolean trusted = shop.getMembers().contains(target.getUniqueId());

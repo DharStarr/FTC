@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.sk89q.worldedit.math.Vector3;
 import lombok.Data;
 import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.math.Bounds3i;

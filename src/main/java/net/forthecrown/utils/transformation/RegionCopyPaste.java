@@ -27,7 +27,7 @@ public class RegionCopyPaste implements Runnable {
 
     public RegionCopyPaste(WorldVec3i destination, WorldBounds3i origin) {
         this.destination = destination;
-        this.origin = origin.immutable();
+        this.origin = origin;
     }
 
     public static RegionCopyPaste create(WorldBounds3i area, WorldVec3i destination) {

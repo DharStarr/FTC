@@ -1,6 +1,6 @@
 package net.forthecrown.events;
 
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.dungeons.DungeonUtils;
 import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.sound.SoundStop;
@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Husk;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -23,17 +24,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static net.forthecrown.text.Messages.DUMMY_NAME;
+import static net.forthecrown.core.Messages.DUMMY_NAME;
 
 public class PunchingBags implements Listener {
     private static final Map<UUID, PunchingBagInstance> PUNCHING_BAGS = new HashMap<>();
 
+    public static boolean isPunchingBag(Entity entity) {
+        return entity
+                .getPersistentDataContainer()
+                .has(DungeonUtils.PUNCHING_BAG_KEY, PersistentDataType.BYTE);
+    }
+
     @EventHandler(ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
-        if (!event.getEntity()
-                .getPersistentDataContainer()
-                .has(DungeonUtils.PUNCHING_BAG_KEY, PersistentDataType.BYTE)
-        ) {
+        if (!isPunchingBag(event.getEntity())) {
             return;
         }
 

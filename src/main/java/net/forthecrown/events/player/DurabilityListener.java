@@ -1,8 +1,8 @@
 package net.forthecrown.events.player;
 
 import io.papermc.paper.event.entity.EntityDamageItemEvent;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
@@ -42,7 +42,7 @@ public class DurabilityListener implements Listener {
         int maxDurability = item.getType().getMaxDurability();
         int remaining = maxDurability - damage - 1;
 
-        if (!(remaining < (maxDurability * Vars.durabilityWarnThreshold))) {
+        if (!(remaining < (maxDurability * GeneralConfig.durabilityWarnThreshold))) {
             return;
         }
 

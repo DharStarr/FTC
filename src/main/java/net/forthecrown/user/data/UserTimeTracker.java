@@ -1,7 +1,7 @@
 package net.forthecrown.user.data;
 
 import com.google.gson.JsonElement;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.user.ComponentType;
@@ -165,7 +165,7 @@ public class UserTimeTracker extends UserComponent {
 
             // Couldn't find field
             if (field.isEmpty()) {
-                Crown.logger().warn("Found unknown time field: '{}'", e.getKey());
+                FTC.getLogger().warn("Found unknown time field: '{}'", e.getKey());
                 continue;
             }
 

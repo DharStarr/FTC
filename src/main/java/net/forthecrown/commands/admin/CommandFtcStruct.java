@@ -30,7 +30,7 @@ import net.forthecrown.grenadier.types.pos.Position;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
 import net.forthecrown.royalgrenadier.VanillaMappedArgument;
 import net.forthecrown.structure.*;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.Util;
 import net.forthecrown.structure.Rotation;
 import net.forthecrown.utils.math.Transform;
@@ -432,7 +432,7 @@ public class CommandFtcStruct extends FtcCommand {
 
     /* ----------------------------- ARGUMENT PARSERS ------------------------------ */
 
-    private static class VectorParser implements ArgumentType<Vector3d> {
+    public static class VectorParser implements ArgumentType<Vector3d> {
         @Override
         public Vector3d parse(StringReader reader) throws CommandSyntaxException {
             double x = reader.readDouble();

@@ -1,6 +1,8 @@
 package net.forthecrown.inventory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import net.forthecrown.core.FTC;
 import net.forthecrown.inventory.weapon.RoyalSword;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.minecraft.nbt.CompoundTag;
@@ -10,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import static net.forthecrown.inventory.ExtendedItem.TAG_OWNER;
 import static net.forthecrown.inventory.ExtendedItems.*;
 
-public class ExtendedItemFix {
+class ExtendedItemFix {
     private static final String SWORD_TAG = ExtendedItems.ROYAL_SWORD.getKey();
 
     private static final String
@@ -37,7 +39,7 @@ public class ExtendedItemFix {
             .put("forthecrown:goal_r4_dboss_hidey_spidey",   "boss/hidey_spidey")
             .put("forthecrown:goal_r4_any",                  "entity/any")
 
-            .put("forthecrown:goal_r5_snsowman",             "entity/snowman")
+            .put("forthecrown:goal_r5_snowman",              "entity/snowman")
 
             .put("forthecrown:goal_r6_donator",              "entity/donator")
             .put("forthecrown:goal_r6_ghast",                "entity/ghast")
@@ -46,7 +48,7 @@ public class ExtendedItemFix {
 
             .put("forthecrown:goal_r8_wither",               "entity/wither")
 
-            .put("forthecrown:goal_r9_house_reforge",        "house_reforge")
+            .put("forthecrown:goal_r9_house_reforge",        "entity/ender_dragon")
 
             .put("forthecrown:goal_r11_any",                 "entity/any")
 
@@ -68,7 +70,9 @@ public class ExtendedItemFix {
             .build();
 
     public static void fixSword(ItemMeta meta) {
-        CompoundTag oldTag = ItemStacks.getTagElement(meta, SWORD_TAG);
+        CompoundTag oldTag = ItemStacks.getTagElement(meta, SWORD_TAG).copy();
+        ItemStacks.removeTagElement(meta, SWORD_TAG);
+
         CompoundTag resultTag = new CompoundTag();
 
         if (oldTag.contains(OLD_TAG_GOALS)) {
@@ -78,6 +82,10 @@ public class ExtendedItemFix {
                 String key = e.getKey();
                 int value = ((IntTag) e.getValue()).getAsInt();
 
+                if (key.contains("r9")) {
+                    value = 10;
+                }
+
                 if (key.contains("_boss_ender_dragon")) {
                     key = "entity/ender_dragon";
                 } else if (key.contains("_boss_wither")) {
@@ -86,6 +94,11 @@ public class ExtendedItemFix {
                     key = "dealt_damage";
                 } else {
                     key = GOAL_RENAMES.get(key);
+
+                    if (Strings.isNullOrEmpty(key)) {
+                        FTC.getLogger().error("Unknown goal: '{}', cannot update", e.getKey());
+                        continue;
+                    }
                 }
 
                 newGoals.putInt(key, value);
@@ -110,7 +123,10 @@ public class ExtendedItemFix {
         topTag.putString(TAG_TYPE, key);
         topTag.put(TAG_DATA, tag);
 
-        ItemStacks.removeTagElement(meta, key);
-        ItemStacks.setTagElement(meta, TAG_CONTAINER, topTag);
+        CompoundTag unhandled = ItemStacks.getUnhandledTags(meta);
+        unhandled.put(TAG_CONTAINER, topTag);
+        unhandled.remove(key);
+
+        ItemStacks.setUnhandledTags(meta, unhandled);
     }
 }

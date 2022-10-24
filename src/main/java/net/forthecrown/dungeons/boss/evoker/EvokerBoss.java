@@ -199,7 +199,7 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
         ) {
             transitionTick++;
 
-            if (transitionTick >= EvokerVars.phaseTransition) {
+            if (transitionTick >= EvokerConfig.phaseTransition) {
                 nextPhase(false);
             }
         }
@@ -255,7 +255,7 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
 
     private Evoker createEvoker(BossContext context) {
         return getWorld().spawn(getSpawn(), Evoker.class, evoker -> {
-            AttackPhases.modifyHealth(evoker, EvokerVars.baseHealth, context);
+            AttackPhases.modifyHealth(evoker, EvokerConfig.baseHealth, context);
 
             evoker.getEquipment().setItem(EquipmentSlot.HEAD, null);
 
@@ -335,10 +335,10 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
 
     public static Team getBossTeam() {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        Team t = scoreboard.getTeam(EvokerVars.bossTeam);
+        Team t = scoreboard.getTeam(EvokerConfig.bossTeam);
 
         if (t == null) {
-            t = scoreboard.registerNewTeam(EvokerVars.bossTeam);
+            t = scoreboard.registerNewTeam(EvokerConfig.bossTeam);
             t.color(NamedTextColor.YELLOW);
             t.setAllowFriendlyFire(false);
             t.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
@@ -382,7 +382,7 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
         }
 
         double newHealth = evoker.getHealth() - event.getFinalDamage();
-        if (newHealth < EvokerVars.deathPhaseHealth) {
+        if (newHealth < EvokerConfig.deathPhaseHealth) {
             event.setCancelled(true);
             state = EvokerState.DYING;
 

@@ -6,7 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 public abstract class Cosmetic {
     @Getter

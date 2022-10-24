@@ -11,7 +11,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.WorldArgument;
 import net.forthecrown.grenadier.types.selectors.EntityArgument;
 import net.forthecrown.grenadier.types.selectors.EntitySelector;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.utils.Cooldown;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.math.Bounds3i;

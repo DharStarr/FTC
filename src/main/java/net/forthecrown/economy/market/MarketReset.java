@@ -3,20 +3,17 @@ package net.forthecrown.economy.market;
 import com.google.gson.JsonElement;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.Crown;
-import net.forthecrown.economy.shops.ShopManager;
-import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
-import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.math.WorldBounds3i;
 import net.forthecrown.utils.math.WorldVec3i;
-import net.forthecrown.utils.transformation.CopyPreProcessor;
 import net.forthecrown.utils.transformation.RegionCopyPaste;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
+import org.bukkit.entity.*;
 import org.bukkit.persistence.PersistentDataType;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -25,21 +22,13 @@ import org.spongepowered.math.vector.Vector3i;
 public class MarketReset {
     /* ----------------------------- CONSTANTS ------------------------------ */
 
-    static CopyPreProcessor DESTROY_SHOPS = (copy, paste, copyPaste) -> {
-        if (!SignShops.isShop(paste)) {
-            return;
-        }
-
-        ShopManager manager = Crown.getEconomy().getShops();
-        SignShop shop = manager.getShop(paste);
-
-        shop.destroy(false);
-    };
-
     public static final String
             KEY_PLACE_POS = "placementMinPoint",
             KEY_COPY_POS = "copyMinPoint",
             KEY_COPY_SIZE = "copyAreaSize";
+
+    /** The depth of the market's template below the actual market */
+    public static final int TEMPLATE_DEPTH = 40;
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
@@ -51,10 +40,10 @@ public class MarketReset {
 
     static boolean isEntranceSign(BlockState state) {
         if (!(state instanceof Sign sign)) {
-            return true;
+            return false;
         }
 
-        return !sign.getPersistentDataContainer()
+        return sign.getPersistentDataContainer()
                 .has(ShopEntrance.DOOR_SIGN, PersistentDataType.BYTE);
     }
 
@@ -65,12 +54,12 @@ public class MarketReset {
      * @param world The world to place in
      */
     public void place(World world) {
-        RegionCopyPaste.create(
+        var regionPaste = RegionCopyPaste.create(
                 WorldBounds3i.of(world, copyPosition, copyPosition.add(size)),
                 new WorldVec3i(world, placement)
         )
                 // Ignore entrance signs
-                .addFilter((copy1, paste, copyPaste) -> isEntranceSign(paste.getState()))
+                .addFilter((copy1, paste, copyPaste) -> !isEntranceSign(paste.getState()))
 
                 // Ignore any entrance sign skulls
                 .addFilter((copy1, paste, copyPaste) -> {
@@ -82,12 +71,19 @@ public class MarketReset {
 
                     return !skull.getPersistentDataContainer()
                             .has(ShopEntrance.NOTICE_KEY, PersistentDataType.STRING);
+                });
+
+        regionPaste.run();
+
+        // Yeet any player-placed entities
+        WorldBounds3i.of(world, placement, placement.add(size))
+                .getEntities(entity -> {
+                    return entity instanceof ArmorStand
+                            || entity instanceof Painting
+                            || entity instanceof ItemFrame
+                            || entity instanceof Vehicle;
                 })
-
-                // Destroy all sign shops in the market
-                .addPreProcessor(DESTROY_SHOPS)
-
-                .run();
+                .forEach(Entity::remove);
     }
 
     /**
@@ -103,7 +99,7 @@ public class MarketReset {
                 // Ignore any existing sign shops
                 .addFilter((copy1, paste, copyPaste) -> !SignShops.isShop(copy1))
                 // Ignore entrance signs
-                .addFilter((copy1, paste, copyPaste) -> isEntranceSign(copy1.getState()))
+                .addFilter((copy1, paste, copyPaste) -> !isEntranceSign(copy1.getState()))
 
                 .run();
     }

@@ -12,10 +12,10 @@ import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShopSession;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.regions.PopulationRegion;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
-import net.forthecrown.text.format.ComponentFormat;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
+import net.forthecrown.utils.text.format.ComponentFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.*;
 import net.forthecrown.user.data.MailMessage;
 import net.forthecrown.user.data.RankTier;
@@ -53,7 +53,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static net.forthecrown.text.Text.format;
+import static net.forthecrown.utils.text.Text.format;
 import static net.kyori.adventure.text.Component.*;
 import static net.kyori.adventure.text.event.ClickEvent.openUrl;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
@@ -2645,11 +2645,15 @@ public interface Messages {
             );
 
     static Component soldItems(SellResult result, Material material) {
+        return soldItems(result.getSold(), result.getEarned(), material);
+    }
+
+    static Component soldItems(int sold, int earned, Material material) {
         return format("Sold &e{0}&r for &6{1, rhines}&r.",
                 NamedTextColor.GRAY,
 
-                Text.itemAndAmount(new ItemStack(material), result.getSold()),
-                result.getEarned()
+                Text.itemAndAmount(new ItemStack(material), sold),
+                earned
         );
     }
 

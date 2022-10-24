@@ -10,7 +10,9 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.dungeons.DungeonWorld;
+import net.forthecrown.dungeons.level.gate.DungeonGate;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Bounds3i;
 import net.minecraft.nbt.CompoundTag;
@@ -29,10 +31,11 @@ import static net.forthecrown.dungeons.level.DungeonPiece.TAG_TYPE;
 public class DungeonLevel implements Iterable<DungeonPiece> {
     /* ----------------------------- CONSTANTS ------------------------------ */
 
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     public static final String
             TAG_PIECES = "pieces",
+            TAG_PARAMS = "parameters",
             TAG_ROOT = "root",
             TAG_BOSS_ROOM = "bossRoom";
 
@@ -139,6 +142,28 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
             }
         }
     }
+
+    /* ----------------------------- PLACEMENT ------------------------------ */
+
+    public void place() {
+        PieceVisitor placementVisitor = new PieceVisitor() {
+            @Override
+            public Result onGate(DungeonGate gate) {
+                gate.place(DungeonWorld.get());
+                return Result.CONTINUE;
+            }
+
+            @Override
+            public Result onRoom(DungeonRoom room) {
+                room.place(DungeonWorld.get());
+                return Result.CONTINUE;
+            }
+        };
+
+        getRoot().visit(placementVisitor);
+    }
+
+    /* ----------------------------- SERIALIZATION ------------------------------ */
 
     public void save(CompoundTag tag) {
         ListTag pieces = savePieces();

@@ -2,7 +2,7 @@ package net.forthecrown.dungeons.boss;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.FtcKeyed;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.utils.JsonSerializable;
@@ -40,7 +40,7 @@ public interface KeyedBoss extends DungeonBoss, FtcKeyed, JsonSerializable {
         Advancement advancement = Bukkit.getAdvancement(advancementKey());
 
         if(advancement == null) {
-            Crown.logger().warn("{} boss has no advancement", getKey());
+            FTC.getLogger().warn("{} boss has no advancement", getKey());
             return;
         }
 

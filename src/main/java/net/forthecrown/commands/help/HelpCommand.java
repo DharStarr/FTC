@@ -3,19 +3,18 @@ package net.forthecrown.commands.help;
 import github.scarsz.discordsrv.commands.CommandLink;
 import github.scarsz.discordsrv.commands.CommandUnlink;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
-import net.forthecrown.core.Worlds;
+import net.forthecrown.core.*;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.config.ServerRules;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.regions.PopulationRegion;
 import net.forthecrown.regions.RegionManager;
 import net.forthecrown.regions.RegionPos;
 import net.forthecrown.regions.Regions;
 import net.forthecrown.regions.visit.RegionVisit;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -25,8 +24,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.spongepowered.math.vector.Vector2i;
 
-import static net.forthecrown.text.Messages.DYNMAP_HELP_MESSAGE;
-import static net.forthecrown.text.Messages.POLEHELP_MESSAGE;
+import static net.forthecrown.core.Messages.DYNMAP_HELP_MESSAGE;
+import static net.forthecrown.core.Messages.POLEHELP_MESSAGE;
 
 public abstract class HelpCommand extends FtcCommand {
     protected HelpCommand(String name) {
@@ -40,7 +39,7 @@ public abstract class HelpCommand extends FtcCommand {
         command.executes(c -> {
             User user = getUserSender(c);
             TextWriter writer = TextWriters.newWriter();
-            writer.write(Crown.prefix());
+            writer.write(Messages.FTC_PREFIX);
 
             writeDisplay(writer, user);
 
@@ -134,7 +133,7 @@ public abstract class HelpCommand extends FtcCommand {
 
                 player.sendMessage(
                         Component.text()
-                                .append(Crown.prefix())
+                                .append(Messages.FTC_PREFIX)
                                 .append(Component.text("Closest region pole: ").color(NamedTextColor.YELLOW))
                                 .append(Component.newline())
                                 .append(Component.text("x= " + vec2.x() + " z= " + vec2.y()))
@@ -161,14 +160,14 @@ public abstract class HelpCommand extends FtcCommand {
         @Override
         protected void createCommand(BrigadierCommand command){
             command.executes(c ->{
-                c.getSource().sendMessage(
+                        c.getSource().sendMessage(
                         Component.text()
-                                .append(Crown.prefix())
+                                .append(Messages.FTC_PREFIX)
                                 .append(Component.text("Join our discord: "))
                                 .append(
-                                        Component.text(Vars.discordLink)
+                                        Component.text(GeneralConfig.discordLink)
                                                 .color(NamedTextColor.AQUA)
-                                                .clickEvent(ClickEvent.openUrl(Vars.discordLink))
+                                                .clickEvent(ClickEvent.openUrl(GeneralConfig.discordLink))
                                                 .hoverEvent(Component.text("Click to join :D"))
                                 )
                                 .build()
@@ -290,7 +289,7 @@ public abstract class HelpCommand extends FtcCommand {
 
         @Override
         public void writeDisplay(TextWriter writer, User user) {
-            writer.write(Crown.getRules().display());
+            writer.write(ServerRules.display());
         }
     }
 
@@ -319,7 +318,7 @@ public abstract class HelpCommand extends FtcCommand {
          */
 
         public static final Component MESSAGE = Component.text()
-                .append(Crown.prefix())
+                .append(Messages.FTC_PREFIX)
                 .append(Component.text("Info about spawn: ").color(NamedTextColor.YELLOW))
 
                 .append(Component.newline())
@@ -356,7 +355,7 @@ public abstract class HelpCommand extends FtcCommand {
             command.executes(c ->{
                 User sender = getUserSender(c);
 
-                PopulationRegion region = RegionManager.get().get(Vars.spawnRegion);
+                PopulationRegion region = RegionManager.get().get(GeneralConfig.spawnRegion);
                 if (region != null) {
                     Vector2i pole = RegionManager.get()
                             .getAccess(sender.getRegionPos())

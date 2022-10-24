@@ -2,21 +2,22 @@ package net.forthecrown.commands.admin;
 
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.manager.FtcCommand;
+import net.forthecrown.core.Announcer;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.Punishments;
+import net.forthecrown.core.config.ConfigManager;
 import net.forthecrown.core.holidays.ServerHolidays;
 import net.forthecrown.core.resource.ResourceWorldTracker;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.regions.RegionManager;
 import net.forthecrown.structure.Structures;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.user.UserManager;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
-
-import static net.forthecrown.core.Crown.*;
 
 public class SaveReloadCommands extends FtcCommand {
     private static final EnumArgument<Section> SECTION_ARGUMENT = EnumArgument.of(Section.class);
@@ -125,8 +126,8 @@ public class SaveReloadCommands extends FtcCommand {
         ),
 
         SHOPS (
-                getEconomy().getShops()::save,
-                getEconomy().getShops()::reload
+                Economy.get().getShops()::save,
+                Economy.get().getShops()::reload
         ),
 
         PUNISHMENTS (
@@ -135,18 +136,18 @@ public class SaveReloadCommands extends FtcCommand {
         ),
 
         MARKETS (
-                getEconomy().getMarkets()::save,
-                getEconomy().getMarkets()::load
+                Economy.get().getMarkets()::save,
+                Economy.get().getMarkets()::load
         ),
 
         SELL_SHOP (
                 () -> {},
-                getEconomy().getSellShop()::load
+                Economy.get().getSellShop()::load
         ),
 
         ANNOUNCER (
-                getAnnouncer()::save,
-                getAnnouncer()::reload
+                Announcer.get()::save,
+                Announcer.get()::reload
         ),
 
         HOLIDAYS (
@@ -165,8 +166,8 @@ public class SaveReloadCommands extends FtcCommand {
         ),
 
         CONFIG (
-                config()::save,
-                config()::reload
+                ConfigManager.get()::save,
+                ConfigManager.get()::load
         );
 
         private final Runnable onSave, onLoad;

@@ -2,13 +2,13 @@ package net.forthecrown.dungeons.boss.evoker.phases;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.evoker.BossMessage;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
 import net.forthecrown.dungeons.boss.evoker.EvokerEffects;
-import net.forthecrown.dungeons.boss.evoker.EvokerVars;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
 import org.bukkit.GameMode;
@@ -62,10 +62,10 @@ public class PotionPhase implements AttackPhase {
         tick++;
         potionTick++;
 
-        double progress = (double) tick / (double) EvokerVars.potion_length;
+        double progress = (double) tick / (double) EvokerConfig.potion_length;
         boss.getPhaseBar().setProgress(progress);
 
-        if (tick >= EvokerVars.potion_length) {
+        if (tick >= EvokerConfig.potion_length) {
             boss.nextPhase(true);
             return;
         }
@@ -79,14 +79,14 @@ public class PotionPhase implements AttackPhase {
 
                 if(e.untilSpawn <= 0) {
                     Vector2d next = e.pos;
-                    Location l = new Location(boss.getWorld(), next.x(), EvokerVars.potion_spawnY, next.toVector3().z());
-                    int duration = EvokerVars.potion_length - tick;
+                    Location l = new Location(boss.getWorld(), next.x(), EvokerConfig.potion_spawnY, next.toVector3().z());
+                    int duration = EvokerConfig.potion_length - tick;
 
                     l.getWorld().spawn(l, ThrownPotion.class, potion -> {
                         ItemStack item = ItemStacks.potionBuilder(Material.LINGERING_POTION, 1)
                                 .addEffect(new PotionEffect(
                                         Util.RANDOM.nextBoolean() ? PotionEffectType.POISON : PotionEffectType.WITHER,
-                                        duration, (context.modifier() >= (float) Vars.maxBossDifficulty / 2) ? 2 : 1,
+                                        duration, (context.modifier() >= (float) GeneralConfig.maxBossDifficulty / 2) ? 2 : 1,
                                         false, true, true
                                 ))
                                 .build();
@@ -99,7 +99,7 @@ public class PotionPhase implements AttackPhase {
             }
         }
 
-        if (potionTick < EvokerVars.potion_throwInterval) {
+        if (potionTick < EvokerConfig.potion_throwInterval) {
             return;
         }
 
@@ -111,7 +111,7 @@ public class PotionPhase implements AttackPhase {
             Player p = findTarget(boss);
 
             if(p == null) {
-                Crown.logger().warn("Found no targets for PotionPhase");
+                FTC.getLogger().warn("Found no targets for PotionPhase");
                 return;
             }
 
@@ -122,7 +122,7 @@ public class PotionPhase implements AttackPhase {
         }
 
         QUEUED_POTIONS.add(new QueuedPotion(potionSpawn));
-        Vector3d pos = potionSpawn.toVector3(EvokerVars.potion_spawnY);
+        Vector3d pos = potionSpawn.toVector3(EvokerConfig.potion_spawnY);
 
         EvokerEffects.summoningSound(boss.getWorld(), pos);
         EvokerEffects.drawImpact(boss.getWorld(), pos, 1);
@@ -130,8 +130,8 @@ public class PotionPhase implements AttackPhase {
 
     private static double generateCord() {
         double result = Util.RANDOM.nextDouble(
-                EvokerVars.potion_minDist,
-                EvokerVars.potion_maxDist + 1
+                EvokerConfig.potion_minDist,
+                EvokerConfig.potion_maxDist + 1
         );
 
         return Util.RANDOM.nextBoolean() ? result : -result;
@@ -156,6 +156,6 @@ public class PotionPhase implements AttackPhase {
     @RequiredArgsConstructor
     private static class QueuedPotion {
         private final Vector2d pos;
-        private int untilSpawn = EvokerVars.potion_spawnDelay;
+        private int untilSpawn = EvokerConfig.potion_spawnDelay;
     }
 }

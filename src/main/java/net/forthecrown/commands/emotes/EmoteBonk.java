@@ -6,7 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class EmoteBonk extends CommandEmote {
 

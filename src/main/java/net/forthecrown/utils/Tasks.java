@@ -1,12 +1,13 @@
 package net.forthecrown.utils;
 
-import net.forthecrown.core.Crown;
-import org.bukkit.Bukkit;
+import net.forthecrown.core.FTC;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+
+import static org.bukkit.Bukkit.getScheduler;
 
 /**
  * Utility class full of delegation methods
@@ -21,7 +22,7 @@ public final class Tasks {
      * @return The created bukkit task
      */
     public static BukkitTask runSync(Runnable task) {
-        return scheduler().runTask(Crown.plugin(), task);
+        return getScheduler().runTask(FTC.getPlugin(), task);
     }
 
     /**
@@ -31,7 +32,7 @@ public final class Tasks {
      * @return The created task
      */
     public static BukkitTask runLater(Runnable task, long delay) {
-        return scheduler().runTaskLater(Crown.plugin(), task, delay);
+        return getScheduler().runTaskLater(FTC.getPlugin(), task, delay);
     }
 
     /**
@@ -42,7 +43,7 @@ public final class Tasks {
      * @return The created task
      */
     public static BukkitTask runTimer(Runnable runnable, long delay, long interval) {
-        return scheduler().runTaskTimer(Crown.plugin(), runnable, delay, interval);
+        return getScheduler().runTaskTimer(FTC.getPlugin(), runnable, delay, interval);
     }
 
     /**
@@ -52,7 +53,7 @@ public final class Tasks {
      * @param interval The tick interval at which to run the task
      */
     public static void runTimer(Consumer<BukkitTask> runnable, long delay, long interval) {
-        scheduler().runTaskTimer(Crown.plugin(), runnable, delay, interval);
+        getScheduler().runTaskTimer(FTC.getPlugin(), runnable, delay, interval);
     }
 
     /**
@@ -61,7 +62,7 @@ public final class Tasks {
      * @return The created task
      */
     public static BukkitTask runAsync(Runnable runnable) {
-        return scheduler().runTaskAsynchronously(Crown.plugin(), runnable);
+        return getScheduler().runTaskAsynchronously(FTC.getPlugin(), runnable);
     }
 
     /**
@@ -71,7 +72,7 @@ public final class Tasks {
      * @return The created task
      */
     public static BukkitTask runLaterAsync(Runnable task, long delay) {
-        return scheduler().runTaskLaterAsynchronously(Crown.plugin(), task, delay);
+        return getScheduler().runTaskLaterAsynchronously(FTC.getPlugin(), task, delay);
     }
 
     /**
@@ -82,7 +83,7 @@ public final class Tasks {
      * @return The created task
      */
     public static BukkitTask runTimerAsync(Runnable task, long delay, long interval) {
-        return scheduler().runTaskTimerAsynchronously(Crown.plugin(), task, delay, interval);
+        return getScheduler().runTaskTimerAsynchronously(FTC.getPlugin(), task, delay, interval);
     }
 
     /**
@@ -92,7 +93,7 @@ public final class Tasks {
      * @param interval The tick interval between executions
      */
     public static void runTimerAsync(Consumer<BukkitTask> task, long delay, long interval) {
-        scheduler().runTaskTimerAsynchronously(Crown.plugin(), task, delay, interval);
+        getScheduler().runTaskTimerAsynchronously(FTC.getPlugin(), task, delay, interval);
     }
 
     /**
@@ -117,9 +118,5 @@ public final class Tasks {
 
         task.cancel();
         return null;
-    }
-
-    public static BukkitScheduler scheduler() {
-        return Bukkit.getScheduler();
     }
 }

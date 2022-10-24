@@ -5,8 +5,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.CmdValidate;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.shops.HistoryEntry;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
@@ -15,10 +15,10 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.args.ParsedArgs;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.format.page.Footer;
-import net.forthecrown.text.format.page.PageFormat;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.page.Footer;
+import net.forthecrown.utils.text.format.page.PageFormat;
 import net.forthecrown.utils.LocationFileName;
 import net.forthecrown.utils.math.WorldVec3i;
 import org.bukkit.block.Block;
@@ -99,7 +99,7 @@ public class CommandShopHistory extends FtcCommand {
         // looking at
         if (args.has(SHOP_NAME)) {
             var name = args.get(SHOP_NAME);
-            var shops = Crown.getEconomy().getShops();
+            var shops = Economy.get().getShops();
 
             if ((shop = shops.getShop(name)) == null) {
                 throw Exceptions.INVALID_SHOP;
@@ -158,7 +158,7 @@ public class CommandShopHistory extends FtcCommand {
             throw Exceptions.LOOK_AT_SHOP;
         }
 
-        SignShop shop = Crown.getEconomy()
+        SignShop shop = Economy.get()
                 .getShops()
                 .getShop(WorldVec3i.of(block));
 

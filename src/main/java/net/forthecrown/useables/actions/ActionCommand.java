@@ -8,7 +8,7 @@ import lombok.Getter;
 import net.forthecrown.commands.manager.FtcSuggestions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Suggester;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.*;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.StringTag;

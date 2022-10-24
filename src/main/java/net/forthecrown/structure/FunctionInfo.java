@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.Readers;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.args.ParsedArgs;
@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Rotatable;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -32,7 +31,7 @@ import static net.forthecrown.commands.admin.CommandStructFunction.COMMAND_NAME;
 @Getter
 @RequiredArgsConstructor
 public class FunctionInfo {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     /* ----------------------------- CONSTANTS ------------------------------ */
 
@@ -63,11 +62,31 @@ public class FunctionInfo {
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
+    /** An arbitrary function key defined by staff/systems which use structures */
     private final String functionKey;
+
+    /** The direction the command block this function was scanned from was facing */
     private final Direction facing;
 
+    /**
+     * The block data this function's block will turn into when a
+     * structure is being placed, may be null.
+     * <p>
+     * Note: If a {@link StructurePlaceConfig} has a defined {@link FunctionProcessor}
+     * for functions with the same names as this one, this block data will not be
+     * placed into the world unless a processor calls the {@link #place(StructurePlaceConfig)}
+     * method manually
+     */
     private final BlockData turnsInto;
+
+    /** This function's block position relative to the structure */
     private final Vector3i offset;
+
+    /**
+     * Optional data given to the function
+     * <p>
+     * Note: will not be applied to block
+     */
     private final CompoundTag tag;
 
     /* ----------------------------- METHODS ------------------------------ */
@@ -79,16 +98,7 @@ public class FunctionInfo {
 
         Vector3i pos = config.getTransform().apply(offset);
         BlockData data = turnsInto.clone();
-
-        if (data instanceof Rotatable rotatable) {
-            Direction dir = this.facing;
-
-            if (dir.isRotatable()) {
-                dir = dir.rotate(config.getTransform().getRotation());
-            }
-
-            rotatable.setRotation(dir.asBlockFace());
-        }
+        data = VanillaAccess.rotate(data, config.getTransform().getRotation());
 
         Vectors.getBlock(pos, config.getWorld())
                 .setBlockData(data);

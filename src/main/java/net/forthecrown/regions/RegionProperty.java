@@ -71,6 +71,15 @@ public enum RegionProperty {
         void regen(PopulationRegion data) {
             Regions.placePole(data);
         }
+    },
+
+    /** Determines if players are allowed to visit a region even if it has a name */
+    PRIVATE_POLE {
+        @Override
+        public void onAdd(PopulationRegion region) {}
+
+        @Override
+        public void onRemove(PopulationRegion region) {}
     };
 
     public abstract void onAdd(PopulationRegion region);

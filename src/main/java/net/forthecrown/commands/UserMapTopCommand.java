@@ -6,12 +6,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import net.forthecrown.commands.manager.CmdValidate;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.format.UnitFormat;
-import net.forthecrown.text.format.page.Header;
-import net.forthecrown.text.format.page.PageFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.utils.text.format.page.Header;
+import net.forthecrown.utils.text.format.page.PageFormat;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.UserScoreMap;
 import net.forthecrown.user.Users;
@@ -20,7 +20,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.logging.log4j.Logger;
 
 public class UserMapTopCommand extends FtcCommand {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     public static final int DEF_PAGE_SIZE = 10;
 

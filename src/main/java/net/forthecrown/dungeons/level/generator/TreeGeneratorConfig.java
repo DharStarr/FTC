@@ -28,7 +28,7 @@ public class TreeGeneratorConfig {
             KEY_OPEN_CHANCE = "openRoomChance",
             KEY_REQUIRED_ROOMS = "requiredRoomCount",
 
-            KEY_MAX_GROW_ATTEMPTS = "maxGrowthAttempts",
+            KEY_POTENTIAL_LEVELS = "potentialLevels",
             KEY_LOCATION = "location",
             KEY_CHEST_CHANCE = "chestChance",
             KEY_SEED = "seed";
@@ -46,7 +46,11 @@ public class TreeGeneratorConfig {
     private final int maxConnectorExits;
     private final int maxRoomExits;
 
-    private final int maxGrowthAttempts;
+    /**
+     * The amount of 'potential' levels made by the generator,
+     * from which the best level is selected
+     */
+    private final int potentialLevels;
 
     /** Required amount of non-connector rooms */
     private final int requiredRooms;
@@ -88,7 +92,7 @@ public class TreeGeneratorConfig {
         this.chestRate = builder.chestRate;
         this.random = builder.random;
 
-        this.maxGrowthAttempts = builder.maxGrowthAttempts;
+        this.potentialLevels = builder.potentialLevels;
     }
 
     public static Builder builder() {
@@ -127,8 +131,8 @@ public class TreeGeneratorConfig {
             builder.maxRoomExits(json.getInt(KEY_MAX_ROOM_EXITS));
         }
 
-        if (json.has(KEY_MAX_GROW_ATTEMPTS)) {
-            builder.maxGrowthAttempts(json.getInt(KEY_MAX_GROW_ATTEMPTS));
+        if (json.has(KEY_POTENTIAL_LEVELS)) {
+            builder.potentialLevels(json.getInt(KEY_POTENTIAL_LEVELS));
         }
 
         if (json.has(KEY_LOCATION)) {
@@ -182,7 +186,7 @@ public class TreeGeneratorConfig {
 
         private int requiredRooms = 3;
 
-        private int maxGrowthAttempts = 35;
+        private int potentialLevels = 35;
         private Vector3i location = Vector3i.ZERO;
         private float chestRate = 0.3f;
         private Random random = new Random();

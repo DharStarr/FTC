@@ -147,7 +147,6 @@ public final class JsonWrapper {
     public <T> void addList(String name, Iterable<T> iterable, Function<T, JsonElement> function) {
         JsonArray array = new JsonArray();
         iterable.forEach(e -> array.add(function.apply(e)));
-
         json.add(name, array);
     }
 

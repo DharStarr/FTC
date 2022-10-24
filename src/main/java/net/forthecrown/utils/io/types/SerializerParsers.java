@@ -1,4 +1,4 @@
-package net.forthecrown.vars.types;
+package net.forthecrown.utils.io.types;
 
 import com.mojang.brigadier.arguments.*;
 import com.mojang.serialization.DataResult;
@@ -17,14 +17,14 @@ import java.util.Map;
 /**
  * Class which stores {@link SerializerParser} constants for easy access.
  */
-public interface VarTypes {
+public interface SerializerParsers {
     Registry<SerializerParser> TYPE_REGISTRY = Registries.newFreezable();
     Map<Class, SerializerParser> BY_TYPE = new Object2ObjectOpenHashMap<>();
 
     /* ----------------------------- PRIMITIVES ------------------------------ */
 
     SerializerParser<Byte> BYTE = register("byte_type",
-            new SimpleVarType<>(ByteArgument.byteArg()) {
+            new PrimitiveSerializerParser<>(ByteArgument.byteArg()) {
                 @Override
                 public <V> DataResult<Byte> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getNumberValue(element).map(Number::byteValue);
@@ -35,7 +35,7 @@ public interface VarTypes {
     );
 
     SerializerParser<Boolean> BOOL = register("boolean_type",
-            new SimpleVarType<>(BoolArgumentType.bool()) {
+            new PrimitiveSerializerParser<>(BoolArgumentType.bool()) {
                 @Override
                 public <V> DataResult<Boolean> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getBooleanValue(element);
@@ -46,7 +46,7 @@ public interface VarTypes {
     );
 
     SerializerParser<Short> SHORT = register("short_type",
-            new SimpleVarType<>(ShortArgument.shortArg()) {
+            new PrimitiveSerializerParser<>(ShortArgument.shortArg()) {
                 @Override
                 public <V> DataResult<Short> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getNumberValue(element).map(Number::shortValue);
@@ -57,7 +57,7 @@ public interface VarTypes {
     );
 
     SerializerParser<Integer> INT = register("integer_type",
-            new SimpleVarType<>(IntegerArgumentType.integer()) {
+            new PrimitiveSerializerParser<>(IntegerArgumentType.integer()) {
                 @Override
                 public <V> DataResult<Integer> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getNumberValue(element).map(Number::intValue);
@@ -68,7 +68,7 @@ public interface VarTypes {
     );
 
     SerializerParser<Float> FLOAT = register("float_type",
-            new SimpleVarType<>(FloatArgumentType.floatArg()) {
+            new PrimitiveSerializerParser<>(FloatArgumentType.floatArg()) {
                 @Override
                 public <V> DataResult<Float> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getNumberValue(element).map(Number::floatValue);
@@ -78,7 +78,7 @@ public interface VarTypes {
     );
 
     SerializerParser<Double> DOUBLE = register("double_type",
-            new SimpleVarType<>(DoubleArgumentType.doubleArg()) {
+            new PrimitiveSerializerParser<>(DoubleArgumentType.doubleArg()) {
                 @Override
                 public <V> DataResult<Double> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getNumberValue(element).map(Number::doubleValue);
@@ -88,7 +88,7 @@ public interface VarTypes {
     );
 
     SerializerParser<Long> LONG = register("long_type",
-            new SimpleVarType<>(LongArgumentType.longArg()) {
+            new PrimitiveSerializerParser<>(LongArgumentType.longArg()) {
                 @Override
                 public <V> DataResult<Long> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getNumberValue(element).map(Number::longValue);
@@ -98,7 +98,7 @@ public interface VarTypes {
     );
 
     SerializerParser<String> STRING = register("string_type",
-            new SimpleVarType<>(StringArgumentType.greedyString()) {
+            new PrimitiveSerializerParser<>(StringArgumentType.greedyString()) {
                 @Override
                 public <V> DataResult<String> deserialize(DynamicOps<V> ops, V element) {
                     return ops.getStringValue(element);
@@ -110,17 +110,17 @@ public interface VarTypes {
     /* ----------------------------- COMPLEX TYPES ------------------------------ */
 
     SerializerParser<World> WORLD = register("world_type",
-            new WorldVarType(),
+            new WorldSerializerParser(),
             World.class
     );
 
     SerializerParser<Component> COMPONENT = register("component_type",
-            new ComponentVarType(),
+            new TextSerializerParser(),
             Component.class
     );
 
     SerializerParser<Long> TIME = register("time_interval",
-            new TimeIntervalVarType(),
+            new PeriodSerializerParser(),
             Void.class
     );
 

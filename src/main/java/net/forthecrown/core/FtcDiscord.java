@@ -3,8 +3,9 @@ package net.forthecrown.core;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.utils.Util;
 import org.apache.logging.log4j.message.ParameterizedMessage;
-import org.bukkit.Bukkit;
 
 /**
  * Class for interacting with the Discord server using
@@ -33,11 +34,12 @@ public final class FtcDiscord {
     }
 
     public static boolean isActive() {
-        if (!Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")) {
+        if (!Util.isPluginEnabled("DiscordSRV")) {
             return false;
         }
 
-        return getHandle().isEnabled() && getHandle().getJda() != null;
+        return getHandle().isEnabled()
+                && getHandle().getJda() != null;
     }
 
     public static TextChannel getTextChannel(String name) {
@@ -60,17 +62,17 @@ public final class FtcDiscord {
      * @param args The message arguments
      */
     public static void staffLog(String cat, String msg, Object... args) {
-        if (!isActive()) {
-            return;
-        }
-
-        if (!Vars.staffLogEnabled) {
+        if (!isActive() || !GeneralConfig.staffLogEnabled) {
             return;
         }
 
         TextChannel channel = getTextChannel(STAFF_LOG);
-        DiscordUtil.queueMessage(channel, "**[" + cat + "]** " +
-                new ParameterizedMessage(msg, args).getFormattedMessage()
+        DiscordUtil.queueMessage(channel,
+                String.format("**[%s]** %s",
+                        cat,
+                        new ParameterizedMessage(msg, args)
+                                .getFormattedMessage()
+                )
         );
     }
 }

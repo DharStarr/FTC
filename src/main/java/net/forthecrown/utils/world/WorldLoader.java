@@ -2,8 +2,8 @@ package net.forthecrown.utils.world;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.experimental.UtilityClass;
-import net.forthecrown.core.Crown;
-import net.forthecrown.text.format.PeriodFormat;
+import net.forthecrown.core.FTC;
+import net.forthecrown.utils.text.format.PeriodFormat;
 import net.forthecrown.utils.VanillaAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
@@ -33,7 +33,7 @@ import java.util.concurrent.Semaphore;
  * the CPU and RAM with chunk load requests
  */
 public @UtilityClass class WorldLoader {
-    private final Logger LOGGER = Crown.logger();
+    private final Logger LOGGER = FTC.getLogger();
 
     /**
      * Determines if the loader should log an

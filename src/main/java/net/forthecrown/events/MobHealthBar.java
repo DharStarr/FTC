@@ -2,7 +2,7 @@ package net.forthecrown.events;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.forthecrown.core.Worlds;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;
@@ -25,6 +25,7 @@ import org.spongepowered.math.GenericMath;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class MobHealthBar implements Listener {
     public static final String DEF_HEART = "❤";
@@ -32,6 +33,8 @@ public class MobHealthBar implements Listener {
     public static final Map<LivingEntity, Component> NAMES = new HashMap<>();
     public static final Map<LivingEntity, BukkitTask> HITMOBS = new HashMap<>();
     public static final Set<ArmorStand> HIT_MARKERS = new ObjectOpenHashSet<>();
+
+    public static final double MAX_DAMAGE_INDICATION = 20;
 
     private static void delay(LivingEntity damaged) {
         BukkitTask task = HITMOBS.get(damaged);
@@ -103,7 +106,7 @@ public class MobHealthBar implements Listener {
         }
     }
 
-    public static void spawnDamageNumber(BoundingBox entityBounds, World world, double damage, double health) {
+    public static void spawnDamageNumber(BoundingBox entityBounds, World world, double damage) {
         var random = Util.RANDOM;
 
         double x = random.nextDouble(entityBounds.getMinX() - 0.5D, entityBounds.getMaxX() + 0.5D);
@@ -115,6 +118,7 @@ public class MobHealthBar implements Listener {
                 ArmorStand.class,
 
                 stand -> {
+                    stand.setCanTick(true);
                     stand.setMarker(true);
                     stand.setInvisible(true);
                     stand.setCustomNameVisible(true);
@@ -126,21 +130,37 @@ public class MobHealthBar implements Listener {
                     stand.customName(
                             Component.text(
                                     String.format("%.2f", damage),
-                                    damageColor(damage, health)
+                                    damageColor(damage)
                             )
                     );
                 }
         );
 
         HIT_MARKERS.add(entity);
-        Tasks.runLater(entity::remove, 12);
+
+        Tasks.runTimer(new Consumer<>() {
+            int ticks = 12;
+
+            @Override
+            public void accept(BukkitTask task) {
+                if (--ticks < 0) {
+                    Tasks.cancel(task);
+                    entity.remove();
+                    HIT_MARKERS.remove(entity);
+
+                    return;
+                }
+
+                entity.teleport(entity.getLocation().add(0, 0.035D, 0));
+            }
+        }, 1, 1);
     }
 
-    private static TextColor damageColor(double dmg, double health) {
-        float progress = (float) (dmg / health);
-        progress = (float) GenericMath.clamp(progress, 0F, 1F);
+    private static TextColor damageColor(double dmg) {
+        double progress = dmg / MAX_DAMAGE_INDICATION;
+        progress = GenericMath.clamp(progress, 0.0F, 1.0F);
 
-        return TextColor.lerp((float) (dmg / health), NamedTextColor.RED, NamedTextColor.GREEN);
+        return TextColor.lerp((float) progress, NamedTextColor.YELLOW, NamedTextColor.RED);
     }
 
     public static void shutdown() {
@@ -184,7 +204,10 @@ public class MobHealthBar implements Listener {
         var finalDamage = event.getFinalDamage();
 
         showHealthbar(damaged, finalDamage, DEF_HEART, true);
-        spawnDamageNumber(damaged.getBoundingBox(), damaged.getWorld(), finalDamage, damaged.getHealth());
+
+        if (!PunchingBags.isPunchingBag(damaged)) {
+            spawnDamageNumber(damaged.getBoundingBox(), damaged.getWorld(), finalDamage);
+        }
     }
 
     //Death messsage

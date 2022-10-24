@@ -8,9 +8,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
-import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.MarketShop;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.royalgrenadier.VanillaMappedArgument;
 
@@ -24,7 +24,7 @@ public class MarketArgument implements ArgumentType<MarketShop>, VanillaMappedAr
         int cursor = reader.getCursor();
         String name = reader.readUnquotedString();
 
-        MarketManager region = Crown.getEconomy().getMarkets();
+        MarketManager region = Economy.get().getMarkets();
         MarketShop shop = region.get(name);
 
         if (shop == null) {
@@ -36,7 +36,7 @@ public class MarketArgument implements ArgumentType<MarketShop>, VanillaMappedAr
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CompletionProvider.suggestMatching(builder, Crown.getEconomy().getMarkets().getNames());
+        return CompletionProvider.suggestMatching(builder, Economy.get().getMarkets().getNames());
     }
 
     @Override

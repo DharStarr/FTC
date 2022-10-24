@@ -1,8 +1,8 @@
 package net.forthecrown.commands.item;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -17,6 +17,11 @@ public class ItemDataNode extends ItemModifierNode {
                 "item_data",
                 "item_tags", "itemnbt", "itemdata", "itemtags"
         );
+    }
+
+    @Override
+    String getArgumentName() {
+        return "data";
     }
 
     @Override

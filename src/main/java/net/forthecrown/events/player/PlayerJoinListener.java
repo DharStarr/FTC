@@ -1,11 +1,9 @@
 package net.forthecrown.events.player;
 
-import net.forthecrown.core.AfkKicker;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.TabList;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.*;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.inventory.ExtendedItems;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.useables.command.Kit;
 import net.forthecrown.user.User;
@@ -33,7 +31,7 @@ public class PlayerJoinListener implements Listener {
         PacketListeners.inject(event.getPlayer());
 
         if (!event.getPlayer().hasPlayedBefore()) {
-            event.getPlayer().teleport(Crown.config().getServerSpawn());
+            event.getPlayer().teleport(GeneralConfig.getServerSpawn());
 
             event.joinMessage(Messages.firstJoin(user));
 
@@ -44,7 +42,7 @@ public class PlayerJoinListener implements Listener {
             user.getInventory().addItem(sword);
 
             //Give join kit
-            Kit kit = Usables.get().getKits().get(Vars.onFirstJoinKit);
+            Kit kit = Usables.get().getKits().get(GeneralConfig.onFirstJoinKit);
 
             if (kit != null) {
                 kit.interact(user.getPlayer());

@@ -1,25 +1,18 @@
 package net.forthecrown.dungeons.boss.components;
 
-import net.forthecrown.text.Messages;
-import net.forthecrown.core.Crown;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.DungeonBoss;
+import net.forthecrown.core.Messages;
 import net.forthecrown.utils.math.WorldBounds3i;
-import net.forthecrown.vars.Var;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 public class EmptyRoomComponent implements BossComponent {
-    @Var(namePrefix = "dungeons_")
-    public static int
+    public static final int
             emptyRoomCheckInterval = 60 * 20,
             emptyRoomMaxTicks = 30 * 60 * 20;
-
-    static {
-        Crown.getVars().register();
-    }
 
     private final DungeonBoss boss;
     private int checkTick;

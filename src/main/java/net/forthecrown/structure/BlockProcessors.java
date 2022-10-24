@@ -72,19 +72,13 @@ public @UtilityClass class BlockProcessors {
             ) {
                 return previous;
             }
-
-            CraftBlockData beforeData = (CraftBlockData) previous.getData();
             Transform transform = context.getTransform();
 
             // So fun fact, rotation is built into vanilla, Bukkit,
             // in their infinite wisdom haven't made that part API
             // though, the geniuses that they are
-            net.minecraft.world.level.block.state.BlockState vanillaState = beforeData.getState();
-            vanillaState = vanillaState.rotate(
-                    VanillaAccess.toVanilla(transform.getRotation())
-            );
-
-            return previous.withData(vanillaState.createCraftBlockData());
+            var data = VanillaAccess.rotate(previous.getData(), transform.getRotation());
+            return previous.withData(data);
         }
     }
 

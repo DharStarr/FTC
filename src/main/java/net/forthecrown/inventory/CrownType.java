@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 import static net.kyori.adventure.text.Component.text;
 
 public class CrownType implements ExtendedItemType<RoyalCrown> {

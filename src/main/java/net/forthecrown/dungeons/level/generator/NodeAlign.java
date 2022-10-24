@@ -11,7 +11,7 @@ import net.forthecrown.utils.math.Bounds3i;
 import org.spongepowered.math.vector.Vector3i;
 
 public @UtilityClass class NodeAlign {
-    public AbsoluteGateData align(DungeonPiece created, AbsoluteGateData exit, GateData entrance) {
+    public void align(DungeonPiece created, AbsoluteGateData exit, GateData entrance) {
         Vector3i exitRight = exit.rightSide();
 
         // Derive rotation from direction difference between entrance and exit
@@ -48,11 +48,7 @@ public @UtilityClass class NodeAlign {
         if (created instanceof DungeonGate gate) {
             gate.setParentExit(exit);
             gate.setOriginGate(entrance.toAbsolute(gate));
-
-            return gate.getOriginGate();
         }
-
-        return entrance.toAbsolute(created);
     }
 
     public Vector3i pivotPoint(Bounds3i bb, Rotation rotation) {

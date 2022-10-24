@@ -1,6 +1,7 @@
 package net.forthecrown.book.builder;
 
-import net.forthecrown.text.Text;
+import com.google.common.base.Preconditions;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -18,7 +19,7 @@ public class BookBuilder {
 
     TextComponent.Builder currentPage = Component.text();
     boolean pageAdded = false;
-    boolean textWritten = false;
+    boolean emptyPage = false;
     int pageCount = 0;
     int lineCount = 0;
 
@@ -51,15 +52,9 @@ public class BookBuilder {
 
     // Add text to current page
     public BookBuilder addText(Component line) {
-        String text = Text.plain(line);
-        int pxLength = TextInfo.getPxWidth(text);
-
-        // Ensure the text isn't larger than a single page
-        Validate.isTrue(pxLength < PIXELS_PER_LINE * MAX_LINES, "Text too big :(");
-
         // Increase numLines according to new line length
-        // I love integer division
-        int extraLines = (int) Math.ceil((double) pxLength / (double) PIXELS_PER_LINE);
+        int extraLines = lineLength(line);
+        Preconditions.checkState(extraLines <= MAX_LINES, "Text too big :(");
 
         // If numLines too big, paste new line on next page
         if (lineCount + extraLines > MAX_LINES) {
@@ -68,14 +63,14 @@ public class BookBuilder {
 
         lineCount += extraLines;
 
-        if (textWritten) {
+        if (!emptyPage) {
             currentPage.append(NEW_LINE);
         }
 
         currentPage.append(line);
 
         pageAdded = false;
-        textWritten = true;
+        emptyPage = false;
 
         return this;
     }
@@ -86,13 +81,11 @@ public class BookBuilder {
         int dif = PIXELS_PER_LINE - pxLength;
 
         Validate.isTrue(dif >= 0, "Given text is longer than a single line");
-
-        // 2 Would be to fill up the rest of the line, 4 to fill up half
-        dif /= 4;
+        dif /= 2;
 
         return addText(
                 Component.text()
-                        .append(Component.text(".".repeat(dif), NamedTextColor.WHITE))
+                        .append(Component.text(TextInfo.getFiller(dif), NamedTextColor.WHITE))
                         .append(text)
                         .build()
         );
@@ -102,11 +95,13 @@ public class BookBuilder {
         String text = Text.plain(line);
         String[] lines = text.split("\n");
 
-        int lineCount = 0;
+        int lineCount = lines.length;
 
         for (var s: lines) {
-            int pxLength = TextInfo.getPxWidth(s);
-            lineCount += 1 + Math.ceil((double) pxLength / (double) PIXELS_PER_LINE);
+            int length = TextInfo.getPxWidth(s);
+            int extraLines = length / PIXELS_PER_LINE;
+
+            lineCount += extraLines;
         }
 
         return lineCount;
@@ -116,7 +111,7 @@ public class BookBuilder {
         bookMeta.addPages(currentPage.build());
         ++pageCount;
         pageAdded = true;
-        textWritten = false;
+        emptyPage = true;
 
         currentPage = Component.text(); // empty page
         lineCount = 0; // No lines yet
@@ -179,7 +174,10 @@ public class BookBuilder {
     }
 
     public BookMeta build() {
-        if(!pageAdded) addPage();
+        if (!pageAdded) {
+            addPage();
+        }
+
         return bookMeta.clone();
     }
 }

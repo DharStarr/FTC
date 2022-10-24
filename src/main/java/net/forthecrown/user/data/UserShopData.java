@@ -6,8 +6,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 public class UserShopData extends UserComponent implements Iterable<UserShopData.Entry>  {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     /**
      * The JSON key of the auto sell material list
@@ -175,7 +175,7 @@ public class UserShopData extends UserComponent implements Iterable<UserShopData
             return;
         }
 
-        var amount = days * Vars.dailySellShopPriceLoss;
+        var amount = days * GeneralConfig.dailySellShopPriceLoss;
         var it = ArrayIterator.modifiable(earnings);
 
         while (it.hasNext()) {

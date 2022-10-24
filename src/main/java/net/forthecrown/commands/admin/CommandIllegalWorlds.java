@@ -1,15 +1,15 @@
 package net.forthecrown.commands.admin;
 
 import com.mojang.brigadier.context.CommandContext;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.WorldArgument;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 
@@ -39,13 +39,13 @@ public class CommandIllegalWorlds extends FtcCommand {
     protected void createCommand(BrigadierCommand command) {
         command
                 .executes(c -> {
-                    if (Crown.config().getIllegalWorlds().isEmpty()) {
+                    if (GeneralConfig.getIllegalWorlds().isEmpty()) {
                         throw Exceptions.NOTHING_TO_LIST;
                     }
 
                     c.getSource().sendMessage(
                             TextJoiner.onComma()
-                                    .add(Crown.config().getIllegalWorlds().stream()
+                                    .add(GeneralConfig.getIllegalWorlds().stream()
                                             .map(Component::text)
                                     )
                     );
@@ -56,7 +56,7 @@ public class CommandIllegalWorlds extends FtcCommand {
                         .then(argument("world", WorldArgument.world())
                                 .executes(c -> {
                                     var world = getWorld(c);
-                                    Crown.config().addIllegalWorld(world);
+                                    GeneralConfig.illegalWorlds.add(world.getName());
 
                                     c.getSource().sendAdmin(
                                             Text.format("Added '{0}' to illegal worlds list", world.getName())
@@ -70,7 +70,7 @@ public class CommandIllegalWorlds extends FtcCommand {
                         .then(argument("world", WorldArgument.world())
                                 .executes(c -> {
                                     var world = getWorld(c);
-                                    Crown.config().removeIllegalWorld(world);
+                                    GeneralConfig.illegalWorlds.remove(world.getName());
 
                                     c.getSource().sendAdmin(
                                             Text.format("Removed '{0}' from illegal worlds list", world.getName())

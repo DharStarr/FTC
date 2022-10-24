@@ -22,6 +22,7 @@ public class PluginDirectoryCleanup extends DataUpdater {
         safeDelete(pluginDir.resolve("holidays.dat"));
         safeDelete(pluginDir.resolve("structures.dat"));
         safeDelete(pluginDir.resolve("guild.json"));
+        safeDelete(pluginDir.resolve("configuration.json"));
 
         safeDelete(pluginDir.resolve("translations"), true);
         safeDelete(pluginDir.resolve("shops"), true);

@@ -1,7 +1,7 @@
 package net.forthecrown.dungeons.boss;
 
 import com.destroystokyo.paper.entity.Pathfinder;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.Worlds;
 import net.forthecrown.dungeons.BossItems;
 import net.forthecrown.dungeons.DungeonAreas;

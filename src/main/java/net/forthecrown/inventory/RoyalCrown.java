@@ -2,7 +2,7 @@ package net.forthecrown.inventory;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.UUID;
 
 import static net.forthecrown.inventory.weapon.RoyalSword.BORDER;
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 public class RoyalCrown extends ExtendedItem {
 

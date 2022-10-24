@@ -1,9 +1,13 @@
 package net.forthecrown.regions;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectLongPair;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.core.FtcDynmap;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.utils.Time;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Vectors;
@@ -20,11 +24,11 @@ import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 public class PopulationRegion implements RegionAccess {
-    @Getter
-    private final Bounds3i region;
     @Getter
     private final RegionPos pos;
 
@@ -41,9 +45,14 @@ public class PopulationRegion implements RegionAccess {
     @Getter
     private final RegionResidency residency;
 
+    /** Map of player ID to time stamp of when their invite ends, not serialized */
+    @Getter
+    private final Map<UUID, ObjectLongPair<UUID>> invites = new Object2ObjectOpenHashMap<>();
+
+    /* ----------------------------- CONSTRUCTORS ------------------------------ */
+
     PopulationRegion(RegionPos pos) {
         this.pos = pos;
-        this.region = makeRegion();
         this.residency = new RegionResidency(this);
     }
 
@@ -57,16 +66,7 @@ public class PopulationRegion implements RegionAccess {
         }
     }
 
-    //Makes a bounding box for the region, from -65 to 312
-    private Bounds3i makeRegion() {
-        int minX = pos.getCenterX() - Regions.HALF_REGION_SIZE;
-        int minZ = pos.getCenterZ() - Regions.HALF_REGION_SIZE;
-
-        int maxX = pos.getCenterX() + Regions.HALF_REGION_SIZE;
-        int maxZ = pos.getCenterZ() + Regions.HALF_REGION_SIZE;
-
-        return new Bounds3i(minX, Util.MIN_Y, minZ, maxX, Util.MAX_Y, maxZ);
-    }
+    /* ----------------------------- SERIALIZATION ------------------------------ */
 
     public void save(CompoundTag tag) {
         if (polePosition != null) {
@@ -115,6 +115,8 @@ public class PopulationRegion implements RegionAccess {
             residency.load(tags.getList("residency", Tag.TAG_COMPOUND));
         }
     }
+
+    /* ----------------------------- METHODS ------------------------------ */
 
     // sets the pole position without generating a new pole or removing the old one
     protected void setPolePosition0(@Nullable Vector2i polePosition) {
@@ -207,7 +209,7 @@ public class PopulationRegion implements RegionAccess {
     public void setPolePosition(@Nullable Vector2i polePosition) {
         //prev must be created before polePosition0 is called
         WorldBounds3i prev = poleBounds.toWorldBounds(
-                RegionManager.get().getWorld()
+                Regions.getWorld()
         );
 
         // Actually sets the pole's position and updates the
@@ -228,8 +230,7 @@ public class PopulationRegion implements RegionAccess {
 
             if (marker != null) {
                 marker.setLocation(
-                        RegionManager.get()
-                                .getWorld()
+                        Regions.getWorld()
                                 .getName(),
 
                         pos.x() + 0.5D,
@@ -268,5 +269,33 @@ public class PopulationRegion implements RegionAccess {
                 .center()
                 .toInt()
                 .withY(getPoleBounds().minY());
+    }
+
+    /* ----------------------------- INVITES ------------------------------ */
+
+    public void invite(UUID inviter, UUID uuid) {
+        invites.put(
+                uuid,
+                ObjectLongPair.of(inviter, System.currentTimeMillis() + GeneralConfig.validInviteTime)
+        );
+    }
+
+    public UUID getInviter(UUID recipient) {
+        if (!hasValidInvite(recipient)) {
+            return null;
+        }
+
+        return invites.get(recipient).first();
+    }
+
+    public boolean hasValidInvite(UUID uuid) {
+        long l = invites.get(uuid).rightLong();
+
+        if (Time.isPast(l)) {
+            invites.remove(uuid);
+            return false;
+        } else {
+            return true;
+        }
     }
 }

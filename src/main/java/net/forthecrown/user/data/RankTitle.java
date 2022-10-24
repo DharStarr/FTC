@@ -2,7 +2,7 @@ package net.forthecrown.user.data;
 
 import com.google.gson.JsonElement;
 import lombok.Getter;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.io.JsonUtils;
 import net.kyori.adventure.text.Component;

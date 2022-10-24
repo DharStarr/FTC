@@ -1,8 +1,8 @@
 package net.forthecrown.events;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.Worlds;
+import net.forthecrown.core.config.ResourceWorldConfig;
 import net.forthecrown.core.resource.ResourceWorldTracker;
 import net.forthecrown.inventory.ExtendedItems;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -50,7 +50,7 @@ public class ResourceWorldListener implements Listener {
                 || event.getBlock().getState() instanceof Container
 
                 // If they were unlucky
-                || Vars.rwDoubleDropRate < RANDOM.nextFloat(1f)
+                || ResourceWorldConfig.doubleDropRate < RANDOM.nextFloat(1f)
 
                 // Not a natural block or in creative
                 || !testBlock(event.getBlock())
@@ -108,7 +108,7 @@ public class ResourceWorldListener implements Listener {
                 || !testWorld(event.getEntity().getWorld())
 
                 // They were unlucky :(
-                || Vars.rwDoubleDropRate < RANDOM.nextFloat(1f)
+                || ResourceWorldConfig.doubleDropRate < RANDOM.nextFloat(1f)
         ) {
             return;
         }

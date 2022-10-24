@@ -8,7 +8,7 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.pos.Position;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.UsableBlock;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.utils.math.WorldVec3i;

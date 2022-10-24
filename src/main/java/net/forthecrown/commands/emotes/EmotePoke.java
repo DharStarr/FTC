@@ -7,7 +7,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class EmotePoke extends CommandEmote {
 

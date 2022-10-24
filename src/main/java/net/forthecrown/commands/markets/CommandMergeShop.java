@@ -1,22 +1,23 @@
 package net.forthecrown.commands.markets;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.market.Markets;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.UserInteractions;
 import net.forthecrown.user.data.UserMarketData;
 
-import static net.forthecrown.text.Messages.MARKET_MERGE_BLOCKED_SENDER;
-import static net.forthecrown.text.Messages.MARKET_MERGE_BLOCKED_TARGET;
+import static net.forthecrown.core.Messages.MARKET_MERGE_BLOCKED_SENDER;
+import static net.forthecrown.core.Messages.MARKET_MERGE_BLOCKED_TARGET;
 
 public class CommandMergeShop extends FtcCommand {
 
@@ -142,7 +143,7 @@ public class CommandMergeShop extends FtcCommand {
             this.targetInter = target.getInteractions();
             this.targetOwnership = target.getMarketData();
 
-            this.markets = Crown.getEconomy().getMarkets();
+            this.markets = Economy.get().getMarkets();
             this.shop = markets.get(user.getUniqueId());
             this.targetShop = markets.get(target.getUniqueId());
         }
@@ -205,7 +206,7 @@ public class CommandMergeShop extends FtcCommand {
                 return false;
             }
 
-            if (!MarketManager.ownsShop(user)) {
+            if (!Markets.ownsShop(user)) {
                 throw Exceptions.NO_SHOP_OWNED;
             }
 
@@ -217,7 +218,7 @@ public class CommandMergeShop extends FtcCommand {
                 throw Exceptions.marketTargetMerged(target);
             }
 
-            if (MarketManager.ownsShop(target)) {
+            if (Markets.ownsShop(target)) {
                 throw Exceptions.marketTargetHasShop(target);
             }
 

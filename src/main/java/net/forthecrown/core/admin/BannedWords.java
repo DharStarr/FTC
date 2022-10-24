@@ -5,9 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.utils.Cooldown;
 import net.forthecrown.utils.io.PathUtil;
@@ -96,6 +96,6 @@ public final class BannedWords {
             }
         }
 
-        return Crown.plugin().getResource(path);
+        return FTC.getPlugin().getResource(path);
     }
 }

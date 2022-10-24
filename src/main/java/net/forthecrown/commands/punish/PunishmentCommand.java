@@ -1,5 +1,6 @@
 package net.forthecrown.commands.punish;
 
+import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -20,9 +21,8 @@ import net.forthecrown.grenadier.types.TimeArgument;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.args.ParsedArgs;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
-import net.forthecrown.utils.Util;
 import org.bukkit.event.player.PlayerKickEvent;
 
 import javax.annotation.Nullable;
@@ -122,7 +122,7 @@ public class PunishmentCommand extends FtcCommand {
             }
 
             user.getPlayer().kick(
-                    Util.isNullOrBlank(reason) ? null : Text.renderString(reason),
+                    Strings.isNullOrEmpty(reason) ? null : Text.renderString(reason),
                     PlayerKickEvent.Cause.KICK_COMMAND
             );
 

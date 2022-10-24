@@ -9,7 +9,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.royalgrenadier.VanillaMappedArgument;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 

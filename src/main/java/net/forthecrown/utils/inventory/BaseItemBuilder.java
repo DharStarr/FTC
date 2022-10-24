@@ -9,7 +9,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import net.forthecrown.dungeons.enchantments.FtcEnchant;
 import net.forthecrown.dungeons.enchantments.FtcEnchants;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;

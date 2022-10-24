@@ -10,9 +10,7 @@ import org.bukkit.inventory.CartographyInventory;
 public class NoCopiesListener implements Listener {
     private static final String TAG_NO_COPIES = "no_copies";
 
-    private static final int SLOT_MAP = 0;
     private static final int SLOT_ADDITIONAL = 1;
-    private static final int SLOT_RESULT = 2;
 
     @EventHandler(ignoreCancelled = true)
     public void onPrepareResult(PrepareResultEvent event) {

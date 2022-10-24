@@ -7,21 +7,26 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.*;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.Permissions;
+import net.forthecrown.core.TabList;
+import net.forthecrown.core.Worlds;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.EntryNote;
 import net.forthecrown.core.admin.Punishments;
 import net.forthecrown.core.config.EndConfig;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.config.JoinInfo;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.events.dynamic.HulkSmashListener;
 import net.forthecrown.events.player.PlayerRidingListener;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.AbstractCommand;
 import net.forthecrown.regions.RegionPos;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.data.*;
 import net.forthecrown.user.property.BoolProperty;
 import net.forthecrown.user.property.Properties;
@@ -53,7 +58,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.math.vector.Vector2i;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -64,7 +68,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 public class User implements ForwardingAudience.Single,
         HoverEventSource<Component>, Identity
@@ -434,9 +438,8 @@ public class User implements ForwardingAudience.Single,
         ip = getPlayer().getAddress().getHostString();
 
         // Show join info, if we should
-        JoinInfo news = Crown.getJoinInfo();
-        if (news.isVisible() || news.isEndVisible()) {
-            sendMessage(news.display());
+        if (JoinInfo.visible || JoinInfo.endVisible) {
+            sendMessage(JoinInfo.display());
         }
 
         // We are definitely not AFK lol
@@ -448,9 +451,11 @@ public class User implements ForwardingAudience.Single,
         updateGodMode();
         updateTabName();
 
+        UserManager.get().getOnline().put(getUniqueId(), this);
+
         // If in end, but end not open, leave end lol
         if(getWorld().equals(Worlds.end()) && !EndConfig.open) {
-            getPlayer().teleport(Crown.config().getServerSpawn());
+            getPlayer().teleport(GeneralConfig.getServerSpawn());
         }
 
         if (hasComponent(Components.MAIL)) {
@@ -524,7 +529,6 @@ public class User implements ForwardingAudience.Single,
         var interactions = getInteractions();
         interactions.clearIncoming();
         interactions.clearOutgoing();
-        interactions.clearInvites();
         getMarketData().clearIncoming();
 
         if (lastTeleport != null) {
@@ -542,6 +546,7 @@ public class User implements ForwardingAudience.Single,
         }
 
         PlayerRidingListener.stopRiding(getPlayer());
+        UserManager.get().getOnline().remove(getUniqueId());
     }
 
     /**
@@ -732,15 +737,6 @@ public class User implements ForwardingAudience.Single,
      */
     public void delete() {
         UserManager.get().getSerializer().delete(getUniqueId());
-    }
-
-    /**
-     * Gets the user's 2d block location
-     * @return The user's 2d block location
-     */
-    public Vector2i get2DLocation() {
-        Location l = getLocation();
-        return new Vector2i(l.getX(), l.getZ());
     }
 
     /**
@@ -1008,7 +1004,7 @@ public class User implements ForwardingAudience.Single,
      */
     void onTpComplete() {
         if (lastTeleport.isDelayed()) {
-            long cooldownMillis = Vars.tpCooldown * 50;
+            long cooldownMillis = GeneralConfig.tpCooldown * 50L;
             setTime(TimeField.NEXT_TELEPORT, System.currentTimeMillis() + cooldownMillis);
         }
 
@@ -1302,9 +1298,9 @@ public class User implements ForwardingAudience.Single,
 
             // Update vanished state
             if(get(Properties.VANISHED)) {
-                u.getPlayer().hidePlayer(Crown.plugin(), getPlayer());
+                u.getPlayer().hidePlayer(FTC.getPlugin(), getPlayer());
             } else {
-                u.getPlayer().showPlayer(Crown.plugin(), getPlayer());
+                u.getPlayer().showPlayer(FTC.getPlugin(), getPlayer());
             }
         }
     }

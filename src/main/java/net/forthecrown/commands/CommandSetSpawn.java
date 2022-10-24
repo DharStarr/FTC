@@ -1,12 +1,12 @@
 package net.forthecrown.commands;
 
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
+import net.forthecrown.core.Messages;
 import org.bukkit.Location;
 
 public class CommandSetSpawn extends FtcCommand {
@@ -45,7 +45,7 @@ public class CommandSetSpawn extends FtcCommand {
     }
 
     private int setServerSpawn(Location l, CommandSource source){
-        Crown.config().setServerSpawn(l);
+        GeneralConfig.setServerSpawn(l);
 
         source.sendMessage(Messages.serverSpawnSet(l));
         return 0;

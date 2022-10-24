@@ -2,6 +2,7 @@ package net.forthecrown.core;
 
 import net.forthecrown.core.admin.StaffChat;
 import net.forthecrown.core.config.EndConfig;
+import net.forthecrown.core.config.JoinInfo;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.VanillaAccess;
 import net.forthecrown.utils.world.WorldLoader;
@@ -17,13 +18,11 @@ import net.minecraft.world.level.dimension.end.EndDragonFight;
 import org.apache.commons.lang3.Range;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Switch;
 import org.bukkit.craftbukkit.v1_19_R1.block.CraftBlock;
-import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -41,7 +40,7 @@ import static net.forthecrown.core.config.EndConfig.*;
  * It should be kept open for the last 7 days of each week, aka, end week.
  */
 public class EndOpener implements DayChangeListener {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
     private static final EndOpener INSTANCE = new EndOpener();
 
     public EndOpener() {
@@ -55,7 +54,9 @@ public class EndOpener implements DayChangeListener {
     @Override
     public void onDayChange(ZonedDateTime time) {
         // If we've disabled this, don't run
-        if(!enabled) return;
+        if (!enabled) {
+            return;
+        }
 
         byte day = (byte) time.getDayOfMonth();
         byte first = 1;
@@ -78,11 +79,11 @@ public class EndOpener implements DayChangeListener {
         // If current day is a closed day, but portal not closed,
         // close it, if not close day and portal not open, open it
         // This is messy, but IDK how to do it better
-        if(closedRange.contains(day)) {
-            if(open) {
+        if (closedRange.contains(day)) {
+            if (open) {
                 setOpen(false);
             }
-        } else if(!open) {
+        } else if (!open) {
             setOpen(true);
         }
     }
@@ -95,9 +96,6 @@ public class EndOpener implements DayChangeListener {
      */
     public CompletableFuture<World> regenerateEnd() {
         StaffChat.send(Component.text("Starting End reset"), false);
-
-        // Kick any players out of the end
-        kickPlayers();
 
         // Re-create world
         WorldReCreator reCreator = WorldReCreator.of(Worlds.end())
@@ -118,7 +116,7 @@ public class EndOpener implements DayChangeListener {
         return WorldLoader.loadAsync(created)
                 .whenComplete((world, throwable) -> {
                     // Run sync
-                    Bukkit.getScheduler().runTask(Crown.plugin(), () -> {
+                    Bukkit.getScheduler().runTask(FTC.getPlugin(), () -> {
                         try {
                             EndDragonFight fight = VanillaAccess.getLevel(world).dragonFight();
 
@@ -137,33 +135,20 @@ public class EndOpener implements DayChangeListener {
     }
 
     /**
-     * Kicks all players from the current end world and teleports them to hazel
-     */
-    private void kickPlayers() {
-        Location exitLocation = Crown.config().getServerSpawn();
-
-        for (Player p: Worlds.end().getPlayers()) {
-            p.teleport(exitLocation);
-        }
-    }
-
-    /**
      * Opens or closes the end
      * @param open Whether the end is to be open
      */
     public void setOpen(boolean open) {
         // If lever setting fails, don't proceed
-        if(!setLever(open)) {
+        if (!setLever(open)) {
             return;
         }
 
         EndConfig.open = open;
+        JoinInfo.endVisible = open;
+
         PortalRoad.set(leverPos.getWorld(), open);
-
-        Crown.getJoinInfo().setEndVisible(open);
-
-        Component message = open ? openMessage : closeMessage;
-        Crown.getAnnouncer().announce(message);
+        Announcer.get().announce(open ? openMessage : closeMessage);
 
         FtcDiscord.staffLog(C_END, "End is now " + (open ? "open" : "closed"));
     }

@@ -1,7 +1,7 @@
 package net.forthecrown.inventory;
 
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.RankTier;
 import net.forthecrown.user.data.RankTitle;
@@ -19,7 +19,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 public final class RankMenu {
     private RankMenu() {}

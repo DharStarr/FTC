@@ -1,8 +1,8 @@
 package net.forthecrown.user;
 
 import lombok.Getter;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.EavesDropper;
 import net.forthecrown.core.admin.Mute;
@@ -14,7 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 /**
  * A message sent from one command source to another.

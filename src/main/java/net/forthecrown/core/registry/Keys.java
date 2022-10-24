@@ -2,7 +2,7 @@ package net.forthecrown.core.registry;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.types.KeyArgument;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.NamespacedKey;
@@ -28,7 +28,7 @@ public interface Keys {
      * Namespaced key parser with "forthecrown" as the default
      * namespace
      */
-    KeyArgument FTC_KEY_PARSER = KeyArgument.key(Crown.plugin());
+    KeyArgument FTC_KEY_PARSER = KeyArgument.key(FTC.getPlugin());
 
     /**
      * Creates a key with the given namespace and value
@@ -46,7 +46,7 @@ public interface Keys {
      * @return The created key
      */
     static NamespacedKey forthecrown(String value){
-        return key(Crown.plugin().namespace(), value);
+        return key(FTC.getPlugin().namespace(), value);
     }
 
     /**

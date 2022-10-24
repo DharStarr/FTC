@@ -1,14 +1,15 @@
 package net.forthecrown.commands.markets;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.market.Markets;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.UserMarketData;
 
@@ -54,7 +55,7 @@ public class CommandUnclaimShop extends FtcCommand {
                             User user = getUserSender(c);
                             check(user);
 
-                            MarketManager markets = Crown.getEconomy().getMarkets();
+                            MarketManager markets = Economy.get().getMarkets();
                             MarketShop shop = markets.get(user.getUniqueId());
 
                             shop.unclaim(true);
@@ -68,10 +69,10 @@ public class CommandUnclaimShop extends FtcCommand {
     private void check(User user) throws CommandSyntaxException {
         UserMarketData ownership = user.getMarketData();
 
-        if (!MarketManager.ownsShop(user)) {
+        if (!Markets.ownsShop(user)) {
             throw Exceptions.NO_SHOP_OWNED;
         }
 
-        MarketManager.checkStatusChange(ownership);
+        Markets.checkStatusChange(ownership);
     }
 }

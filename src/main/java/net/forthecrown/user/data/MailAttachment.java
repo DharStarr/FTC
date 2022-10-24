@@ -5,13 +5,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
-import net.forthecrown.text.format.UnitFormat;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
+import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.user.User;
@@ -168,7 +168,7 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
             writer.formattedLine("Gems: &e{0, gems}", gems);
         }
 
-        if (Crown.inDebugMode() && !Util.isNullOrBlank(tag)) {
+        if (FTC.inDebugMode() && !Util.isNullOrBlank(tag)) {
             writer.formattedLine("Tag: '&e{0}&r'", tag);
         }
     }

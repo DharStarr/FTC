@@ -1,8 +1,10 @@
 package net.forthecrown.dungeons;
 
+import net.forthecrown.core.config.ConfigManager;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.dungeons.boss.*;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.dungeons.usables.ActionBossInfo;
 import net.forthecrown.dungeons.usables.ActionEntranceInfo;
 import net.forthecrown.dungeons.usables.ActionGiveArtifact;
@@ -33,6 +35,9 @@ public class Bosses {
         USAGE_ACTIONS.register("give_artifact", ActionGiveArtifact.TYPE);
         USAGE_ACTIONS.register("boss_info", ActionBossInfo.TYPE);
         USAGE_ACTIONS.register("spawn_boss", ActionSpawnBoss.TYPE);
+
+        ConfigManager.get()
+                .registerConfig(EvokerConfig.class);
     }
 
     private static <T extends KeyedBoss> T register(T boss) {

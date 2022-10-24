@@ -7,7 +7,7 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.npc.SimpleNpc;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.cosmetics.emotes.CosmeticEmotes;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.UserInteractions;

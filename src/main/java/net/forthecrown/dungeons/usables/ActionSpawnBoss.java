@@ -1,7 +1,7 @@
 package net.forthecrown.dungeons.usables;
 
 import net.forthecrown.commands.arguments.RegistryArguments;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.useables.*;
 import net.forthecrown.grenadier.CommandSource;

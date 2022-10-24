@@ -1,8 +1,8 @@
 package net.forthecrown.structure;
 
 import lombok.Getter;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.AutoSave;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
@@ -53,7 +53,7 @@ public final class Structures {
         try {
             loadDirectory(directory, "");
         } catch (IOException e) {
-            Crown.logger().error("Error loading structures", e);
+            FTC.getLogger().error("Error loading structures", e);
         }
     }
 
@@ -76,9 +76,13 @@ public final class Structures {
             String key = prefix + path.getFileName().toString().replaceAll(".dat", "");
 
             BlockStructure structure = new BlockStructure();
-            SerializationHelper.readTagFile(path, structure::load);
 
-            Crown.logger().info("Loaded structure: '{}'", key);
+            if (!SerializationHelper.readTagFile(path, structure::load)) {
+                FTC.getLogger().warn("Couldn't read structure file: '{}'", path);
+                continue;
+            }
+
+            //FTC.getLogger().info("Loaded structure: '{}'", key);
             registry.register(key, structure);
         }
 

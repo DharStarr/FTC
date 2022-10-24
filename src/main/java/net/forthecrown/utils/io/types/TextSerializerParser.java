@@ -1,4 +1,4 @@
-package net.forthecrown.vars.types;
+package net.forthecrown.utils.io.types;
 
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A class for the Component com var type
  */
-public class ComponentVarType implements SerializerParser<Component> {
+public class TextSerializerParser implements SerializerParser<Component> {
     @Override
     public @NotNull String asString(@NotNull Component value) {
         return GsonComponentSerializer.gson().serialize(value);

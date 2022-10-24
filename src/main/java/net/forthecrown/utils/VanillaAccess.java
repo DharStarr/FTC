@@ -105,6 +105,12 @@ public final class VanillaAccess {
         };
     }
 
+    public static BlockData rotate(BlockData data, net.forthecrown.structure.Rotation rotation) {
+        var state = getState(data);
+        state = state.rotate(toVanilla(rotation));
+        return state.createCraftBlockData();
+    }
+
     /**
      * Unfreezes the given registry
      * @param registry The registry to unfreeze

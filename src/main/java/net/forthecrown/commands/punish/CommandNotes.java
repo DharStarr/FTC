@@ -14,9 +14,9 @@ import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.core.admin.Punishments;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 
 import java.util.List;
 

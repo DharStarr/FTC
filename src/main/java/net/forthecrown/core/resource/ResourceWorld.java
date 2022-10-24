@@ -63,7 +63,7 @@ import static net.forthecrown.core.config.ResourceWorldConfig.*;
 
 @Getter
 public class ResourceWorld implements DayChangeListener {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     private static final ResourceWorld INSTANCE = new ResourceWorld();
 
@@ -162,7 +162,7 @@ public class ResourceWorld implements DayChangeListener {
         if (resetStart == null) {
             LOGGER.warn("resetStart message is null, cannot announce");
         } else {
-            Crown.getAnnouncer().announce(resetStart);
+            Announcer.get().announce(resetStart);
         }
 
         findSeed().whenComplete((seed, throwable) -> {
@@ -174,7 +174,7 @@ public class ResourceWorld implements DayChangeListener {
                 return;
             }
 
-            Bukkit.getScheduler().runTask(Crown.plugin(), () -> {
+            Bukkit.getScheduler().runTask(FTC.getPlugin(), () -> {
                 // Re-create world
                 WorldReCreator creator = WorldReCreator.of(original)
                         .seed(seed)
@@ -359,7 +359,7 @@ public class ResourceWorld implements DayChangeListener {
         if (resetEnd == null) {
             LOGGER.warn("resetEnd message is null, cannot announce opening");
         } else {
-            Crown.getAnnouncer().announce(resetEnd);
+            Announcer.get().announce(resetEnd);
         }
 
         setGatesOpen(true);
@@ -401,7 +401,7 @@ public class ResourceWorld implements DayChangeListener {
             return;
         }
 
-        if (!Time.isPast(Vars.rwResetInterval + lastReset)) {
+        if (!Time.isPast(resetInterval + lastReset)) {
             return;
         }
 

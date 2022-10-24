@@ -1,5 +1,6 @@
 package net.forthecrown.commands.click;
 
+import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -33,7 +34,7 @@ public final class ClickableTexts {
     }
 
     public static void execute(User user, String args) throws CommandSyntaxException {
-        StringReader reader = new StringReader(Util.isNullOrBlank(args) ? "" : args);
+        StringReader reader = new StringReader(Strings.isNullOrEmpty(args) ? "" : args);
         long initialID = Long.valueOf(reader.readString(), RADIX);
         reader.skipWhitespace();
 

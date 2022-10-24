@@ -1,12 +1,11 @@
 package net.forthecrown.dungeons.boss;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.inventory.ExtendedItems;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.math.WorldBounds3i;
 import net.minecraft.util.Mth;
-import org.apache.commons.lang.Validate;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -27,9 +26,7 @@ public record BossContext(float modifier, List<Player> players) {
         // gear
 
         Collection<Player> players = room.getPlayers();
-        players.removeIf(player -> player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR);
-
-        Validate.isTrue(!players.isEmpty(), "Cannot spawn boss with no 'acceptable' players, all players must be in survival");
+        players.removeIf(player -> player.getGameMode() == GameMode.SPECTATOR);
 
         float armorAmount = 0;
         float enchants = 0;
@@ -96,7 +93,7 @@ public record BossContext(float modifier, List<Player> players) {
             modifier = MIN_MODIFIER;
         }
 
-        return new BossContext(Mth.clamp(modifier, MIN_MODIFIER, Vars.maxBossDifficulty), new ObjectArrayList<>(players));
+        return new BossContext(Mth.clamp(modifier, MIN_MODIFIER, GeneralConfig.maxBossDifficulty), new ObjectArrayList<>(players));
     }
 
     private static int getRank(ItemStack s) {

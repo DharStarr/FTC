@@ -8,7 +8,6 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.Mute;
 import net.forthecrown.core.admin.Punishments;
@@ -16,7 +15,7 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.royalgrenadier.types.selector.EntityArgumentImpl;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
@@ -24,7 +23,7 @@ import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
-import static net.forthecrown.text.Messages.PAY_BLOCKED;
+import static net.forthecrown.core.Messages.PAY_BLOCKED;
 
 public class CommandPay extends FtcCommand {
 
@@ -93,7 +92,7 @@ public class CommandPay extends FtcCommand {
                 .then(argument("players", Arguments.USERS)
 
                         // /pay <user> <amount>
-                      .then(argument("amount", IntegerArgumentType.integer(1, Vars.maxMoneyAmount))
+                      .then(argument("amount", IntegerArgumentType.integer(1))
 
                               // Suggest fixed rhine amount and/or
                               // the sender's balance amount

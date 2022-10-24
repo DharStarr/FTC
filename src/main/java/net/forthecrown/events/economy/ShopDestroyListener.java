@@ -1,11 +1,11 @@
 package net.forthecrown.events.economy;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
-import net.forthecrown.core.Main;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
+import net.forthecrown.core.Messages;
 import net.forthecrown.utils.Tasks;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,7 +21,7 @@ public class ShopDestroyListener implements Listener {
             return;
         }
 
-        SignShop shop = Main.getEconomy()
+        SignShop shop = Economy.get()
                 .getShops()
                 .getShop(event.getBlock());
 

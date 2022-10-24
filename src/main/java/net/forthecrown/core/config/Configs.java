@@ -42,8 +42,8 @@ public final class Configs {
         manager.registerConfig(EndConfig.class);
         manager.registerConfig(ResourceWorldConfig.class);
         manager.registerConfig(GeneralConfig.class);
-
-        manager.load();
+        manager.registerConfig(JoinInfo.class);
+        manager.registerConfig(ServerRules.class);
 
         AutoSave.get().addCallback(ConfigManager.get()::save);
     }

@@ -4,17 +4,17 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketDisplay;
 import net.forthecrown.economy.market.MarketShop;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.TimeArgument;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.kyori.adventure.text.Component;
 
@@ -128,7 +128,7 @@ public class CommandMarketWarning extends FtcCommand {
             @Override
             public MarketShop get(CommandContext<CommandSource> c, String argName) throws CommandSyntaxException {
                 User user = Arguments.getUser(c, argName);
-                MarketShop shop = Crown.getEconomy().getMarkets().get(user.getUniqueId());
+                MarketShop shop = Economy.get().getMarkets().get(user.getUniqueId());
 
                 if (shop == null) {
                     throw Exceptions.noShopOwned(user);

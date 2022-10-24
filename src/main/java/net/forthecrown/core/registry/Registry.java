@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static net.forthecrown.core.registry.Keys.VALID_KEY_REGEX;
 
@@ -299,7 +300,7 @@ public class Registry<V> implements Iterable<V> {
             }
         }
 
-        // No non-null entries -> ID array size
+        // No non-null entries -> ID = array size
         return byId.length;
     }
 
@@ -743,6 +744,14 @@ public class Registry<V> implements Iterable<V> {
      */
     public @NotNull ObjectCollection<Holder<V>> entries() {
         return ObjectCollections.unmodifiable(byKey.values());
+    }
+
+    /**
+     * Creates a stream of all holders in this registry
+     * @return The holder stream
+     */
+    public Stream<Holder<V>> stream() {
+        return byKey.values().stream();
     }
 
     /**

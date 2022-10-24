@@ -2,7 +2,7 @@ package net.forthecrown.core.admin;
 
 import net.forthecrown.core.FtcDiscord;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;

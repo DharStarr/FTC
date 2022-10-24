@@ -1,10 +1,11 @@
 package net.forthecrown.core.admin;
 
 import net.forthecrown.core.*;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.format.PeriodFormat;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.PeriodFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Util;
 import net.kyori.adventure.audience.Audience;
@@ -126,7 +127,7 @@ public final class Punishments {
 
         var lengthString = length == INDEFINITE_EXPIRY ? "Eternal" : PeriodFormat.of(length).toString();
 
-        Crown.logger().info("{} punished {} with {}, reason: {}, length: {}",
+        FTC.getLogger().info("{} punished {} with {}, reason: {}, length: {}",
                 source.textName(), target.getName(),
                 type.name().toLowerCase(),
                 reason,
@@ -190,7 +191,7 @@ public final class Punishments {
     private static void _announce(CommandSource source, Component text) {
         // If punishments should be announce to all, then announce them
         // to all, otherwise send them to staff chat only
-        if (!StaffChat.isVanished(source) && Vars.announcePunishments) {
+        if (!StaffChat.isVanished(source) && GeneralConfig.announcePunishments) {
             source.sendMessage(text);
 
             Component formatted = StaffChat.format(
@@ -201,7 +202,7 @@ public final class Punishments {
                             .build()
             );
 
-            Crown.getAnnouncer().announce(formatted);
+            Announcer.get().announce(formatted);
             return;
         }
 

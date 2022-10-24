@@ -21,7 +21,7 @@ import net.forthecrown.commands.tpa.*;
 import net.forthecrown.commands.usables.InteractableCommands;
 import net.forthecrown.commands.usables.UseCmdCommand;
 import net.forthecrown.commands.user.UserCommands;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.user.data.RankTitle;
 
@@ -38,7 +38,7 @@ public final class Commands {
 
     //Command loading
     public static void init() {
-        if (Crown.inDebugMode()) {
+        if (FTC.inDebugMode()) {
             TestCommands.createCommands();
         }
 
@@ -60,7 +60,6 @@ public final class Commands {
         new CommandStaffChat();
         new CommandResourceWorld();
         new CommandHologram();
-        new CommandVar();
         new CommandGift();
         new CommandSudo();
         new CommandSetSpawn();
@@ -175,7 +174,6 @@ public final class Commands {
         new CommandHomePole();
         new CommandSetHomeRegion();
         new CommandAddPole();
-        new CommandCancelInvite();
         new CommandListRegions();
         new CommandRandomRegion();
         new CommandInvite();

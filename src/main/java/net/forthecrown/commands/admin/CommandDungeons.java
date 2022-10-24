@@ -2,7 +2,7 @@ package net.forthecrown.commands.admin;
 
 import net.forthecrown.commands.arguments.RegistryArguments;
 import net.forthecrown.core.registry.Holder;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;

@@ -1,6 +1,6 @@
 package net.forthecrown.events.player;
 
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.user.packet.PacketCall;
 import net.forthecrown.user.packet.PacketHandler;
 import net.forthecrown.user.packet.PacketListener;
@@ -12,7 +12,7 @@ import java.util.ListIterator;
 import java.util.UUID;
 
 public class PlayerPacketListener implements PacketListener {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     @PacketHandler(ignoreCancelled = true)
     public void onGameModePacket(ClientboundPlayerInfoPacket packet, PacketCall call) {

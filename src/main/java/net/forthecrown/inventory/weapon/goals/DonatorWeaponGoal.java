@@ -1,12 +1,13 @@
 package net.forthecrown.inventory.weapon.goals;
 
 import lombok.Getter;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.RankTier;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class DonatorWeaponGoal implements WeaponGoal {
@@ -17,7 +18,7 @@ public class DonatorWeaponGoal implements WeaponGoal {
 
     @Override
     public boolean test(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
+        if (!(event.getDamager() instanceof Player player)) {
             return false;
         }
 
@@ -28,11 +29,12 @@ public class DonatorWeaponGoal implements WeaponGoal {
 
     @Override
     public Component loreDisplay() {
-        return Component.text("Bought Tier-1 Donator ").append(Messages.HEART);
+        return Component.text("Bought Tier-1 Donator ")
+                .append(Messages.HEART);
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "donator";
     }
 }

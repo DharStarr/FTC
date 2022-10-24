@@ -7,9 +7,11 @@ import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.regions.Region;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.math.Vectors;
+import net.minecraft.SharedConstants;
 import org.apache.commons.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.AttributeInstance;
@@ -97,7 +99,7 @@ public final class Util {
         try {
             runnable.run();
         } catch (Throwable e) {
-            Crown.logger().error("Error while running safeRunnable", e);
+            FTC.getLogger().error("Error while running safeRunnable", e);
         }
     }
 
@@ -157,5 +159,13 @@ public final class Util {
         }
 
         return result;
+    }
+
+    public static int getDataVersion() {
+        return SharedConstants.getCurrentVersion().getWorldVersion();
+    }
+
+    public static boolean isPluginEnabled(String s) {
+        return Bukkit.getPluginManager().isPluginEnabled(s);
     }
 }

@@ -4,8 +4,8 @@ import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.AfkKicker;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.*;
 import net.forthecrown.user.MarriageMessage;
@@ -13,11 +13,13 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.Cooldown;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,10 +44,10 @@ public class ChatListener implements Listener {
         onAsyncChatDecorate(event);
     }
 
-
-
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerChat(AsyncChatEvent event) {
+        event.setCancelled(true);
+
         Player player = event.getPlayer();
         User user = Users.get(player);
 
@@ -57,8 +59,6 @@ public class ChatListener implements Listener {
         // then if mute == hard, report to eaves dropper and cancel event
         if ((mute = BannedWords.checkAndWarn(player, rendered) ? Mute.HARD : mute) == Mute.HARD) {
             EavesDropper.reportChat(rendered, mute);
-
-            event.setCancelled(true);
             return;
         }
 
@@ -66,23 +66,18 @@ public class ChatListener implements Listener {
         // then don't send message to chat, just to staff
         if (StaffChat.toggledPlayers.contains(player.getUniqueId())) {
             StaffChat.send(user.getCommandSource(null), event.message(), false);
-
-            event.setCancelled(true);
             return;
         }
 
         // If vanished, don't say nuthin
         if (user.get(Properties.VANISHED)) {
             user.sendMessage(Messages.CHAT_NO_SPEAK_VANISH);
-
-            event.setCancelled(true);
             return;
         }
 
         // If marriage chat enabled
         if (user.get(Properties.MARRIAGE_CHAT)) {
             var spouse = user.getInteractions().spouseUser();
-            event.setCancelled(true);
 
             // Ensure spouse exists and is online
             if (spouse == null || !spouse.isOnline()) {
@@ -97,6 +92,7 @@ public class ChatListener implements Listener {
                     Text.toString(event.originalMessage()),
                     true
             );
+
             return;
         }
 
@@ -117,6 +113,25 @@ public class ChatListener implements Listener {
             // If the message sender is soft-muted, then only other
             // soft muted players may see the message
             return finalMute == Mute.SOFT && Punishments.muteStatus(viewer) != Mute.SOFT;
+        });
+
+        AfkKicker.addOrDelay(event.getPlayer().getUniqueId());
+        AfkListener.checkUnafk(event);
+
+        handleChat(event);
+    }
+
+    private void handleChat(AsyncChatEvent event) {
+        event.viewers().forEach(audience -> {
+            var message = event.renderer()
+                    .render(
+                            event.getPlayer(),
+                            event.getPlayer().displayName(),
+                            event.message(),
+                            audience
+                    );
+
+            audience.sendMessage(event.getPlayer(), message);
         });
     }
 

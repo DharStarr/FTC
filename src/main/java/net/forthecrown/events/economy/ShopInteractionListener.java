@@ -1,6 +1,6 @@
 package net.forthecrown.events.economy;
 
-import net.forthecrown.core.Main;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.shops.ShopManager;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
@@ -38,7 +38,7 @@ public class ShopInteractionListener implements Listener {
             return;
         }
 
-        ShopManager manager = Main.getEconomy().getShops();
+        ShopManager manager = Economy.get().getShops();
         SignShop shop = manager.getShop(event.getClickedBlock());
 
         //Handle interaction between player and shop

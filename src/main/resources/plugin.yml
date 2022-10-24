@@ -2,9 +2,11 @@ name: ForTheCrown
 version: '${version}'
 main: net.forthecrown.core.Main
 api-version: 1.19
-loadbefore: [ OpenInv, GriefPrevention, PopulationDensity ]
-depend: [ RoyalGrenadier, WorldGuard, LuckPerms, dynmap, CoreProtect, AncientGates, DiscordSRV ]
+loadbefore: [ OpenInv, GriefPrevention ]
+depend: [ RoyalGrenadier, WorldGuard, LuckPerms, dynmap, AncientGates, DiscordSRV ]
+softdepend: [ VotingPlugin ]
 authors: [ Julie, Wout ]
+prefix: 'FTC'
 
 buildTime: '${buildDate}'
 buildID: '${buildID}'

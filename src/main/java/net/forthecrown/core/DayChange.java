@@ -1,20 +1,22 @@
 package net.forthecrown.core;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import lombok.Getter;
-import net.forthecrown.text.format.PeriodFormat;
+import net.forthecrown.utils.text.format.PeriodFormat;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjuster;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import static java.time.temporal.ChronoField.*;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 /**
  * DayUpdate listens to a change in the day.
@@ -25,9 +27,21 @@ import java.util.concurrent.TimeUnit;
  * </p>
  */
 public class DayChange {
-    private static final Logger LOGGER = Crown.logger();
+    /* ----------------------------- CONSTANTS ------------------------------ */
+
+    private static final Logger LOGGER = FTC.getLogger();
 
     private static final DayChange INSTANCE = new DayChange();
+
+    public static final TemporalAdjuster NEXT_DAY = temporal -> {
+        return temporal.plus(1, DAYS)
+                .with(HOUR_OF_DAY, 0)
+                .with(MINUTE_OF_HOUR, 0)
+                .with(SECOND_OF_MINUTE, 0)
+                .with(MILLI_OF_SECOND, 1);
+    };
+
+    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
     @Getter
     private final List<DayChangeListener> listeners = new ArrayList<>();
@@ -77,13 +91,10 @@ public class DayChange {
         // Configure calendar to be at the start of the next day
         // So we can run day update exactly on time. As always,
         // there's probably a better way of doing this, but IDK lol
-        ZonedDateTime time = ZonedDateTime.now()
-                .plusDays(1)
-                .withHour(0)
-                .withMinute(0)
-                .withSecond(1);
+        ZonedDateTime time = ZonedDateTime.now();
+        time = time.with(NEXT_DAY);
 
-        return time.toInstant().toEpochMilli();
+        return Time.toTimestamp(time);
     }
 
     public void addListener(DayChangeListener runnable) {

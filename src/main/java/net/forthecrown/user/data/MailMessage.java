@@ -76,7 +76,7 @@ public class MailMessage implements JsonSerializable {
             json.add("read", true);
         }
 
-        if(getSender() != null) {
+        if (getSender() != null) {
             json.addUUID("sender", getSender());
         }
 

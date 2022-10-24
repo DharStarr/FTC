@@ -1,6 +1,7 @@
 package net.forthecrown.economy.shops;
 
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketShop;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.math.WorldVec3i;
@@ -37,7 +38,7 @@ public final class SignShops {
      * Also, the key the sign's data is saved under in the {@link org.bukkit.block.Sign}'s
      * {@link org.bukkit.persistence.PersistentDataContainer}
      */
-    public static final NamespacedKey SHOP_KEY = new NamespacedKey(Crown.plugin(), "signshop");
+    public static final NamespacedKey SHOP_KEY = new NamespacedKey(FTC.getPlugin(), "signshop");
 
     /**
      * The free item slot in the initial item
@@ -96,7 +97,7 @@ public final class SignShops {
      * @return Whether the block is a shop or not
      */
     public static boolean isShop(Block block) {
-        if(block == null) {
+        if (block == null) {
             return false;
         }
 
@@ -137,7 +138,7 @@ public final class SignShops {
         // Get the shop's position and try to
         // find a market that overlaps that area
         WorldVec3i vec = shop.getPosition();
-        MarketShop s = Crown.getEconomy()
+        MarketShop s = Economy.get()
                 .getMarkets()
                 .get(vec);
 

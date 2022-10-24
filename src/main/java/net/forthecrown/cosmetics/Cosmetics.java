@@ -1,6 +1,6 @@
 package net.forthecrown.cosmetics;
 
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.cosmetics.arrows.ArrowEffect;
 import net.forthecrown.cosmetics.arrows.ArrowEffects;
@@ -19,17 +19,17 @@ public final class Cosmetics {
     /**
      *
      */
-    public static final CosmeticType<ArrowEffect>   ARROWS  = new CosmeticType<>("arrow_effects",  () -> Vars.effectCost_arrow);
+    public static final CosmeticType<ArrowEffect>   ARROWS  = new CosmeticType<>("arrow_effects",  () -> GeneralConfig.effectCost_arrow);
 
     /**
      *
      */
-    public static final CosmeticType<DeathEffect>   DEATH   = new CosmeticType<>("death_effects",  () -> Vars.effectCost_death);
+    public static final CosmeticType<DeathEffect>   DEATH   = new CosmeticType<>("death_effects",  () -> GeneralConfig.effectCost_death);
 
     /**
      *
      */
-    public static final CosmeticType<TravelEffect>  TRAVEL  = new CosmeticType<>("travel_effects", () -> Vars.effectCost_travel);
+    public static final CosmeticType<TravelEffect>  TRAVEL  = new CosmeticType<>("travel_effects", () -> GeneralConfig.effectCost_travel);
 
     /**
      *

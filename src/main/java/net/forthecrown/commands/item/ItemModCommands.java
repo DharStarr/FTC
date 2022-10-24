@@ -32,7 +32,7 @@ public class ItemModCommands extends CmdUtil {
         @Override
         protected void createCommand(BrigadierCommand command) {
             for (var node: NODES) {
-                var literal = literal(node.getName());
+                var literal = literal(node.getArgumentName());
 
                 node.create(literal);
                 node.register();

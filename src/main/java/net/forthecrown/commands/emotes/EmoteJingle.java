@@ -14,7 +14,7 @@ import org.bukkit.SoundCategory;
 import java.time.Month;
 import java.time.ZonedDateTime;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 import static net.forthecrown.commands.emotes.EmoteJingle.JingleNote.BASS;
 import static net.forthecrown.commands.emotes.EmoteJingle.JingleNote.SNARE;
 

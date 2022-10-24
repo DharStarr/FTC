@@ -1,7 +1,7 @@
 package net.forthecrown.utils.io;
 
 import com.google.gson.JsonObject;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import org.apache.logging.log4j.Logger;
@@ -14,14 +14,14 @@ import java.util.function.Consumer;
 public final class SerializationHelper {
     private SerializationHelper() {}
 
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
-    private static final IoReader<CompoundTag> TAG_READER = file -> NbtIo.readCompressed(Files.newInputStream(file));
-    private static final IoReader<JsonObject> JSON_READER = JsonUtils::readFileObject;
+    public static final IoReader<CompoundTag> TAG_READER = file -> NbtIo.readCompressed(Files.newInputStream(file));
+    public static final IoReader<JsonObject> JSON_READER = JsonUtils::readFileObject;
 
-    public static <T> void readFile(Path file, IoReader<T> reader, Consumer<T> loadCallback) {
+    public static <T> boolean readFile(Path file, IoReader<T> reader, Consumer<T> loadCallback) {
         if (!Files.exists(file)) {
-            return;
+            return false;
         }
 
         try {
@@ -29,15 +29,18 @@ public final class SerializationHelper {
             loadCallback.accept(t);
         } catch (IOException e) {
             LOGGER.error("Error writing file: '" + file + "'", e);
+            return false;
         }
+
+        return true;
     }
 
-    public static void readTagFile(Path file, Consumer<CompoundTag> loadCallback) {
-        readFile(file, TAG_READER, loadCallback);
+    public static boolean readTagFile(Path file, Consumer<CompoundTag> loadCallback) {
+        return readFile(file, TAG_READER, loadCallback);
     }
 
-    public static void readJsonFile(Path file, Consumer<JsonWrapper> loadCallback) {
-        readFile(file, JSON_READER, object -> loadCallback.accept(JsonWrapper.wrap(object)));
+    public static boolean readJsonFile(Path file, Consumer<JsonWrapper> loadCallback) {
+        return readFile(file, JSON_READER, object -> loadCallback.accept(JsonWrapper.wrap(object)));
     }
 
     public static void writeFile(Path file, IoWriter writer) {

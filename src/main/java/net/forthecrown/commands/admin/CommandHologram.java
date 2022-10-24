@@ -2,9 +2,9 @@ package net.forthecrown.commands.admin;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
@@ -29,7 +29,7 @@ public class CommandHologram extends FtcCommand {
         register();
     }
 
-    public static final NamespacedKey HOLOGRAM_KEY = new NamespacedKey(Crown.plugin(), "hologram");
+    public static final NamespacedKey HOLOGRAM_KEY = new NamespacedKey(FTC.getPlugin(), "hologram");
 
     /*
      * ----------------------------------------

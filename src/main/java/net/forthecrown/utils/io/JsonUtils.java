@@ -11,7 +11,6 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.server.players.BanListEntry;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -27,6 +26,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -39,7 +39,7 @@ import java.util.function.Function;
 public final class JsonUtils {
     private JsonUtils() {}
 
-    static final SimpleDateFormat DATE_FORMAT = BanListEntry.DATE_FORMAT;
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
     private static final DateFormat LEGACY_FORMAT = DateFormat.getDateInstance();
 
     private static final BigInteger B = BigInteger.ONE.shiftLeft(64); // 2^64

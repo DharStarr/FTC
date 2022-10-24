@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class StepResult<T extends SectionGenerator<T>> {
+public class StepResult {
     /* ----------------------------- CONSTANTS ------------------------------ */
     /** Result code indicating that the result is a success */
     public static final byte SUCCESS = 0;
@@ -30,7 +30,7 @@ public class StepResult<T extends SectionGenerator<T>> {
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
     /** The created child sections */
-    final List<T> sections;
+    final List<PieceGenerator> sections;
 
     /** The generated room */
     final DungeonRoom room;
@@ -51,14 +51,14 @@ public class StepResult<T extends SectionGenerator<T>> {
 
     /* ----------------------------- STATIC CONSTRUCTORS ------------------------------ */
 
-    public static <T extends SectionGenerator<T>> StepResult<T> success(List<T> sections,
-                                                                        DungeonRoom room
+    public static StepResult success(List<PieceGenerator> sections,
+                                     DungeonRoom room
     ) {
-        return new StepResult<>(sections, room, SUCCESS);
+        return new StepResult(sections, room, SUCCESS);
     }
 
-    public static <T extends SectionGenerator<T>> StepResult<T> failure(byte code) {
-        return new StepResult<T>(Collections.emptyList(), null, code);
+    public static StepResult failure(byte code) {
+        return new StepResult(Collections.emptyList(), null, code);
     }
 
     /* ----------------------------- METHODS ------------------------------ */

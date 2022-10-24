@@ -5,12 +5,12 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Data;
 import lombok.Getter;
-import net.forthecrown.text.Messages;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.holidays.RewardRange;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.io.TagUtil;
@@ -66,7 +66,7 @@ public class BossLootBox {
         }
 
         float lastMod = list.removeFloat(0) - BossContext.MIN_MODIFIER;
-        float chance = lastMod / (Vars.maxBossDifficulty - BossContext.MIN_MODIFIER);
+        float chance = lastMod / (GeneralConfig.maxBossDifficulty - BossContext.MIN_MODIFIER);
 
         int rhines = getChanced(getReward().getRhines(), chance, Util.RANDOM);
         int gems = getChanced(getReward().getGems(), chance, Util.RANDOM);

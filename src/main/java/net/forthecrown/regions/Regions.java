@@ -2,13 +2,13 @@ package net.forthecrown.regions;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.core.Worlds;
 import net.forthecrown.structure.*;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.math.Bounds3i;
-import net.forthecrown.utils.math.MathUtil;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.math.WorldVec3i;
 import net.kyori.adventure.text.Component;
@@ -19,6 +19,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
+import org.spongepowered.math.vector.Vector2d;
 import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -35,9 +36,6 @@ public final class Regions {
 
     /** Half of a region's width */
     public static final int HALF_REGION_SIZE = REGION_SIZE / 2;
-
-    /** The max distance a player can be be to use a pole */
-    public static final float DISTANCE_TO_POLE = 3f;
 
     /** The default name of the server's spawn region */
     public static final String DEFAULT_SPAWN_NAME = "Hazelguard";
@@ -80,7 +78,7 @@ public final class Regions {
      * @return The bounding box
      */
     public static Bounds3i poleBoundingBox(PopulationRegion region) {
-        WorldVec3i p = bottomOfPole(get().getWorld(), region.getPolePosition());
+        WorldVec3i p = bottomOfPole(getWorld(), region.getPolePosition());
         Vector3i size = poleSize();
         int halfX = size.x() / 2;
         int halfZ = size.z() / 2;
@@ -134,10 +132,21 @@ public final class Regions {
      */
     public static boolean isValidPolePosition(PopulationRegion region, Vector2i vec) {
         var size = poleSize();
-        Bounds3i valid = region.getRegion().contract(Math.max(size.x(), size.z()));
+        int sizeVal = Math.max(size.x(), size.z());
 
-        return MathUtil.inRange(vec.x(), valid.minX(), valid.maxX()) &&
-                MathUtil.inRange(vec.y(), valid.minZ(), valid.maxZ());
+        var min = region.getPos().toAbsolute()
+                .add(sizeVal, sizeVal);
+
+        var max = min.add(REGION_SIZE, REGION_SIZE)
+                .sub(sizeVal, sizeVal);
+
+        // Ensure X in bounds
+        return vec.x() >= min.x()
+                && vec.x() <= max.x()
+
+                // Ensure Y in bounds
+                && vec.y() >= min.y()
+                && vec.y() <= max.y();
     }
 
     /**
@@ -146,7 +155,7 @@ public final class Regions {
      * @throws CommandSyntaxException If the world is not the region world
      */
     public static void validateWorld(World world) throws CommandSyntaxException {
-        if (!world.equals(get().getWorld())) {
+        if (!world.equals(getWorld())) {
             throw Exceptions.REGIONS_WRONG_WORLD;
         }
     }
@@ -166,14 +175,21 @@ public final class Regions {
     /**
      * Checks if the given user is within a valid distance to the
      * given pole position
+     * <p>
+     * Note: This distance check only occurs in the second dimension,
+     * vertical height is not checked.
      *
      * @param pole The pole's position
      * @param user The user
-     * @return True, if the user is closer than {@link Regions#DISTANCE_TO_POLE} to the pole.
+     * @return True, if the user is close enough to the pole to use it
      */
     public static boolean isCloseToPole(Vector2i pole, User user) {
-        Vector2i vec2 = user.get2DLocation();
-        return vec2.distance(pole) <= DISTANCE_TO_POLE;
+        var loc = user.getLocation();
+        Vector2d userPos = Vector2d.from(loc.getX(), loc.getZ());
+        Vector2d polePos = pole.toDouble().add(0.5D, 0.5D);
+
+        double distance = userPos.distance(polePos);
+        return distance <= (poleSize().length() / 2);
     }
 
     /**
@@ -190,11 +206,21 @@ public final class Regions {
         }
     }
 
+    /**
+     * Gets the world the region pole system operates in
+     * @return The region world
+     */
+    public static World getWorld() {
+        return Worlds.overworld();
+    }
+
+    /* ----------------------------- POLE GENERATION ------------------------------ */
+
     public static void placePole(PopulationRegion region) {
         var structure = Regions.getRegionPole();
 
         if (structure == null) {
-            Crown.logger().warn("No pole structure found in registry! Cannot place!");
+            FTC.getLogger().warn("No pole structure found in registry! Cannot place!");
             return;
         }
 
@@ -202,7 +228,7 @@ public final class Regions {
                 .placeEntities(true)
                 .addRotationProcessor()
                 .addNonNullProcessor()
-                .world(get().getWorld())
+                .world(getWorld())
 
                 .pos(region.getPoleBounds().min())
 

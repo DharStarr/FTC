@@ -1,14 +1,14 @@
-package net.forthecrown.vars.types;
+package net.forthecrown.utils.io.types;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.forthecrown.grenadier.types.TimeArgument;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
-public class TimeIntervalVarType implements SerializerParser<Long> {
+public class PeriodSerializerParser implements SerializerParser<Long> {
     @Override
     public @NotNull String asString(@NotNull Long value) {
         return value.toString();
@@ -21,12 +21,12 @@ public class TimeIntervalVarType implements SerializerParser<Long> {
 
     @Override
     public <V> V serialize(DynamicOps<V> ops, Long value) {
-        return VarTypes.LONG.serialize(ops, value);
+        return SerializerParsers.LONG.serialize(ops, value);
     }
 
     @Override
     public <V> DataResult<Long> deserialize(DynamicOps<V> ops, V element) {
-        return VarTypes.LONG.deserialize(ops, element);
+        return SerializerParsers.LONG.deserialize(ops, element);
     }
 
     @Override

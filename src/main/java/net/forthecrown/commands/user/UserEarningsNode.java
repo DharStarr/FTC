@@ -3,7 +3,7 @@ package net.forthecrown.commands.user;
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import net.forthecrown.text.TextJoiner;
+import net.forthecrown.utils.text.TextJoiner;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
@@ -14,7 +14,7 @@ import org.bukkit.Material;
 
 import java.util.Locale;
 
-import static net.forthecrown.text.Text.format;
+import static net.forthecrown.utils.text.Text.format;
 
 class UserEarningsNode extends UserCommandNode {
     public UserEarningsNode() {

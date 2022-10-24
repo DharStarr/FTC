@@ -1,15 +1,16 @@
 package net.forthecrown.commands.markets;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.market.Markets;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 
 public class CommandTransferShop extends FtcCommand {
@@ -60,7 +61,7 @@ public class CommandTransferShop extends FtcCommand {
 
                                     check(user, target);
 
-                                    MarketManager markets = Crown.getEconomy().getMarkets();
+                                    MarketManager markets = Economy.get().getMarkets();
                                     MarketShop shop = markets.get(user.getUniqueId());
 
                                     shop.transfer(target);
@@ -78,17 +79,17 @@ public class CommandTransferShop extends FtcCommand {
             throw Exceptions.TRANSFER_SELF;
         }
 
-        if (!MarketManager.ownsShop(user)) {
+        if (!Markets.ownsShop(user)) {
             throw Exceptions.NO_SHOP_OWNED;
         }
 
-        if (MarketManager.ownsShop(target)) {
+        if (Markets.ownsShop(target)) {
             throw Exceptions.marketTargetHasShop(target);
         }
 
-        MarketManager.checkStatusChange(user.getMarketData());
+        Markets.checkStatusChange(user.getMarketData());
 
-        if (!MarketManager.canChangeStatus(target)) {
+        if (!Markets.canChangeStatus(target)) {
             throw Exceptions.marketTargetStatus(target);
         }
     }

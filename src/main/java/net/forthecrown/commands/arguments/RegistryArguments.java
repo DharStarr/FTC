@@ -7,13 +7,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.admin.JailCell;
 import net.forthecrown.core.npc.SimpleNpc;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.dungeons.boss.KeyedBoss;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.sell.SellShopMenu;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.royalgrenadier.GrenadierUtils;
@@ -38,7 +38,7 @@ public class RegistryArguments<T> implements ArgumentType<Holder<T>>, VanillaMap
 
     public static final RegistryArguments<SimpleNpc> NPC = new RegistryArguments<>(Registries.NPCS, "NPC");
 
-    public static final RegistryArguments<SellShopMenu> SELLS_SHOP = new RegistryArguments<>(Crown.getEconomy().getSellShop().getMenus(), "Menu");
+    public static final RegistryArguments<SellShopMenu> SELLS_SHOP = new RegistryArguments<>(Economy.get().getSellShop().getMenus(), "Menu");
 
     public static final RegistryArguments<TimeField> TIME_FIELDS = new RegistryArguments<>(UserTimeTracker.TIME_FIELDS, "TimeStamp");
 

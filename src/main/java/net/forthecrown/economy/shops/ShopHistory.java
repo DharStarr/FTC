@@ -2,10 +2,10 @@ package net.forthecrown.economy.shops;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.format.page.PageEntryIterator;
-import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
 import net.forthecrown.utils.Time;
+import net.forthecrown.utils.io.TagUtil;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +62,7 @@ public class ShopHistory {
     }
 
     private boolean isTooOld(HistoryEntry entry) {
-        return Time.isPast(Vars.dataRetentionTime + entry.date());
+        return Time.isPast(GeneralConfig.dataRetentionTime + entry.date());
     }
 
     private void clearOld() {

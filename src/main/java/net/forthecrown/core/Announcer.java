@@ -2,14 +2,15 @@ package net.forthecrown.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import net.forthecrown.user.User;
+import lombok.Getter;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
+import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
-import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -23,14 +24,27 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class Announcer extends SerializableObject.Json {
+    private static final Announcer INSTANCE = new Announcer();
+
+    @Getter
     private final List<Component> announcements = new ArrayList<>();
+
     private BukkitTask broadcaster;
 
-    public Announcer(){
+    private Announcer() {
         super(PathUtil.pluginPath("announcer.json"));
+    }
 
-        reload();
-        Crown.logger().info("Announcer loaded");
+    public static Announcer get() {
+        return INSTANCE;
+    }
+
+    private static void init() {
+        get().reload();
+        get().start();
+
+        AutoSave.get()
+                .addCallback(get()::save);
     }
 
     protected void save(final JsonWrapper json) {
@@ -53,30 +67,6 @@ public class Announcer extends SerializableObject.Json {
     }
 
     /**
-     * Gets the string list of announcements used by the AutoAnnouncer
-     * @return The list of announcements
-     */
-    public List<Component> getAnnouncements() {
-        return announcements;
-    }
-
-    /**
-     * Adds an announcement
-     * @param announcement the announcement to add
-     */
-    public void add(Component announcement) {
-        announcements.add(announcement);
-    }
-
-    /**
-     * Removes an announcement
-     * @param acIndex The index of the announcement to remove
-     */
-    public void remove(int acIndex) {
-        announcements.remove(acIndex);
-    }
-
-    /**
      * Stops the AutoAnnouncer
      */
     public void stop() {
@@ -88,7 +78,7 @@ public class Announcer extends SerializableObject.Json {
      */
     public void start() {
         stop();
-        broadcaster = Tasks.runTimer(new BroadcastRunnable(), 20, Vars.broadcastDelay);
+        broadcaster = Tasks.runTimer(new BroadcastRunnable(), 20, GeneralConfig.broadcastDelay);
     }
 
     public void announce(ComponentLike announcement, @Nullable Predicate<Player> predicate) {
@@ -103,7 +93,7 @@ public class Announcer extends SerializableObject.Json {
 
     private Component formatMessage(ComponentLike message) {
         return Component.text()
-                .append(Crown.prefix())
+                .append(Messages.FTC_PREFIX)
                 .append(message)
                 .build();
     }
@@ -118,27 +108,26 @@ public class Announcer extends SerializableObject.Json {
         @Override
         public void run() {
             Component broadcast = Component.text()
-                    .append(Crown.prefix())
+                    .append(Messages.FTC_PREFIX)
                     .append(getAnnouncements().get(counter++))
                     .build();
 
-            for (User player : Users.getOnline()) {
-                // Don't broadcast info messages to people that don't want to
-                // see broadcasts
-                if (player.getProperties().get(Properties.IGNORING_ANNOUNCEMENTS)) {
-                    continue;
-                }
+            Users.getOnline()
+                    .stream()
 
-                player.sendMessage(broadcast);
+                    .filter(user -> !user.get(Properties.IGNORING_ANNOUNCEMENTS))
 
-                if (player.getWorld().equals(Worlds.resource())) {
-                    player.sendMessage(Component.text(
-                            "You're in the resource world! To get back to the normal " +
-                                    "survival world, do /warp portal.",
-                            NamedTextColor.GRAY
-                    ));
-                }
-            }
+                    .forEach(user -> {
+                        user.sendMessage(broadcast);
+
+                        if (user.getWorld().equals(Worlds.resource())) {
+                            user.sendMessage(Component.text(
+                                    "You're in the resource world! To get back to the normal " +
+                                            "survival world, do /warp portal.",
+                                    NamedTextColor.GRAY
+                            ));
+                        }
+                    });
 
             counter %= getAnnouncements().size();
         }

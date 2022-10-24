@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Vectors;
 import net.minecraft.nbt.CompoundTag;
@@ -69,7 +69,7 @@ public class BlockPalette {
                     var info = FunctionInfo.parse(origin, cmd);
                     structure.functions.add(info);
                 } catch (CommandSyntaxException exc) {
-                    Crown.logger().error("Couldn't parse function block at {}:",
+                    FTC.getLogger().error("Couldn't parse function block at {}:",
                             Vectors.from(b), exc
                     );
                 }

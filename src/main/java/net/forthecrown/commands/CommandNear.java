@@ -6,13 +6,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
@@ -39,7 +39,7 @@ public class CommandNear extends FtcCommand {
         command
                 .executes(c -> {
                     User user = getUserSender(c);
-                    return showNearby(user.getLocation(), Vars.nearRadius, c.getSource());
+                    return showNearby(user.getLocation(), GeneralConfig.nearRadius, c.getSource());
                 })
 
                 .then(argument("radius", IntegerArgumentType.integer(1, 100000))
@@ -57,7 +57,7 @@ public class CommandNear extends FtcCommand {
                         .executes(c -> {
                             User user = Arguments.getUser(c, "user");
 
-                            return showNearby(user.getLocation(), Vars.nearRadius, c.getSource());
+                            return showNearby(user.getLocation(), GeneralConfig.nearRadius, c.getSource());
                         })
 
                         .then(argument("radius", IntegerArgumentType.integer(1, 100000))

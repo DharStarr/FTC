@@ -1,8 +1,8 @@
 package net.forthecrown.core;
 
 import net.forthecrown.regions.PopulationRegion;
-import net.forthecrown.regions.RegionManager;
 import net.forthecrown.regions.RegionProperty;
+import net.forthecrown.regions.Regions;
 import org.dynmap.DynmapCommonAPI;
 import org.dynmap.DynmapCommonAPIListener;
 import org.dynmap.markers.Marker;
@@ -47,7 +47,7 @@ public class FtcDynmap extends DynmapCommonAPIListener {
     static MarkerIcon getOrCreate(String id) {
         MarkerIcon result = getMarkerAPI().getMarkerIcon(id);
 
-        return result != null ? result : getMarkerAPI().createMarkerIcon(id, id, Crown.plugin().getResource(id + ".png"));
+        return result != null ? result : getMarkerAPI().createMarkerIcon(id, id, FTC.getPlugin().getResource(id + ".png"));
     }
 
     /**
@@ -127,8 +127,7 @@ public class FtcDynmap extends DynmapCommonAPIListener {
         return getRegionPoleSet().createMarker(
                 data.getMarkerID(),
                 data.getName(),
-                RegionManager.get()
-                        .getWorld()
+                Regions.getWorld()
                         .getName(),
 
                 vec2.x() + 0.5D,

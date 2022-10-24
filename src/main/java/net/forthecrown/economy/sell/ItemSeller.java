@@ -6,14 +6,13 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.text.Messages;
-import net.forthecrown.core.Crown;
-import net.forthecrown.royalgrenadier.GrenadierUtils;
+import net.forthecrown.commands.manager.Exceptions;
+import net.forthecrown.core.Messages;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.user.User;
-import net.forthecrown.user.property.Properties;
 import net.forthecrown.user.data.UserShopData;
+import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.inventory.ItemStacks;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -27,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
  * sell shop: {@link #inventorySell(User, Material, ItemSellData)} and
  * {@link #itemPickup(User, ItemStack)}.
  * <p>
- * The primary logic is all ran in {@link #run()}
+ * The primary logic is all ran in {@link #run(boolean)}
  * @see ItemSell To see how the earnings this class gives
  *      and item removal quantity is calculated
  */
@@ -66,18 +65,21 @@ public final class ItemSeller {
      * <p>
      * First this calls {@link ItemSell#sell()} to get the result of
      * the selling, if that returns a failed result with 0 sold items,
-     * it sends the user the failure message with {@link #sendMessage(Component)}.
+     * it sends the user the failure message.
      * <p>
      * Otherwise, it gives the earned rhines to the user and also adds
      * the earned amount to the user's earnings list. After that
      * it sends the user the message telling them that they sold the items
      * and tests if the item has dropped price for them, if it has, it
      * tells the user as such.
+     *
+     * @param send True, to send the item 'You sold X for Y' message, false
+     *             otherwise
      */
-    public void run() {
+    public SellResult run(boolean send) {
         int beforePrice = sell.getItemData().calculatePrice(sell.getTotalEarned()) * sell.getScalar();
 
-        var result = sell.sell();
+        SellResult result = sell.sell();
 
         // If the amount is 0, that means
         // an exception was thrown before any
@@ -87,8 +89,9 @@ public final class ItemSeller {
             // Don't use Exceptions#handleSyntaxException, because
             // this might need to send the message to the actionbar
             // of the given seller instead
-            sendMessage(GrenadierUtils.formatCommandException(result.getFailure()));
-            return;
+
+            Exceptions.handleSyntaxException(user, result.getFailure());
+            return result;
         }
 
         int afterPrice = sell.getItemData().calculatePrice(sell.getTotalEarned()) * sell.getScalar();
@@ -100,12 +103,16 @@ public final class ItemSeller {
         user.getComponent(UserShopData.class)
                 .add(sell.getItemData().getMaterial(), result.getEarned());
 
-        sendMessage(Messages.soldItems(result, material));
+        if (send) {
+            user.sendMessage(Messages.soldItems(result, material));
+        }
 
         // If price dropped
         if (afterPrice < beforePrice) {
             user.sendMessage(Messages.priceDropped(material, beforePrice, afterPrice));
         }
+
+        return result;
     }
 
     void removeItems(SellResult result) {
@@ -132,21 +139,6 @@ public final class ItemSeller {
                 removed += i.getAmount();
                 i.setAmount(0);
             }
-        }
-    }
-
-    /**
-     * Sends the given text either to this seller's
-     * chat or action bar depending on the value of
-     * {@link #isAutoSell()}
-     *
-     * @param text The message to send
-     */
-    void sendMessage(Component text) {
-        if (isAutoSell()) {
-            user.sendActionBar(text);
-        } else {
-            user.sendMessage(text);
         }
     }
 
@@ -218,7 +210,7 @@ public final class ItemSeller {
      */
     public static ItemSeller itemPickup(User user, ItemStack item) {
         // Holy molly, that getter chain
-        var price = Crown.getEconomy()
+        var price = Economy.get()
                 .getSellShop()
                 .getPriceMap()
                 .get(item.getType());

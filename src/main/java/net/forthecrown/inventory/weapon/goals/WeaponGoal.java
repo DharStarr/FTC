@@ -1,8 +1,9 @@
 package net.forthecrown.inventory.weapon.goals;
 
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.kyori.adventure.text.Component;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A RoyalSword's goal, which is achieved through killing entities.
@@ -28,7 +29,7 @@ public interface WeaponGoal {
      * @return The amount to increase
      */
     default int getIncrementAmount(EntityDamageByEntityEvent event) {
-        return Vars.swordGoalGainPerKill;
+        return GeneralConfig.swordGoalGainPerKill;
     }
 
     /**
@@ -37,5 +38,5 @@ public interface WeaponGoal {
      */
     Component loreDisplay();
 
-    String getName();
+    @NotNull String getName();
 }

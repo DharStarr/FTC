@@ -2,8 +2,8 @@ package net.forthecrown.core.admin;
 
 import com.google.gson.JsonElement;
 import lombok.Data;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.*;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.kyori.adventure.text.Component;

@@ -22,6 +22,7 @@ class PermissionsUpdate extends DataUpdater {
 
         addGroupPerm(GROUP_TIER_2, CHAT_COLORS);
         addGroupPerm(GROUP_TIER_2, CMD_SUICIDE);
+        addGroupPerm(GROUP_TIER_2, CHAT_CLEAN_LINKS);
         addGroupPerm(GROUP_TIER_2, MAX_HOMES.getPermission(4));
 
         addGroupPerm(GROUP_TIER_3, CMD_BEEZOOKA);

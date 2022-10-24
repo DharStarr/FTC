@@ -2,8 +2,8 @@ package net.forthecrown.core.admin.ui;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserFormat;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -60,7 +60,10 @@ abstract class AdminUiPage implements MenuNode {
                                     .setName(punished.displayName().style(Text.NON_ITALIC));
 
                             var writer = TextWriters.loreWriter();
-                            UserFormat format = UserFormat.create(user).disableHover();
+                            UserFormat format = UserFormat.create(user)
+                                    .disableHover()
+                                    .with(UserFormat.ADMIN_VIEWER);
+
                             UserFormat.applyProfileStyle(writer);
                             format.format(writer);
 

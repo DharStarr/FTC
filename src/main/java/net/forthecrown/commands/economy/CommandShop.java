@@ -1,12 +1,12 @@
 package net.forthecrown.commands.economy;
 
 import net.forthecrown.commands.arguments.RegistryArguments;
-import net.forthecrown.core.registry.Holder;
-import net.forthecrown.text.Messages;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.registry.Holder;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.sell.SellShopMenu;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
 
 public class CommandShop extends FtcCommand {
 
@@ -34,7 +34,7 @@ public class CommandShop extends FtcCommand {
         command
                 .executes(c -> {
                     var user = getUserSender(c);
-                    Crown.getEconomy().getSellShop().getMainMenu().open(user);
+                    Economy.get().getSellShop().getMainMenu().open(user);
                     return 0;
                 })
 

@@ -7,7 +7,7 @@ import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.core.admin.PunishType;
 import net.forthecrown.core.admin.Punishments;
 import net.forthecrown.core.registry.Registries;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;

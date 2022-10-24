@@ -1,22 +1,16 @@
 package net.forthecrown.dungeons.boss.components;
 
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.dungeons.DungeonUtils;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.SingleEntityBoss;
-import net.forthecrown.vars.Var;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
 public class TargetUpdateComponent implements BossComponent<SingleEntityBoss> {
-    @Var
-    public static int bossTargetUpdateInterval = 40;
-
-    static {
-        Crown.getVars().register();
-    }
-
     private TargetUpdateComponent() {}
+
+    public static final int bossTargetUpdateInterval = 40;
 
     public static TargetUpdateComponent create() {
         return new TargetUpdateComponent();
@@ -38,6 +32,12 @@ public class TargetUpdateComponent implements BossComponent<SingleEntityBoss> {
         }
 
         Mob bossEntity = boss.getBossEntity();
+
+        if (bossEntity == null) {
+            FTC.getLogger().warn("Boss entity is null");
+            return;
+        }
+
         Player target = DungeonUtils.getOptimalTarget(bossEntity, boss.getRoom());
 
         // Change target only if found target is not already target

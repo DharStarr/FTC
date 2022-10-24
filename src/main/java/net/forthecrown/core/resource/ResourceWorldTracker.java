@@ -7,9 +7,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.AutoSave;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.config.ResourceWorldConfig;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.io.PathUtil;
@@ -26,7 +26,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ResourceWorldTracker implements SerializableObject {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     /** File format used by sections, custom */
     private static final String FORMAT_SUFFIX = ".non_natural";
@@ -199,7 +199,7 @@ public class ResourceWorldTracker implements SerializableObject {
 
         region.unloadTask = Tasks.runLaterAsync(
                 () -> unloadSection(pos),
-                Time.millisToTicks(Vars.rw_sectionRetentionTime)
+                Time.millisToTicks(ResourceWorldConfig.sectionRetentionTime)
         );
     }
 
@@ -246,7 +246,7 @@ public class ResourceWorldTracker implements SerializableObject {
         stream.close();
         output.close();
 
-        if (Crown.inDebugMode()) {
+        if (FTC.inDebugMode()) {
             LOGGER.info("Saved section {}", pos);
         }
     }

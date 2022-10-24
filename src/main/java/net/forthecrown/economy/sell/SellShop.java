@@ -2,7 +2,7 @@ package net.forthecrown.economy.sell;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.io.JsonWrapper;
@@ -16,14 +16,22 @@ import java.nio.file.Path;
 
 @RequiredArgsConstructor
 public class SellShop {
+    /** Registry of sell shop menus */
     @Getter
     private final Registry<SellShopMenu> menus = Registries.newRegistry();
 
+    /**
+     * Directory the sellshops are in, this directory
+     * must include the <code>shops.json</code> file
+     * from which the shop data is read
+     */
     private final Path directory;
 
+    /** Main sellshop menu */
     @Getter
     private Menu mainMenu;
 
+    /** Global item price map */
     @Getter
     private final ItemPriceMap priceMap = new ItemPriceMap();
 
@@ -48,7 +56,6 @@ public class SellShop {
             var menu = reader.read(this);
 
             priceMap.addAll(menu.getPriceMap());
-
             builder.add(reader.getSlot(), Menus.createOpenNode(menu.getInventory(), menu.getButton()));
 
             menus.register(name, menu);
@@ -71,7 +78,7 @@ public class SellShop {
         };
 
         for (var s: defaults) {
-            var input = Crown.plugin().getResource("sellshops/" + s);
+            var input = FTC.getPlugin().getResource("sellshops/" + s);
             Path path = directory.resolve(s);
 
             try {
@@ -82,7 +89,7 @@ public class SellShop {
                 var output = Files.newOutputStream(path);
                 output.write(input.readAllBytes());
             } catch (IOException e) {
-                Crown.logger().error("Couldn't save sellshop file defaults", e);
+                FTC.getLogger().error("Couldn't save sellshop file defaults", e);
             }
         }
 

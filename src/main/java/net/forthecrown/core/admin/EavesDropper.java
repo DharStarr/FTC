@@ -1,8 +1,8 @@
 package net.forthecrown.core.admin;
 
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.DirectMessage;
 import net.forthecrown.user.MarriageMessage;
 import net.forthecrown.user.Users;
@@ -16,13 +16,13 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 /**
  *
  */
 public class EavesDropper {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     public static void send(Component message, BoolProperty property, boolean log) {
         var formatted = edPrependPrefix(message);

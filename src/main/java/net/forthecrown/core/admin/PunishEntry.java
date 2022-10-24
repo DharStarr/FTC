@@ -64,7 +64,7 @@ public class PunishEntry implements JsonSerializable {
         }
 
         return Arrays.stream(current)
-                .filter(Objects::isNull)
+                .filter(Objects::nonNull)
                 .collect(ObjectImmutableList.toList());
     }
 

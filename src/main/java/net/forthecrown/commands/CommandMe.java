@@ -8,7 +8,7 @@ import net.forthecrown.core.admin.Mute;
 import net.forthecrown.core.admin.Punishments;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.Users;
 import net.kyori.adventure.text.Component;
 

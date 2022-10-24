@@ -7,8 +7,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import net.forthecrown.commands.manager.FtcSuggestions;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.Util;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  * {@link #onNameChange(UserLookupEntry, String)} and {@link #onNickChange(UserLookupEntry, String)}
  */
 public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray> {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     /**
      * Expected size of the 2 primary maps for tracking
@@ -114,7 +114,7 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
                     }
 
                     if(reader.getLastName() != null
-                            && Time.isPast(Vars.dataRetentionTime + reader.getLastNameChange())
+                            && Time.isPast(GeneralConfig.dataRetentionTime + reader.getLastNameChange())
                     ) {
                         json.add("lastName", reader.getLastName());
                         json.add("lastNameChange", reader.getLastNameChange());
@@ -143,7 +143,7 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
             entry.lastNameChange = json.getLong("lastNameChange", NO_NAME_CHANGE);
 
             if (entry.lastNameChange != NO_NAME_CHANGE
-                    && Time.isPast(Vars.dataRetentionTime + entry.lastNameChange)
+                    && Time.isPast(GeneralConfig.dataRetentionTime + entry.lastNameChange)
             ) {
                 entry.lastName = null;
                 entry.lastNameChange = NO_NAME_CHANGE;
@@ -285,7 +285,7 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
     /**
      * Clears the cache
      */
-    void clear() {
+    public void clear() {
         named.clear();
         nicknamed.clear();
         identified.clear();
@@ -329,7 +329,10 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
                 LOGGER.info("{} has not played before, removing entry", e.getKey());
 
                 iterator.remove();
-                named.remove(cache.getName());
+
+                if (cache.getName() != null) {
+                    named.remove(cache.getName());
+                }
 
                 if (cache.getNickname() != null) {
                     nicknamed.remove(cache.getNickname());

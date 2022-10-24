@@ -29,12 +29,7 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
     private World world;
 
     public WorldBounds3i(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        super(minX, minY, minZ, maxX, maxY, maxZ, true);
-        this.world = world;
-    }
-
-    protected WorldBounds3i(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean immutable) {
-        super(minX, minY, minZ, maxX, maxY, maxZ, immutable);
+        super(minX, minY, minZ, maxX, maxY, maxZ);
         this.world = world;
     }
 
@@ -125,22 +120,12 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
     }
 
     public WorldBounds3i setWorld(World world) {
-        if(immutable) {
-            return new WorldBounds3i(world, minX, minY, minZ, maxX, maxY, maxZ, true);
-        }
-
-        this.world = world;
-        return this;
+        return new WorldBounds3i(world, minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override
-    protected WorldBounds3i getThis() {
-        return this;
-    }
-
-    @Override
-    protected WorldBounds3i cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean immutable) {
-        return new WorldBounds3i(world, minX, minY, minZ, maxX, maxY, maxZ, immutable);
+    protected WorldBounds3i cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        return new WorldBounds3i(world, minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override

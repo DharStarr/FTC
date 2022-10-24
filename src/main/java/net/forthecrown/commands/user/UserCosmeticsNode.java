@@ -12,12 +12,12 @@ import net.forthecrown.cosmetics.Cosmetic;
 import net.forthecrown.cosmetics.CosmeticType;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.CosmeticData;
 
-import static net.forthecrown.text.Text.format;
+import static net.forthecrown.utils.text.Text.format;
 
 class UserCosmeticsNode extends UserCommandNode {
     public UserCosmeticsNode() {

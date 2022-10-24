@@ -3,7 +3,7 @@ package net.forthecrown.core.config;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import jdk.jfr.Timestamp;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.commons.lang3.Validate;
@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.Set;
 
 public class ConfigManager {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     private static final ConfigManager inst = new ConfigManager();
 
@@ -34,7 +34,7 @@ public class ConfigManager {
 
         ConfigData data = file.getAnnotation(ConfigData.class);
 
-        if (data.filePath() == null || data.filePath().isBlank()) {
+        if (data.filePath().isBlank()) {
             throw new IllegalArgumentException("File path not set");
         }
 
@@ -69,6 +69,15 @@ public class ConfigManager {
             try {
                 JsonObject json = JsonUtils.readFileObject(path);
                 forEachField(f, field -> {
+                    if (!json.has(field.getName())) {
+                        LOGGER.warn("'{}' config is missing field '{}', not attempting to set it",
+                                f.filePath().getFileName(),
+                                field.getName()
+                        );
+
+                        return;
+                    }
+
                     Object value = Configs.GSON.fromJson(json.get(field.getName()), field.getType());
                     field.set(null, value);
                 });

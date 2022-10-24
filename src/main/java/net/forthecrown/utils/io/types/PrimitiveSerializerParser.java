@@ -1,4 +1,4 @@
-package net.forthecrown.vars.types;
+package net.forthecrown.utils.io.types;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.serialization.DynamicOps;
@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
-abstract class SimpleVarType<T> implements SerializerParser<T> {
+abstract class PrimitiveSerializerParser<T> implements SerializerParser<T> {
     @Getter
     private final ArgumentType<T> argumentType;
 

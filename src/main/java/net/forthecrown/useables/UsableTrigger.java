@@ -2,7 +2,7 @@ package net.forthecrown.useables;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.WorldBounds3i;
 import net.minecraft.nbt.CompoundTag;

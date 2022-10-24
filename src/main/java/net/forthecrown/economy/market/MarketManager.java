@@ -1,7 +1,6 @@
 package net.forthecrown.economy.market;
 
 import com.google.gson.JsonElement;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -9,21 +8,15 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
-import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.DayChangeListener;
-import net.forthecrown.core.Vars;
-import net.forthecrown.core.Worlds;
+import net.forthecrown.core.FTC;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.TimeField;
-import net.forthecrown.user.data.UserMarketData;
-import net.forthecrown.utils.Time;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import net.forthecrown.utils.math.WorldVec3i;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.World;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,7 +29,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public class MarketManager implements DayChangeListener {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
+
+    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
     //2 maps for tracking shops, byName stores all saved shops
     private final Map<UUID, MarketShop> byOwner = new Object2ObjectOpenHashMap<>();
@@ -45,72 +40,20 @@ public class MarketManager implements DayChangeListener {
     @Getter
     private final Path directory;
 
+    /* ----------------------------- CONSTRUCTOR ------------------------------ */
+
     public MarketManager(Path economyDirectory) {
         this.directory = PathUtil.ensureDirectoryExists(economyDirectory.resolve("markets"))
                 .orThrow();
-    }
-
-    /* ----------------------------- STATIC METHODS ------------------------------ */
-
-    /**
-     * Checks if the given ownership can change status and throws an exception
-     * if they cant
-     * <p>
-     * Ye idk lol, didn't know where else to put stuff this
-     * @param ownership The market ownership to check
-     * @throws CommandSyntaxException If the given owner can't change status
-     */
-    public static void checkStatusChange(UserMarketData ownership) throws CommandSyntaxException {
-        checkStatusChange(
-                ownership,
-                "You cannot currently do this, next allowed: {0, time, -timestamp}."
-        );
-    }
-
-    public static void checkCanPurchase(UserMarketData ownership) throws CommandSyntaxException {
-        checkStatusChange(
-                ownership,
-                "Cannot purchase shop right now, allowed in: {0, time, -timestamp}."
-        );
-    }
-
-    public static void checkStatusChange(UserMarketData ownership, String transKey) throws CommandSyntaxException {
-        if (canChangeStatus(ownership.getUser())) {
-            return;
-        }
-
-        long nextAllowed = ownership.getUser()
-                .getTime(TimeField.MARKET_LAST_ACTION) + Vars.marketStatusCooldown;
-
-        throw Exceptions.format(transKey, nextAllowed);
-    }
-
-    /**
-     * Tests if this user currently owns a shop
-     * @param user The user to test
-     * @return True if the user directly owns a market shop
-     */
-    public static boolean ownsShop(User user) {
-        return Crown.getEconomy().getMarkets().get(user.getUniqueId()) != null;
-    }
-
-    /**
-     * Tests if this user's {@link Vars#marketStatusCooldown} has
-     * ended or not
-     * @param user The user to test
-     * @return True, if the market cooldown has ended for this user
-     */
-    public static boolean canChangeStatus(User user) {
-        return Time.isPast(
-                Vars.marketStatusCooldown + user.getTime(TimeField.MARKET_LAST_ACTION)
-        );
     }
 
     /* ----------------------------- METHODS ------------------------------ */
 
     @Override
     public void onDayChange(ZonedDateTime time) {
-        if (time.getDayOfWeek() != DayOfWeek.MONDAY) {
+        if (time.getDayOfWeek() != DayOfWeek.MONDAY
+                || !MarketConfig.autoEvictionsEnabled
+        ) {
             return;
         }
 
@@ -138,7 +81,7 @@ public class MarketManager implements DayChangeListener {
     }
 
     public MarketShop get(WorldVec3i pos) {
-        if (!pos.getWorld().equals(getWorld())) {
+        if (!pos.getWorld().equals(Markets.getWorld())) {
             return null;
         }
 
@@ -149,14 +92,6 @@ public class MarketManager implements DayChangeListener {
         }
 
         return null;
-    }
-
-    /**
-     * Gets the world the markets are in
-     * @return The market's world
-     */
-    public World getWorld() {
-        return Worlds.overworld();
     }
 
     /**
@@ -190,9 +125,13 @@ public class MarketManager implements DayChangeListener {
     public void remove(MarketShop shop) {
         _remove(shop);
 
+        if (shop.getReset() != null) {
+            shop.reset();
+        }
+
         for (ShopEntrance e: shop.getEntrances()) {
-            e.removeNotice(getWorld());
-            e.removeSign(getWorld());
+            e.removeNotice(Markets.getWorld());
+            e.removeSign(Markets.getWorld());
         }
 
         ProtectedRegion region = shop.getWorldGuard();
@@ -285,7 +224,7 @@ public class MarketManager implements DayChangeListener {
         RegionManager manager = WorldGuard.getInstance()
                 .getPlatform()
                 .getRegionContainer()
-                .get(BukkitAdapter.adapt(getWorld()));
+                .get(BukkitAdapter.adapt(Markets.getWorld()));
 
         Set<MarketShop> notLoaded = new ObjectOpenHashSet<>(byName.values());
 

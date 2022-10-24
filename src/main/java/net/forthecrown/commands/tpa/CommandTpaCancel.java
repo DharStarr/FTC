@@ -27,7 +27,7 @@ public class CommandTpaCancel extends FtcCommand {
                             User target = Arguments.getUser(c, "user");
 
                             TeleportRequest r = user.getInteractions().getOutgoing(target);
-                            if(r == null) {
+                            if (r == null) {
                                 throw Exceptions.noOutgoing(target);
                             }
 

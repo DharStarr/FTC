@@ -3,8 +3,8 @@ package net.forthecrown.useables.test;
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.WorldArgument;
 import net.forthecrown.useables.CheckHolder;
@@ -33,7 +33,7 @@ public class TestWorld extends UsageTest {
         super(TYPE);
 
         if (world == null) {
-            Crown.logger().warn("Found unknown world while creating world usage test!");
+            FTC.getLogger().warn("Found unknown world while creating world usage test!");
             this.world = null;
         } else {
             this.world = world.getKey();

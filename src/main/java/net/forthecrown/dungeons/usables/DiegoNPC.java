@@ -1,7 +1,7 @@
 package net.forthecrown.dungeons.usables;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.commands.click.ClickableTextNode;
 import net.forthecrown.commands.click.ClickableTexts;
 import net.forthecrown.commands.manager.Exceptions;

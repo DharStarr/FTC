@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemStack;
 

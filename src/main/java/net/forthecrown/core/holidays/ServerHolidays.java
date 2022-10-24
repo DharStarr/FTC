@@ -2,11 +2,8 @@ package net.forthecrown.core.holidays;
 
 import com.google.common.collect.Collections2;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.DayChange;
-import net.forthecrown.core.DayChangeListener;
-import net.forthecrown.core.AutoSave;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.*;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;
@@ -46,7 +43,7 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
             TAG_NAMESPACE = "holiday",
             TAG_SEPARATOR = ":";
 
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     private static final ServerHolidays inst = new ServerHolidays();
 
@@ -55,8 +52,8 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
     public ServerHolidays() {
         super(PathUtil.pluginPath("holidays.dat"));
 
-        DayChange.get().addListener(get());
-        AutoSave.get().addCallback(() -> get().save());
+        DayChange.get().addListener(this);
+        AutoSave.get().addCallback(this::save);
     }
 
     public static ServerHolidays get() {

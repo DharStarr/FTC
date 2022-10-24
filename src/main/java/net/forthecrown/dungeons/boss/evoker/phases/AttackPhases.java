@@ -2,7 +2,7 @@ package net.forthecrown.dungeons.boss.evoker.phases;
 
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.evoker.BossMessage;
-import net.forthecrown.dungeons.boss.evoker.EvokerVars;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.Util;
 import org.bukkit.Bukkit;
@@ -37,7 +37,7 @@ public final class AttackPhases {
 
     public static final AttackPhase ZOMBIES = new SummonPhase(
             (pos, world, context) -> {
-                Class<? extends Monster> spawnClass = Util.RANDOM.nextInt(100) < EvokerVars.zombies_skeletonChance ?
+                Class<? extends Monster> spawnClass = Util.RANDOM.nextInt(100) < EvokerConfig.zombies_skeletonChance ?
                         Skeleton.class : Zombie.class;
 
                 return world.spawn(new Location(world, pos.x, pos.y, pos.z), spawnClass, zombie -> {
@@ -59,7 +59,7 @@ public final class AttackPhases {
 
     public static final AttackPhase ILLAGERS = new SummonPhase(
             (pos, world, context) -> {
-                boolean ravager = Util.RANDOM.nextInt(100) < EvokerVars.illager_ravagerChance + Math.ceil(context.modifier());
+                boolean ravager = Util.RANDOM.nextInt(100) < EvokerConfig.illager_ravagerChance + Math.ceil(context.modifier());
                 Class<? extends Raider> clazz = ravager ? Ravager.class : (Util.RANDOM.nextBoolean() ? Pillager.class : Vindicator.class);
 
                 return world.spawn(
@@ -117,10 +117,10 @@ public final class AttackPhases {
 
     static Team getMobTeam() {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        Team t = scoreboard.getTeam(EvokerVars.mobTeam);
+        Team t = scoreboard.getTeam(EvokerConfig.mobTeam);
 
         if (t == null) {
-            t = scoreboard.registerNewTeam(EvokerVars.mobTeam);
+            t = scoreboard.registerNewTeam(EvokerConfig.mobTeam);
             t.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             t.setAllowFriendlyFire(false);
         }

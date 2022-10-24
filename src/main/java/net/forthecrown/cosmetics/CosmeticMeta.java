@@ -2,7 +2,7 @@ package net.forthecrown.cosmetics;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.user.data.CosmeticData;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -14,7 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 @Getter
 public class CosmeticMeta {

@@ -1,6 +1,6 @@
 package net.forthecrown.events.player;
 
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.inventory.ExtendedItems;
 import net.forthecrown.inventory.weapon.RoyalSword;
 import org.bukkit.entity.ArmorStand;
@@ -28,12 +28,10 @@ public class WeaponListener implements Listener {
             return;
         }
 
-        if (!Vars.allowNonOwnerSwords
-                && !sword.getOwner().equals(damager.getUniqueId())
+        if (GeneralConfig.allowNonOwnerSwords
+                || sword.getOwner().equals(damager.getUniqueId())
         ) {
-            return;
+            sword.damage(damager, event, item);
         }
-
-        sword.damage(damager, event, item);
     }
 }

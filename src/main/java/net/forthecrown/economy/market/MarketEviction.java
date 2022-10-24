@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FtcDiscord;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;

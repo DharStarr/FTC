@@ -2,13 +2,13 @@ package net.forthecrown.events;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Worlds;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.npc.Npcs;
 import net.forthecrown.inventory.ExtendedItems;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
@@ -30,10 +30,9 @@ import org.bukkit.persistence.PersistentDataType;
 public class CoreListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (event.getBlock().getType() != Material.HOPPER) {
-            return;
-        }
-        if (Vars.hoppersInOneChunk == -1) {
+        if (event.getBlock().getType() != Material.HOPPER
+                || GeneralConfig.hoppersInOneChunk == -1
+        ) {
             return;
         }
 
@@ -42,7 +41,7 @@ public class CoreListener implements Listener {
                 .getTileEntities(block -> block.getType() == Material.HOPPER, true)
                 .size();
 
-        if (hopperAmount <= Vars.hoppersInOneChunk) {
+        if (hopperAmount <= GeneralConfig.hoppersInOneChunk) {
             return;
         }
 
@@ -106,7 +105,7 @@ public class CoreListener implements Listener {
             user.sendMessage(Messages.diedAt(loc));
         }
 
-        Crown.logger().info("! {} died at x={} y={} z={} world='{}'",
+        FTC.getLogger().info("! {} died at x={} y={} z={} world='{}'",
                 user.getName(),
                 loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(),
                 loc.getWorld().getName()

@@ -11,6 +11,7 @@ import net.forthecrown.structure.BlockProcessors;
 import net.forthecrown.structure.BlockStructure;
 import net.forthecrown.structure.Rotation;
 import net.forthecrown.structure.StructurePlaceConfig;
+import net.forthecrown.user.User;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Transform;
@@ -94,25 +95,17 @@ public abstract class DungeonPiece {
 
     /* ----------------------------- METHODS ------------------------------ */
 
-    public boolean place(World world) {
+    public void place(World world) {
         var struct = getStructure();
 
         if (struct == null) {
-            return false;
+            return;
         }
 
         StructurePlaceConfig config = createPlaceConfig(world).build();
 
         struct.place(config);
         placed = true;
-
-        if (!children.isEmpty()) {
-            for (var c: children.values()) {
-                c.place(world);
-            }
-        }
-
-        return true;
     }
 
     public BlockStructure getStructure() {
@@ -125,9 +118,9 @@ public abstract class DungeonPiece {
 
     protected StructurePlaceConfig.Builder createPlaceConfig(World world) {
         return StructurePlaceConfig.builder()
-                .addProcessor(BlockProcessors.IGNORE_AIR)
                 .addRotationProcessor()
                 .addNonNullProcessor()
+                .addProcessor(BlockProcessors.IGNORE_AIR)
                 .pos(getPivotPosition())
                 .paletteName(paletteName)
                 .transform(Transform.rotation(rotation))
@@ -172,6 +165,7 @@ public abstract class DungeonPiece {
     public boolean addChild(DungeonPiece piece) {
         if (!canBeChild(piece)
                 || children.containsKey(piece.getId())
+                || piece.getParent() != null
         ) {
             return false;
         }
@@ -236,6 +230,20 @@ public abstract class DungeonPiece {
 
     protected boolean canBeChild(DungeonPiece o) {
         return o instanceof DungeonGate;
+    }
+
+    /* ----------------------------- CALLBACKS ------------------------------ */
+
+    public void onTick() {
+
+    }
+
+    public void onEnter(User user) {
+
+    }
+
+    public void onExit(User user) {
+
     }
 
     /* ----------------------------- ITERATION ------------------------------ */

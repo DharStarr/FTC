@@ -5,7 +5,7 @@ import net.forthecrown.commands.emotes.CommandEmote;
 import net.forthecrown.cosmetics.Cosmetic;
 import net.forthecrown.cosmetics.CosmeticMeta;
 import net.forthecrown.cosmetics.Cosmetics;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
@@ -16,7 +16,7 @@ import org.bukkit.Material;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 public class CosmeticEmote extends Cosmetic {
 

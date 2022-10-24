@@ -1,16 +1,13 @@
 package net.forthecrown.regions;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import lombok.Getter;
 import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FtcDynmap;
-import net.forthecrown.core.Worlds;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.dynmap.markers.Marker;
 
@@ -18,17 +15,13 @@ import java.util.Collection;
 import java.util.Map;
 
 public class RegionManager extends SerializableObject.NbtDat {
-    private static RegionManager inst;
-
-    @Getter
-    private final World world;
+    private static final RegionManager inst = new RegionManager();
 
     private final Map<String, PopulationRegion> byName = new Object2ObjectOpenHashMap<>();
     private final Map<RegionPos, PopulationRegion> byCords = new Object2ObjectOpenHashMap<>();
 
-    public RegionManager(World world) {
-        super(PathUtil.pluginPath("regions_" + world.getName() + ".dat"));
-        this.world = world;
+    public RegionManager() {
+        super(PathUtil.pluginPath("regions.dat"));
     }
 
     public static RegionManager get() {
@@ -36,7 +29,6 @@ public class RegionManager extends SerializableObject.NbtDat {
     }
 
     static void init() {
-        inst = new RegionManager(Worlds.overworld());
         inst.reload();
 
         AutoSave.get()
@@ -137,7 +129,7 @@ public class RegionManager extends SerializableObject.NbtDat {
      */
     public void add(PopulationRegion region) {
         //If has name, add to name tracker, always add to cord tracker
-        if(region.hasName()) {
+        if (region.hasName()) {
             byName.put(region.getName().toLowerCase(), region);
         }
 

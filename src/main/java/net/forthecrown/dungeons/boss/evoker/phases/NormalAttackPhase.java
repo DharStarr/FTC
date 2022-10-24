@@ -3,7 +3,7 @@ package net.forthecrown.dungeons.boss.evoker.phases;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.evoker.BossMessage;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
-import net.forthecrown.dungeons.boss.evoker.EvokerVars;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.Util;
 import org.bukkit.entity.Spellcaster;
 
@@ -42,10 +42,10 @@ public class NormalAttackPhase implements AttackPhase {
             boss.getBossEntity().setSpell(Util.RANDOM.nextBoolean() ? Spellcaster.Spell.FANGS : Spellcaster.Spell.SUMMON_VEX);
         }
 
-        if (tick >= EvokerVars.normal_length) {
+        if (tick >= EvokerConfig.normal_length) {
             boss.nextPhase(true);
         } else {
-            double progress = (double) tick / (double) EvokerVars.normal_length;
+            double progress = (double) tick / (double) EvokerConfig.normal_length;
             boss.getPhaseBar().setProgress(progress);
         }
     }

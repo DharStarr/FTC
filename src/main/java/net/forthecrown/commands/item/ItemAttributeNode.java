@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.EnumArgument;
@@ -63,6 +63,11 @@ public class ItemAttributeNode extends ItemModifierNode {
 
     public ItemAttributeNode() {
         super("item_attribute_modifiers");
+    }
+
+    @Override
+    String getArgumentName() {
+        return "attributes";
     }
 
     @Override

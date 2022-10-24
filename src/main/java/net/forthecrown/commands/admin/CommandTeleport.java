@@ -11,7 +11,7 @@ import net.forthecrown.grenadier.types.pos.PositionArgument;
 import net.forthecrown.grenadier.types.selectors.EntityArgument;
 import net.forthecrown.royalgrenadier.types.selector.EntityArgumentImpl;
 import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserTeleport;
 import net.forthecrown.user.Users;

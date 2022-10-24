@@ -5,12 +5,12 @@ import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.EavesDropper;
 import net.forthecrown.core.admin.Mute;
 import net.forthecrown.core.admin.Punishments;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.property.Properties;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 /**
  * Message sent by a user to only be seen by their spouse

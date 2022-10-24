@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class EntityGoal implements WeaponKillGoal {
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "entity/" + (type == null ? "any" : type.name().toLowerCase());
     }
 }

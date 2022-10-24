@@ -3,7 +3,7 @@ package net.forthecrown.core.admin.ui;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.admin.PunishEntry;
-import net.forthecrown.text.format.page.PageEntryIterator;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.*;

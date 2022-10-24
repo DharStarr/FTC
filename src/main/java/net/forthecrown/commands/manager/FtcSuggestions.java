@@ -6,7 +6,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Suggester;
 import net.forthecrown.royalgrenadier.WrappedCommandSource;
@@ -60,7 +60,7 @@ public interface FtcSuggestions {
         // have more than 3 chars inputted and the userCacheSuggestions == true
         if (acceptOffline
                 && token.length() >= 3
-                && Vars.userCacheSuggestions
+                && GeneralConfig.userCacheSuggestions
         ) {
             return UserManager.get().getUserLookup().suggestNames(builder);
         }
@@ -68,7 +68,7 @@ public interface FtcSuggestions {
         boolean seeVanished = c == null || c.hasPermission(Permissions.VANISH_SEE);
 
         for (User user: Users.getOnline()) {
-            if (user.get(Properties.VANISHED) && !seeVanished) {
+            if (!seeVanished && user.get(Properties.VANISHED)) {
                 continue;
             }
 

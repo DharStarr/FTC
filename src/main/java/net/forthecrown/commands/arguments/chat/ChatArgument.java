@@ -9,8 +9,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.grenadier.types.ComponentArgument;
 import net.forthecrown.royalgrenadier.VanillaMappedArgument;
-import net.forthecrown.text.ChatEmotes;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.ChatEmotes;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 
 import java.util.concurrent.CompletableFuture;

@@ -2,7 +2,7 @@ package net.forthecrown.user.data;
 
 import com.google.gson.JsonElement;
 import lombok.Getter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
@@ -272,7 +272,7 @@ public class UserTitles extends UserComponent {
         var lpUser = lp.getUserManager().getUser(user.getUniqueId());
 
         if (lpUser == null) {
-            Crown.logger().warn("{} is online but has no LuckPerms user :(", user.getName());
+            FTC.getLogger().warn("{} is online but has no LuckPerms user :(", user.getName());
             return;
         }
 

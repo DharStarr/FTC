@@ -11,15 +11,15 @@ import net.forthecrown.commands.arguments.SuggestionFunction;
 import net.forthecrown.commands.arguments.chat.MessageSuggestions;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.holidays.*;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
@@ -65,7 +65,7 @@ public class CommandHolidays extends FtcCommand {
 
     @Override
     protected void createCommand(BrigadierCommand command) {
-        if (Crown.inDebugMode()) {
+        if (FTC.inDebugMode()) {
             command
                     .then(literal("debug")
                             .then(literal("run_day_check")

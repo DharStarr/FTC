@@ -3,7 +3,7 @@ package net.forthecrown.user.property;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
@@ -174,7 +174,7 @@ public class PropertyMap extends UserComponent {
 
             // Test the property isn't null
             if (property == null) {
-                Crown.logger().warn("Found unknown user property: '{}', skipping", e.getKey());
+                FTC.getLogger().warn("Found unknown user property: '{}', skipping", e.getKey());
                 continue;
             }
 

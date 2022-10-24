@@ -5,8 +5,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.registry.FtcKeyed;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.grenadier.CommandSource;
@@ -59,7 +59,7 @@ public class ActionScore extends UsageAction {
                 .getObjective(objective);
 
         if (obj == null) {
-            Crown.logger().warn("Found unknown objective '{}' in score change action", objective);
+            FTC.getLogger().warn("Found unknown objective '{}' in score change action", objective);
             return;
         }
 

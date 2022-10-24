@@ -11,7 +11,7 @@ import java.time.Month;
 import java.time.MonthDay;
 import java.time.ZonedDateTime;
 
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class EmoteSmooch extends CommandEmote {
     private static final MonthDayPeriod VALENTINES = MonthDayPeriod.between(

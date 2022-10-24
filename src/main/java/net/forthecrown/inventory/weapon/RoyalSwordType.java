@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 public class RoyalSwordType implements ExtendedItemType<RoyalSword> {
     public static final Component

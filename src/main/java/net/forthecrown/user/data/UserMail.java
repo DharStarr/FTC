@@ -5,8 +5,8 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
-import net.forthecrown.text.Messages;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
@@ -92,7 +92,7 @@ public class UserMail extends UserComponent {
             return false;
         }
 
-        return !Time.isPast(Vars.dataRetentionTime + message.getSent());
+        return !Time.isPast(GeneralConfig.dataRetentionTime + message.getSent());
     }
 
     /**

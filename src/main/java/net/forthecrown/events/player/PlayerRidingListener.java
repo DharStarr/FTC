@@ -2,13 +2,13 @@ package net.forthecrown.events.player;
 
 import com.google.common.collect.Lists;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.FtcFlags;
 import net.forthecrown.core.Worlds;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.events.Events;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
@@ -232,8 +232,10 @@ public class PlayerRidingListener implements Listener {
             if(vehicle.getLocation().getBlockY() <= Util.MIN_Y
                     || passenger.getLocation().getBlockY() <= Util.MIN_Y
             ) {
-                vehicle.teleport(Crown.config().getServerSpawn());
-                passenger.teleport(Crown.config().getServerSpawn());
+                var spawn = GeneralConfig.getServerSpawn();
+
+                vehicle.teleport(spawn);
+                passenger.teleport(spawn);
             }
         }
 

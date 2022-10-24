@@ -4,9 +4,10 @@ import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.regions.PopulationRegion;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.core.admin.PunishType;
 import net.forthecrown.core.holidays.Holiday;
@@ -27,6 +28,8 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
 
 import static net.forthecrown.commands.manager.OpenExceptionType.INSTANCE;
 
@@ -247,18 +250,6 @@ public interface Exceptions {
     CommandSyntaxException INVALID_REWARD_RANGE = create("Max or Min bounds cannot be below 100");
 
     /**
-     * Exception which states that no Var by the given name exists
-     * <p>
-     * Used by {@link net.forthecrown.commands.arguments.GlobalVarArgument}
-     * @param reader The reader to get the context from
-     * @param name The unknown variable's name
-     * @return The created exception
-     */
-    static CommandSyntaxException unknownVar(ImmutableStringReader reader, String name) {
-        return unknown("variable", reader, name);
-    }
-
-    /**
      * Creates an exception stating that no {@link Holiday}
      * exists by the given name
      * <p>
@@ -274,8 +265,6 @@ public interface Exceptions {
     /**
      * Creates an exception stating that no {@link net.forthecrown.useables.UsableTrigger}
      * by the given name exists.
-     * <p>
-     * Used by {@link net.forthecrown.commands.usables.CommandInteractable}
      * @param reader The reader to get the context of
      * @param cursor The cursor position to move the reader to
      * @param name The name of the trigger
@@ -481,7 +470,7 @@ public interface Exceptions {
     }
 
     static CommandSyntaxException shopMaxPrice() {
-        return format("Shop price exceeded max price of {0, rhines}.", Vars.maxSignShopPrice);
+        return format("Shop price exceeded max price of {0, rhines}.", GeneralConfig.maxSignShopPrice);
     }
 
     // ----------------------
@@ -519,12 +508,12 @@ public interface Exceptions {
         return unknown("home", reader, name);
     }
 
-    static CommandSyntaxException notInvited(User user) {
+    static CommandSyntaxException notInvited(UUID user) {
         return format("{0, user} has not invited you.", user);
     }
 
     static CommandSyntaxException noHomeRegion(User user) {
-        return format("{0, user} does not have a home region");
+        return format("{0, user} does not have a home region", user);
     }
 
     static CommandSyntaxException badWorldHome(String name){
@@ -544,8 +533,6 @@ public interface Exceptions {
     CommandSyntaxException BAD_POLE_POSITION = create("Invalid position for pole, too close to the edge");
 
     CommandSyntaxException REGION_NO_DATA = create("Region has no data");
-
-    CommandSyntaxException ONLY_NAMED_HAVE_DESC = create("Only named regions may have descriptions");
 
     CommandSyntaxException RESIDENTS_HIDDEN = create("This region's residents are hidden");
 
@@ -581,6 +568,10 @@ public interface Exceptions {
 
     static CommandSyntaxException inviteNotSent(User target) {
         return format("You haven't invited {0, user} to your region.", target);
+    }
+
+    static CommandSyntaxException privateRegion(PopulationRegion region) {
+        return format("'{0}' is a private region", region.getName());
     }
 
     // -----------------------------------------
@@ -619,7 +610,7 @@ public interface Exceptions {
 
     static CommandSyntaxException nickTooLong(int length) {
         return format("Nickname is too long: {0, number} characters out of {1}",
-                length, Vars.maxNickLength
+                length, GeneralConfig.maxNickLength
         );
     }
 
@@ -678,7 +669,7 @@ public interface Exceptions {
     static CommandSyntaxException marriageStatusSender(User user) {
         return format("Cannot change marriage status for {0, time}",
                 Time.timeUntil(
-                        user.getTime(TimeField.MARRIAGE_CHANGE) + Vars.marriageCooldown
+                        user.getTime(TimeField.MARRIAGE_CHANGE) + GeneralConfig.marriageCooldown
                 )
         );
     }

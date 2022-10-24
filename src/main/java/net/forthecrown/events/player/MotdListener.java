@@ -1,9 +1,9 @@
 package net.forthecrown.events.player;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.ServerIcons;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
@@ -57,7 +57,7 @@ public class MotdListener implements Listener {
     }
 
     Component afterDashText() {
-        if (Crown.inDebugMode()) {
+        if (FTC.inDebugMode()) {
             return Component.text("Test server").color(NamedTextColor.GREEN);
         }
 

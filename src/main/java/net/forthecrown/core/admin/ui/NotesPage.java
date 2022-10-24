@@ -1,7 +1,7 @@
 package net.forthecrown.core.admin.ui;
 
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.core.admin.EntryNote;
 import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.user.User;
@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 import static net.forthecrown.core.admin.ui.AdminUI.ENTRY;
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 class NotesPage extends ListUiPage<EntryNote> {
     public NotesPage(AdminUiPage parent) {

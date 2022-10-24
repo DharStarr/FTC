@@ -2,8 +2,8 @@ package net.forthecrown.inventory;
 
 import lombok.Getter;
 import net.forthecrown.dungeons.enchantments.FtcEnchant;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.inventory.ItemStacks;

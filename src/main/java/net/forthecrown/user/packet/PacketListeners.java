@@ -2,7 +2,7 @@ package net.forthecrown.user.packet;
 
 import io.netty.channel.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.VanillaAccess;
 import net.minecraft.network.protocol.Packet;
 import org.apache.commons.lang3.Validate;
@@ -15,7 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 
 public class PacketListeners {
-    static final Logger LOGGER = Crown.logger();
+    static final Logger LOGGER = FTC.getLogger();
 
     private static final Map<Class, PacketHandlerList> HANDLER_LISTS = new Object2ObjectOpenHashMap<>();
 

@@ -8,6 +8,7 @@ import net.forthecrown.user.User;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 @Getter
@@ -36,7 +37,7 @@ public class DungeonBossGoal implements WeaponKillGoal {
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "boss/" + boss.getKey();
     }
 }

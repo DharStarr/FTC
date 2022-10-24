@@ -3,7 +3,7 @@ package net.forthecrown.regions.visit.handlers;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.regions.visit.RegionVisit;
 import net.forthecrown.regions.visit.VisitHandler;
 import net.forthecrown.user.User;
@@ -114,7 +114,7 @@ public class OwnedEntityHandler implements VisitHandler {
             return;
         }
 
-        Bukkit.getScheduler().runTaskLater(Crown.plugin(), () -> {
+        Bukkit.getScheduler().runTaskLater(FTC.getPlugin(), () -> {
             entities.forEach(e -> e.teleport(location));
         }, 10);
     }

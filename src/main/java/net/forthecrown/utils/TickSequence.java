@@ -1,7 +1,7 @@
 package net.forthecrown.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Arrays;
@@ -69,7 +69,7 @@ public class TickSequence {
         try {
             node.runnable.run();
         } catch (Exception e) {
-            Crown.logger().error("Couldn't run sequence node", e);
+            FTC.getLogger().error("Couldn't run sequence node", e);
         }
 
         if(nodeIndex >= nodes.size()) {

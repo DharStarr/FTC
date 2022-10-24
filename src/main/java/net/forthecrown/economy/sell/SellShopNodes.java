@@ -2,9 +2,9 @@ package net.forthecrown.economy.sell;
 
 import com.google.common.collect.ImmutableMap;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.writer.LoreWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.writer.LoreWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.data.SellAmount;
 import net.forthecrown.user.data.UserShopData;
 import net.forthecrown.user.property.BoolProperty;
@@ -260,7 +260,7 @@ final class SellShopNodes {
                     }
 
                     ItemSeller handler = ItemSeller.inventorySell(user, material, data);
-                    handler.run();
+                    handler.run(true);
 
                     context.shouldReloadMenu(true);
                 })

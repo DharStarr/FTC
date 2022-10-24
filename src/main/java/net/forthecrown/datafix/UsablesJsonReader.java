@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.useables.*;
@@ -56,7 +56,7 @@ public final class UsablesJsonReader {
         Optional<UsageType<T>> valueOptional = registry.get(key);
 
         if (valueOptional.isEmpty()) {
-            Crown.logger().warn("Could not find usage type with key: '{}'", key);
+            FTC.getLogger().warn("Could not find usage type with key: '{}'", key);
             return null;
         }
 

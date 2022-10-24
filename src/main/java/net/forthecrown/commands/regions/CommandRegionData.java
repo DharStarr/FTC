@@ -7,7 +7,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.regions.RegionAccess;
 import net.forthecrown.regions.RegionManager;
 import net.forthecrown.regions.RegionPos;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.minecraft.nbt.CompoundTag;
 

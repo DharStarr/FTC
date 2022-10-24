@@ -6,10 +6,10 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserLookup;
 import net.forthecrown.user.UserLookupEntry;
@@ -36,7 +36,7 @@ public class CommandNickname extends FtcCommand {
      * @throws CommandSyntaxException If the nickname is invalid
      */
     public static void checkNickAllowed(String nick) throws CommandSyntaxException {
-        if (Vars.maxNickLength < nick.length()) {
+        if (GeneralConfig.maxNickLength < nick.length()) {
             throw Exceptions.nickTooLong(nick.length());
         }
 

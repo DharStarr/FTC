@@ -17,6 +17,10 @@ public abstract class ItemModifierNode extends FtcCommand {
         setPermission(ItemModCommands.PERMISSION);
     }
 
+    String getArgumentName() {
+        return getName();
+    }
+
     @Override
     protected void createCommand(BrigadierCommand command) {
         create(command);

@@ -4,12 +4,12 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.inventory.ExtendedItem;
 import net.forthecrown.inventory.ExtendedItemType;
 import net.forthecrown.inventory.weapon.goals.WeaponGoal;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.user.data.RankTier;
 import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.text.Component;
@@ -27,7 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.UUID;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 /**
  * A RoyalSword is a special in-game sword, this is the class which
@@ -41,9 +41,7 @@ public class RoyalSword extends ExtendedItem {
             TAG_EXTRA_DATA = "extraData",
             TAG_GOALS = "goals";
 
-    public static final Component BORDER = Component.text("------------------------------",
-            nonItalic(NamedTextColor.DARK_GRAY)
-    );
+    public static final Component BORDER = Component.text("------------------------------", nonItalic(NamedTextColor.DARK_GRAY));
 
     @Setter private SwordRank rank;
     @Setter private SwordRank lastFlavorChange;
@@ -296,7 +294,7 @@ public class RoyalSword extends ExtendedItem {
                 WeaponGoal g = rank.getGoals().get(e.getKey());
 
                 if (g == null) {
-                    Crown.logger().warn("Unknown goal '{}', found in sword, owner={}",
+                    FTC.getLogger().warn("Unknown goal '{}', found in sword, owner={}",
                             e.getKey(), getOwner()
                     );
                     continue;

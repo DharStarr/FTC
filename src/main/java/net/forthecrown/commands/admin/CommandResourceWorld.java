@@ -16,7 +16,6 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.RegistryArguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.Worlds;
 import net.forthecrown.core.config.ResourceWorldConfig;
@@ -26,7 +25,7 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.structure.BlockStructure;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.Time;
 import net.kyori.adventure.text.Component;
 import net.minecraft.world.level.Level;
@@ -74,7 +73,7 @@ public class CommandResourceWorld extends FtcCommand {
 
                 .then(literal("next_reset")
                         .executes(c -> {
-                            long next = ResourceWorldConfig.lastReset + Vars.rwResetInterval;
+                            long next = ResourceWorldConfig.lastReset + ResourceWorldConfig.resetInterval;
 
                             if (Time.isPast(next)) {
                                 c.getSource().sendMessage(

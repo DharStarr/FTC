@@ -6,8 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.cosmetics.Cosmetics;
-import net.forthecrown.user.Components;
-import net.forthecrown.user.UserManager;
+import net.forthecrown.user.*;
 import net.forthecrown.user.data.CosmeticData;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserShopData;
@@ -53,6 +52,8 @@ public class UserDataUpdate extends DataUpdater {
 
         var users = UserManager.get();
         users.getBalances().reload();
+        clearNonPlayerBalances(users.getBalances());
+
         users.getUserLookup().reload();
 
         if (!convertUserData(dataPath, PathUtil.pluginPath("users"))) {
@@ -62,6 +63,19 @@ public class UserDataUpdate extends DataUpdater {
         users.save();
 
         return true;
+    }
+
+    void clearNonPlayerBalances(UserScoreMap map) {
+        var it = map.iterator();
+
+        while (it.hasNext()) {
+            var next = it.next();
+
+            if (!Users.hasVanillaData(next.getUniqueId())) {
+                LOGGER.info("Removed non player data of ID {}", next.getUniqueId());
+                map.remove(next.getUniqueId());
+            }
+        }
     }
 
     boolean convertUserData(Path newDir, Path oldDir) {
@@ -84,9 +98,10 @@ public class UserDataUpdate extends DataUpdater {
     void fixUserFile(Path p, Path newDir) throws IOException {
         var name = p.getFileName().toString();
         UUID id = UUID.fromString(name.substring(0, name.lastIndexOf('.')));
+        UserLookupEntry entry = UserManager.get().getUserLookup().getEntry(id);
 
         var offlinePlayer = Bukkit.getOfflinePlayer(id);
-        if (!offlinePlayer.hasPlayedBefore()) {
+        if (!offlinePlayer.hasPlayedBefore() || entry == null) {
             LOGGER.info("Found unknown player: '{}'", id);
             return;
         }

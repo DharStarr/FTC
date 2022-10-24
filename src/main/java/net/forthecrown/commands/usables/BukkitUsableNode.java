@@ -3,7 +3,7 @@ package net.forthecrown.commands.usables;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.text.Text;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.BukkitSavedUsable;
 import org.jetbrains.annotations.NotNull;
 

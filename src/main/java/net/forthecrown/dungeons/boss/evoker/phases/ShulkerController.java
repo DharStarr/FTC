@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
 import net.forthecrown.dungeons.boss.evoker.EvokerEffects;
-import net.forthecrown.dungeons.boss.evoker.EvokerVars;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;
@@ -43,7 +43,7 @@ public class ShulkerController {
                 data.drawTick++;
             }
 
-            boolean shouldDraw = data.drawTick >= EvokerVars.shulker_drawInterval;
+            boolean shouldDraw = data.drawTick >= EvokerConfig.shulker_drawInterval;
             if(shouldDraw) data.drawTick = 0;
 
             // Tick logic
@@ -53,10 +53,10 @@ public class ShulkerController {
                     drawBeam(data);
 
                     // If we should start firing the projectile
-                    if (data.tick >= EvokerVars.shulker_aimingTime) {
+                    if (data.tick >= EvokerConfig.shulker_aimingTime) {
                         data.tick = 0;
                         data.phase = Phase.FIRING;
-                        data.drawTick = EvokerVars.shulker_drawInterval;
+                        data.drawTick = EvokerConfig.shulker_drawInterval;
                     }
                 }
 
@@ -86,21 +86,21 @@ public class ShulkerController {
                 }
 
                 case NONE -> {
-                    final int interval = EvokerVars.shulker_aimInterval;
+                    final int interval = EvokerConfig.shulker_aimInterval;
                     final double random = Util.RANDOM.nextDouble(interval);
                     final int nextAimTick = (int) (interval + random);
 
                     if (data.tick >= nextAimTick) {
                         data.tick = 0;
                         data.phase = Phase.AIMING;
-                        data.drawTick = EvokerVars.shulker_drawInterval;
+                        data.drawTick = EvokerConfig.shulker_drawInterval;
                         data.target = findTarget();
 
                         if (data.target == null) {
                             data.phase = Phase.NONE;
                         } else {
                             Vector3d dist = data.target.sub(data.beamOrigin);
-                            data.firingTicks = dist.length() / EvokerVars.shulker_firingSpeed;
+                            data.firingTicks = dist.length() / EvokerConfig.shulker_firingSpeed;
 
                             // beamStep is the large step the beam will take every
                             // tick towards the player
@@ -147,7 +147,7 @@ public class ShulkerController {
         double length = dif.length();
         dif = dif.normalize();
 
-        for (double i = 0; i < length; i += EvokerVars.shulker_particleDistance) {
+        for (double i = 0; i < length; i += EvokerConfig.shulker_particleDistance) {
             Vector3d vec = start.add(dif.mul(i));
 
             spawn.location(world, vec.x(), vec.y(), vec.z())

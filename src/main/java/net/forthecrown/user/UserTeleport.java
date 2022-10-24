@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.Messages;
 import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
@@ -15,8 +15,8 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static net.forthecrown.text.Messages.TELEPORT_CANCELLED;
-import static net.forthecrown.text.Messages.TELEPORT_ERROR;
+import static net.forthecrown.core.Messages.TELEPORT_CANCELLED;
+import static net.forthecrown.core.Messages.TELEPORT_ERROR;
 
 /**
  * A user's teleport from one area to another.
@@ -59,7 +59,7 @@ public class UserTeleport {
 
     /**
      * Determines if the teleport should occurr in async,
-     * note that {@link Vars#useAsyncTpForPlayers} is
+     * note that {@link GeneralConfig#useAsyncTpForPlayers} is
      * also checked before an async teleport is initiated
      */
     @Getter @Setter
@@ -119,11 +119,11 @@ public class UserTeleport {
         if (!silent) {
             user.sendMessage(Objects.requireNonNullElse(
                     startMessage,
-                    Messages.teleportStart(Vars.tpTickDelay * 50L, type)
+                    Messages.teleportStart(GeneralConfig.tpTickDelay * 50L, type)
             ));
         }
 
-        task = Tasks.runLater(this::complete, Vars.tpTickDelay);
+        task = Tasks.runLater(this::complete, GeneralConfig.tpTickDelay);
     }
 
     /**
@@ -172,7 +172,7 @@ public class UserTeleport {
 
             // If we should use async tp for players and we've selected
             // to use async for this, then TP async, else in sync
-            if (Vars.useAsyncTpForPlayers && async) {
+            if (GeneralConfig.useAsyncTpForPlayers && async) {
                 player.teleportAsync(dest);
             } else {
                 player.teleport(dest);

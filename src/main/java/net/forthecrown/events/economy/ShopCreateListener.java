@@ -3,13 +3,15 @@ package net.forthecrown.events.economy;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.*;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.shops.ShopManager;
 import net.forthecrown.economy.shops.ShopType;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
 import net.forthecrown.events.Events;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.inventory.ItemStacks;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -92,7 +94,7 @@ public class ShopCreateListener implements Listener {
             }
 
             // Make sure they don't exceed the max shop price
-            if (price > Vars.maxSignShopPrice) {
+            if (price > GeneralConfig.maxSignShopPrice) {
                 throw Exceptions.shopMaxPrice();
             }
 
@@ -111,7 +113,7 @@ public class ShopCreateListener implements Listener {
                 return;
             }
 
-            ShopManager shopManager = Main.getEconomy().getShops();
+            ShopManager shopManager = Economy.get().getShops();
 
             //creates the signshop
             SignShop shop = shopManager.createSignShop(sign.getLocation(), shopType, price, player.getUniqueId());

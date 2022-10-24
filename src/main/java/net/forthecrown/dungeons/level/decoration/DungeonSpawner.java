@@ -10,13 +10,16 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import org.bukkit.World;
 import org.spongepowered.math.vector.Vector3i;
 
 @Getter
 @RequiredArgsConstructor
-public class DungeonPopulator {
+public class DungeonSpawner {
+    public static final String
+            TAG_SPAWNER = "spawner",
+            TAG_POSITION = "position";
+
     private final SpawnerImpl spawner;
     private final Vector3i position;
 
@@ -28,15 +31,23 @@ public class DungeonPopulator {
     }
 
     public CompoundTag save() {
-
+        CompoundTag tag = new CompoundTag();
+        tag.put(TAG_SPAWNER, spawner.save(new CompoundTag()));
+        tag.put(TAG_POSITION, Vectors.writeTag(position));
+        return tag;
     }
 
-    public static DungeonPopulator load(Tag t) {
+    public static DungeonSpawner load(Tag t) {
         if (!(t instanceof CompoundTag tag)) {
             return null;
         }
 
+        SpawnerImpl spawner = new SpawnerImpl();
+        spawner.load(null, null, tag.getCompound(TAG_SPAWNER));
 
+        Vector3i pos = Vectors.read3i(tag.get(TAG_POSITION));
+
+        return new DungeonSpawner(spawner, pos);
     }
 
     public static class SpawnerImpl extends BaseSpawner {

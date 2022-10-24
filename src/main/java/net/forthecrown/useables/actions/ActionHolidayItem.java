@@ -5,7 +5,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.holidays.Holiday;
 import net.forthecrown.core.holidays.ServerHolidays;
 import net.forthecrown.grenadier.CommandSource;
@@ -40,14 +40,14 @@ public class ActionHolidayItem extends UsageAction {
         Holiday holiday = holidays.getHoliday(holidayName);
 
         if (holiday == null) {
-            Crown.logger().info("Can't give holiday item for '{}', holiday does not exist", holidayName);
+            FTC.getLogger().info("Can't give holiday item for '{}', holiday does not exist", holidayName);
             return;
         }
 
         ItemStack item = holidays.getRewardItem(holiday, Users.get(player), ZonedDateTime.now());
 
         if (ItemStacks.isEmpty(item)) {
-            Crown.logger().warn("Cannot give rewards for '{}', reward item is empty", holidayName);
+            FTC.getLogger().warn("Cannot give rewards for '{}', reward item is empty", holidayName);
             return;
         }
 

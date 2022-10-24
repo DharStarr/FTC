@@ -1,7 +1,7 @@
 package net.forthecrown.commands.test;
 
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.dungeons.DungeonWorld;
 import net.forthecrown.dungeons.level.DungeonPiece;
 import net.forthecrown.dungeons.level.DungeonRoom;
@@ -10,6 +10,7 @@ import net.forthecrown.dungeons.level.gate.AbsoluteGateData;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
 import net.forthecrown.dungeons.level.generator.TreeGenerator;
 import net.forthecrown.dungeons.level.generator.TreeGeneratorConfig;
+import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.utils.Particles;
 import net.forthecrown.utils.Tasks;
@@ -20,8 +21,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
-import java.util.concurrent.CompletableFuture;
-
 public class CommandTestDungeon extends FtcCommand {
 
     public static final int RENDER_INTERVAL = 15;
@@ -29,7 +28,7 @@ public class CommandTestDungeon extends FtcCommand {
     public static final float SIZE = 3F;
     public static final boolean DRAW_GATES = false;
 
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     public CommandTestDungeon() {
         super("TestDungeon");
@@ -71,74 +70,8 @@ public class CommandTestDungeon extends FtcCommand {
     @Override
     protected void createCommand(BrigadierCommand command) {
         command
-                .then(literal("generate_place")
-                        .executes(c -> {
-                            CompletableFuture.supplyAsync(() -> {
-                                initGenerator();
-                                return generator.generate();
-                            })
-                                    .whenComplete((level, throwable) -> {
-                                        if (throwable != null) {
-                                            LOGGER.error("Error generating level", throwable);
-                                            return;
-                                        }
-
-                                        Tasks.runSync(() -> {
-                                            c.getSource().sendMessage("Placing generated dungeons");
-                                            level.getRoot().place(DungeonWorld.get());
-                                        });
-                                    });
-
-                            return 0;
-                        })
-                )
-
-                .then(literal("render")
-                        .executes(c -> {
-                            toggleRender();
-
-                            c.getSource().sendMessage("Toggled outline rendering");
-                            return 0;
-                        })
-                )
-
-                .then(literal("reset_tree")
-                        .executes(c -> {
-                            initGenerator();
-
-                            c.getSource().sendMessage("Reset dungeon level tree");
-                            return 0;
-                        })
-                )
-
-                .then(literal("place")
-                        .executes(c -> {
-                            if (generator == null
-                                    || generator.getLevel() == null
-                            ) {
-                                initGenerator();
-                            }
-
-                            generator.getLevel().getRoot().place(DungeonWorld.get());
-
-                            c.getSource().sendMessage("Placing dungeon");
-                            return 0;
-                        })
-                )
-
-                .then(literal("step")
-                        .executes(c -> {
-                            if (generator == null
-                                    || generator.getLevel() == null
-                            ) {
-                                initGenerator();
-                            }
-
-                            generator.step();
-
-                            c.getSource().sendMessage("Taking generation step");
-                            return 0;
-                        })
+                .then(literal("make")
+                        .executes(c -> place(c.getSource()))
                 )
 
                 .then(literal("reset_world")
@@ -149,6 +82,28 @@ public class CommandTestDungeon extends FtcCommand {
                             return 0;
                         })
                 );
+    }
+
+    private int place(CommandSource source) {
+        DungeonWorld.reset();
+
+        var config = TreeGeneratorConfig.defaultConfig();
+        TreeGenerator.generateAsync(config)
+                .whenComplete((level, throwable) -> {
+                    if (throwable != null) {
+                        LOGGER.error("Couldn't generate level!", throwable);
+                        source.sendMessage("Couldn't generate level!");
+
+                        return;
+                    }
+
+                    Tasks.runSync(() -> {
+                        source.sendAdmin("Placing dungeon level");
+                        level.place();
+                    });
+                });
+
+        return 0;
     }
 
     private class Renderer implements Runnable {

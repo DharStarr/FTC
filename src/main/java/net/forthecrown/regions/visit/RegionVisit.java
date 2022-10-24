@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.cosmetics.travel.TravelEffect;
 import net.forthecrown.events.dynamic.HulkSmashListener;
@@ -93,7 +93,7 @@ public class RegionVisit implements Runnable {
         // 3) The area above the pole must only be air
         // 4) The area above the user must only be air
         // 5) The user shouldn't be in spectator mode
-        hulkSmash = Vars.hulkSmashPoles
+        hulkSmash = GeneralConfig.hulkSmashPoles
                 && user.get(Properties.HULK_SMASHING)
                 && Util.isClearAbove(getTeleportLocation())
                 && Util.isClearAbove(user.getLocation().add(0, Math.ceil(user.getPlayer().getHeight()), 0))
@@ -140,20 +140,20 @@ public class RegionVisit implements Runnable {
     }
 
     void findInitialTeleport() {
-        Vector3i poleBottom = getRegion().getPoleBottom().add(0, 5, 0);
+        Vector3i poleTop = getRegion().getPoleBottom().add(0, 5, 0);
         Location playerLoc = user.getLocation();
 
         setTeleportLocation(
                 new Location(
                         playerLoc.getWorld(),
-                        poleBottom.x(), poleBottom.y(), poleBottom.z(),
+                        poleTop.x() + .5D, poleTop.y(), poleTop.z() + .5D,
                         playerLoc.getYaw(), playerLoc.getPitch()
                 )
         );
     }
 
     public World getDestWorld() {
-        return getManager().getWorld();
+        return Regions.getWorld();
     }
 
     public World getOriginWorld() {

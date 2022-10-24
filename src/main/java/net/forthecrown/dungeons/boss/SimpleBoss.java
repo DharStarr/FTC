@@ -6,7 +6,6 @@ import net.forthecrown.dungeons.boss.components.EmptyRoomComponent;
 import net.forthecrown.dungeons.boss.components.InsideRoomComponent;
 import net.forthecrown.dungeons.boss.components.TargetUpdateComponent;
 import net.forthecrown.utils.math.WorldBounds3i;
-import net.minecraft.util.Mth;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -18,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootTables;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.math.GenericMath;
 
 import java.util.Set;
 
@@ -48,17 +48,19 @@ public abstract class SimpleBoss extends KeyedBossImpl implements SingleEntityBo
     @Override
     public void spawn() {
         // Don't spawn more than 1 boss
-        if(isAlive()) return;
+        if (isAlive()) {
+            return;
+        }
+
+        // Create context and entity
+        currentContext = BossContext.create(getRoom());
+        entity = onSpawn(currentContext);
+
+        createBossBar(currentContext);
 
         // Get everything that's needed started
         registerEvents();
         startTickTask();
-
-        // Create context and entity
-        currentContext = BossContext.create(getRoom());
-        createBossBar(currentContext);
-
-        entity = onSpawn(currentContext);
 
         logSpawn(currentContext);
 
@@ -75,7 +77,9 @@ public abstract class SimpleBoss extends KeyedBossImpl implements SingleEntityBo
 
     @Override
     public void kill(boolean force) {
-        if(!isAlive()) return;
+        if (!isAlive()) {
+            return;
+        }
 
         // Destroy the basic things first
         unregisterEvents();
@@ -113,9 +117,13 @@ public abstract class SimpleBoss extends KeyedBossImpl implements SingleEntityBo
         onHit(currentContext, event);
 
         double newHealth = entity.getHealth() - event.getFinalDamage();
-        newHealth = Mth.clamp(newHealth, 0, 1);
         // Update boss bar
-        bossBar.setProgress(newHealth / entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+        bossBar.setProgress(
+                GenericMath.clamp(
+                        newHealth / entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(),
+                        0, 1
+                )
+        );
 
         runComponents(component -> component.onHit(this, currentContext, event));
     }

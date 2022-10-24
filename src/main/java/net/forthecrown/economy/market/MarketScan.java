@@ -1,7 +1,7 @@
 package net.forthecrown.economy.market;
 
 import com.google.gson.JsonElement;
-import net.forthecrown.core.Crown;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
 import net.forthecrown.utils.io.JsonWrapper;
@@ -32,7 +32,7 @@ public record MarketScan(long date, int stockedCount, int unstockedCount) {
                 continue;
             }
 
-            SignShop signShop = Crown.getEconomy().getShops().getShop(b);
+            SignShop signShop = Economy.get().getShops().getShop(b);
 
             if (signShop.getType().isAdmin()) {
                 continue;

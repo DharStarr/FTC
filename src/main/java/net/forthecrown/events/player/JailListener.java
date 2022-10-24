@@ -3,7 +3,7 @@ package net.forthecrown.events.player;
 import net.forthecrown.core.admin.JailCell;
 import net.forthecrown.core.admin.Punisher;
 import net.forthecrown.core.admin.Punishments;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

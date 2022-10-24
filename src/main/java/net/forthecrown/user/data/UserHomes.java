@@ -4,9 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import lombok.Getter;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Crown;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CmdUtil;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.regions.*;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class UserHomes extends UserComponent {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     /* ----------------------------- CONSTANTS ------------------------------ */
 
@@ -55,7 +55,7 @@ public class UserHomes extends UserComponent {
      * The position of the region the user set as their home
      */
     @Getter
-    public RegionPos homeRegion;
+    private RegionPos homeRegion;
 
     /* ----------------------------- CONSTRUCTOR ------------------------------ */
 
@@ -72,11 +72,7 @@ public class UserHomes extends UserComponent {
 
         RegionManager manager = RegionManager.get();
 
-        /*if (inSameRegion(old, newHome, manager)) {
-            return;
-        }*/
-
-        if (old != null && old.getWorld().equals(manager.getWorld())) {
+        if (old != null && old.getWorld().equals(Regions.getWorld())) {
             RegionPos pos = RegionPos.of(old);
             PopulationRegion region = manager.get(pos);
 
@@ -87,7 +83,7 @@ public class UserHomes extends UserComponent {
             }
         }
 
-        if (newHome != null && newHome.getWorld().equals(manager.getWorld())) {
+        if (newHome != null && newHome.getWorld().equals(Regions.getWorld())) {
             RegionPos pos = RegionPos.of(newHome);
             PopulationRegion region = manager.get(pos);
 

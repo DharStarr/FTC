@@ -3,7 +3,7 @@ package net.forthecrown.core;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
@@ -29,7 +29,7 @@ public class AfkKicker {
         }
 
         entry.setStage(Stage.NONE);
-        entry.schedule(Vars.autoAfkDelay);
+        entry.schedule(GeneralConfig.autoAfkDelay);
     }
 
     public static void remove(UUID uuid) {
@@ -79,7 +79,7 @@ public class AfkKicker {
             }
 
             stage = Stage.AWAITING_KICK;
-            schedule(Vars.afkKickDelay);
+            schedule(GeneralConfig.afkKickDelay);
         }
 
         public void runKick() {
@@ -89,7 +89,9 @@ public class AfkKicker {
                 return;
             }
 
-            player.getPlayer().kick(Messages.AFK_KICK, PlayerKickEvent.Cause.IDLING);
+            Tasks.runSync(() -> {
+                player.getPlayer().kick(Messages.AFK_KICK, PlayerKickEvent.Cause.IDLING);
+            });
         }
 
         public void cancel() {

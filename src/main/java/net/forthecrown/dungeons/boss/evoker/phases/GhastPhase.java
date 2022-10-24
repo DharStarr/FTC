@@ -3,7 +3,7 @@ package net.forthecrown.dungeons.boss.evoker.phases;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.evoker.BossMessage;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
-import net.forthecrown.dungeons.boss.evoker.EvokerVars;
+import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.Util;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Location;
@@ -48,7 +48,7 @@ public class GhastPhase implements AttackPhase {
 
                 AttackPhases.clearAllDrops(ghast);
 
-                double health = EvokerVars.ghast_health;
+                double health = EvokerConfig.ghast_health;
                 AttributeInstance maxHealth = ghast.getAttribute(Attribute.GENERIC_MAX_HEALTH);
                 Util.clearModifiers(maxHealth);
 
@@ -67,10 +67,10 @@ public class GhastPhase implements AttackPhase {
     public void onTick(EvokerBoss boss, BossContext context) {
         tick++;
 
-        if(tick >= EvokerVars.ghast_length) {
+        if(tick >= EvokerConfig.ghast_length) {
             boss.nextPhase(false);
         } else {
-            double progress = (double) tick / (double) EvokerVars.ghast_length;
+            double progress = (double) tick / (double) EvokerConfig.ghast_length;
             boss.getPhaseBar().setProgress(progress);
         }
     }

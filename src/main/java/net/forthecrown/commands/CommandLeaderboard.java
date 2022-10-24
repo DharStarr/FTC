@@ -1,9 +1,9 @@
 package net.forthecrown.commands;
 
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.kyori.adventure.text.Component;
@@ -69,7 +69,7 @@ public class CommandLeaderboard extends FtcCommand {
 
                     newObj.setDisplaySlot(DisplaySlot.SIDEBAR);
                     player.setScoreboard(scoreboard);
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Crown.plugin(), () -> player.setScoreboard(mainScoreboard), 15 * 20);
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(FTC.getPlugin(), () -> player.setScoreboard(mainScoreboard), 15 * 20);
 
                     return 0;
                 });
@@ -81,7 +81,7 @@ public class CommandLeaderboard extends FtcCommand {
         new CommandLeaderboard("crown") {
             @Override
             public boolean test(CommandSource source) {
-                if(!Vars.crownEventActive) {
+                if(!GeneralConfig.crownEventActive) {
                     return false;
                 }
 

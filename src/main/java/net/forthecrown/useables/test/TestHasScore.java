@@ -1,7 +1,7 @@
 package net.forthecrown.useables.test;
 
-import net.forthecrown.text.Text;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.scoreboard.ObjectiveArgument;
@@ -77,7 +77,7 @@ public class TestHasScore extends UsageTest {
                 .getObjective(this.objective);
 
         if (objective == null) {
-            Crown.logger().warn("Unknown objective in score test usage type in: '{}'",
+            FTC.getLogger().warn("Unknown objective in score test usage type in: '{}'",
                     this.objective
             );
             return false;

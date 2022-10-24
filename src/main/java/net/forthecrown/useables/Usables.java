@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Main;
 import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.registry.Keys;
@@ -34,7 +34,7 @@ import java.util.UUID;
  */
 public class Usables implements SerializableObject {
     public static final NamespacedKey
-            USABLE_KEY = new NamespacedKey(Crown.plugin(), "useablesign"),
+            USABLE_KEY = new NamespacedKey(FTC.getPlugin(), "useablesign"),
             LEGACY_KEY = new NamespacedKey(Main.OLD_NAMESPACE, "useablesign"),
 
             BLOCK_KEY  = Keys.forthecrown("usable_block"),

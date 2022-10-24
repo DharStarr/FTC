@@ -1,6 +1,7 @@
 package net.forthecrown.core;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
 import org.apache.logging.log4j.util.StackLocatorUtil;
@@ -21,23 +22,28 @@ public final class AutoSave {
         return INSTANCE;
     }
 
-    public void start() {
+    public void schedule() {
         cancel();
 
-        long interval = Vars.autoSaveInterval;
+        long interval = GeneralConfig.autoSaveInterval;
         interval = Time.millisToTicks(interval);
 
         task = Tasks.runTimer(this::run, interval, interval);
     }
 
     public void run() {
+        int saved = 0;
+
         for (var e: callbacks.entrySet()) {
             try {
                 e.getValue().run();
+                ++saved;
             } catch (Throwable t) {
-                Crown.logger().error("Couldn't save {}", e.getKey().getSimpleName(), t);
+                FTC.getLogger().error("Couldn't save {}", e.getKey().getSimpleName(), t);
             }
         }
+
+        FTC.getLogger().info("Autosaved {} modules", saved);
     }
 
     public void cancel() {

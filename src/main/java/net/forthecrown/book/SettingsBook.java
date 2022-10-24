@@ -14,8 +14,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.forthecrown.text.Messages.BUTTON_ACCEPT_TICK;
-import static net.forthecrown.text.Messages.BUTTON_DENY_CROSS;
+import static net.forthecrown.core.Messages.BUTTON_ACCEPT_TICK;
+import static net.forthecrown.core.Messages.BUTTON_DENY_CROSS;
 
 public final class SettingsBook {
     private SettingsBook() {}
@@ -44,7 +44,7 @@ public final class SettingsBook {
         BookBuilder builder = new BookBuilder()
                 .setAuthor(user.getName())
                 .setTitle("Settings")
-                .addText(Component.text("Settings:"))
+                .addCentered(Component.text("Settings"))
                 .addEmptyLine();
 
         for (var option : OPTIONS) {
@@ -56,10 +56,6 @@ public final class SettingsBook {
 
             if (!cmd.allowedInBook(user)) {
                 continue;
-            }
-
-            if (builder.getLineCount() + 1 > BookBuilder.MAX_LINES) {
-                builder.newPage();
             }
 
             Component header = option.displayName().append(Component.text(":"));

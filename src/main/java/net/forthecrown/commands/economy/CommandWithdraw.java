@@ -3,13 +3,12 @@ package net.forthecrown.commands.economy;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Vars;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.inventory.FtcItems;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 
 import javax.annotation.Nonnegative;
@@ -25,7 +24,7 @@ public class CommandWithdraw extends FtcCommand {
 
     @Override
     protected void createCommand(BrigadierCommand command) {
-        command.then(argument("amount", IntegerArgumentType.integer(1, Vars.maxMoneyAmount))
+        command.then(argument("amount", IntegerArgumentType.integer(1))
                 .suggests(CommandPay.BAL_SUGGESTIONS)
 
                 .then(argument("coinAmount", IntegerArgumentType.integer(1, FtcItems.COIN_MATERIAL.getMaxStackSize()))

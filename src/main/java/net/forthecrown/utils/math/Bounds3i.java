@@ -13,16 +13,16 @@ import org.spongepowered.math.vector.Vector3i;
 public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vector3i> {
 
     public Bounds3i(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        super(minX, minY, minZ, maxX, maxY, maxZ, true);
+        super(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    protected Bounds3i(int[] arr, boolean immutable) {
-        super(arr, immutable);
+    protected Bounds3i(int[] arr) {
+        super(arr);
     }
 
     public static Bounds3i of(JsonElement element) {
         if (element.isJsonArray()) {
-            return new Bounds3i(JsonUtils.readIntArray(element.getAsJsonArray()), true);
+            return new Bounds3i(JsonUtils.readIntArray(element.getAsJsonArray()));
         }
 
         JsonObject obj = element.getAsJsonObject();
@@ -33,7 +33,7 @@ public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vec
     }
 
     public static Bounds3i of(Tag t) {
-        return new Bounds3i(((IntArrayTag) t).getAsIntArray(), true);
+        return new Bounds3i(((IntArrayTag) t).getAsIntArray());
     }
 
     public static Bounds3i of(Vector3i vec1, Vector3i vec2) {
@@ -52,8 +52,6 @@ public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vec
     }
 
     public static Bounds3i of(Region region) {
-        var min = region.getMinimumPoint();
-        var max = region.getMaximumPoint();
         return of(
                 Vectors.from(region.getMinimumPoint()),
                 Vectors.from(region.getMaximumPoint())
@@ -61,12 +59,7 @@ public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vec
     }
 
     @Override
-    protected Bounds3i getThis() {
-        return this;
-    }
-
-    @Override
-    protected Bounds3i cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean immutable) {
+    protected Bounds3i cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         return new Bounds3i(minX, minY, minZ, maxX, maxY, maxZ);
     }
 

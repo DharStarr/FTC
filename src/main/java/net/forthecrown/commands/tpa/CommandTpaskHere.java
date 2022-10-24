@@ -8,7 +8,7 @@ import net.forthecrown.user.TeleportRequest;
 import net.forthecrown.user.User;
 
 import static net.forthecrown.commands.tpa.CommandTpask.*;
-import static net.forthecrown.text.Messages.*;
+import static net.forthecrown.core.Messages.*;
 
 public class CommandTpaskHere extends FtcCommand {
 

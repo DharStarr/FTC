@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.kyori.adventure.text.Component;
@@ -32,7 +32,7 @@ public class UsageTypeList<V extends UsageInstance> implements Iterable<V> {
             TAG_TYPE = "type",
             TAG_VALUE = "value";
 
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     @Getter
     private final Registry<UsageType<? extends V>> registry;

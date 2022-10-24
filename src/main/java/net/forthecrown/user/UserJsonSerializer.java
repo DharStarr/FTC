@@ -4,8 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import net.forthecrown.utils.Util;
 import org.apache.logging.log4j.Logger;
@@ -16,20 +17,13 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 public class UserJsonSerializer implements UserSerializer {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     private final Path userDirectory;
 
     public UserJsonSerializer(Path userDir) {
-        this.userDirectory = userDir;
-
-        try {
-            if (Files.exists(userDirectory)) {
-                Files.createDirectories(userDirectory);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.userDirectory = PathUtil.ensureDirectoryExists(userDir)
+                .orThrow();
     }
 
     @Override

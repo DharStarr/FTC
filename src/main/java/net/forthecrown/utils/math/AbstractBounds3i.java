@@ -22,19 +22,15 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         minX, minY, minZ,
         maxX, maxY, maxZ;
 
-    protected final boolean immutable;
-
-    protected AbstractBounds3i(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean immutable) {
+    protected AbstractBounds3i(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         setBounds(minX, minY, minZ, maxX, maxY, maxZ);
-        this.immutable = immutable;
     }
 
-    protected AbstractBounds3i(int[] arr, boolean immutable) {
-        this(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], immutable);
+    protected AbstractBounds3i(int[] arr) {
+        this(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
     }
 
-    protected abstract T getThis();
-    protected abstract T cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean immutable);
+    protected abstract T cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
 
     private void setBounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         this.minX = Math.min(minX, maxX);
@@ -46,20 +42,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     }
 
     public T set(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        if(immutable) {
-            return cloneAt(minX, minY, minZ, maxX, maxY, maxZ, true);
-        }
-
-        setBounds(minX, minY, minZ, maxX, maxY, maxZ);
-        return getThis();
-    }
-
-    public T mutable() {
-        return immutable ? cloneAt(minX, minY, minZ, maxX, maxY, maxZ, false) : getThis();
-    }
-
-    public T immutable() {
-        return immutable ? getThis() : cloneAt(minX, minY, minZ, maxX, maxY, maxZ, true);
+        return cloneAt(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     public T expand(Vector3i vec3) {
@@ -379,7 +362,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
 
     @Override
     public T clone() {
-        return cloneAt(minX, minY, minZ, maxX, maxY, maxZ, immutable);
+        return cloneAt(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     public int sizeX() {

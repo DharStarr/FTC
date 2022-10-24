@@ -4,8 +4,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.core.admin.PunishType;
 import net.forthecrown.core.admin.Punishment;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNodeItem;
@@ -20,7 +20,7 @@ import java.util.List;
 
 import static net.forthecrown.core.admin.ui.AdminUI.ENTRY;
 import static net.forthecrown.core.admin.ui.AdminUI.PUNISHMENT;
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 
 class PunishmentListPage extends ListUiPage<Punishment> {
     private final boolean current;

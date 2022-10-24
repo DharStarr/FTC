@@ -10,7 +10,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.DisplaySlot;
 
-import static net.forthecrown.text.Text.gradient;
+import static net.forthecrown.utils.text.Text.gradient;
 import static net.kyori.adventure.text.Component.*;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -75,7 +75,7 @@ public final class TabList {
         final boolean seeVanished = user.hasPermission(Permissions.VANISH_SEE);
 
         for (var u: Users.getOnline()) {
-            if (!seeVanished && u.get(Properties.VANISHED)) {
+            if (seeVanished && u.get(Properties.VANISHED)) {
                 continue;
             }
 

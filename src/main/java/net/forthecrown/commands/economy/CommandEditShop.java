@@ -4,19 +4,19 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.shops.ShopType;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShops;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.text.Component;
@@ -112,7 +112,7 @@ public class CommandEditShop extends FtcCommand {
                 .then(literal("sell").executes(c -> setType(c, true)))
 
                 .then(literal("price")
-                        .then(argument("price_actual", IntegerArgumentType.integer(0, Vars.maxSignShopPrice))
+                        .then(argument("price_actual", IntegerArgumentType.integer(0, GeneralConfig.maxSignShopPrice))
                                 .executes(c -> {
                                     Player player = c.getSource().asPlayer();
                                     SignShop shop = getShop(player);
@@ -256,7 +256,7 @@ public class CommandEditShop extends FtcCommand {
             throw Exceptions.LOOK_AT_SHOP;
         }
 
-        SignShop result = Crown.getEconomy().getShops().getShop(block);
+        SignShop result = Economy.get().getShops().getShop(block);
 
         if (!SignShops.mayEdit(result, player.getUniqueId())
                 && !player.hasPermission(Permissions.ADMIN)

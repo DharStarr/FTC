@@ -4,7 +4,6 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Vars;
 import net.forthecrown.core.holidays.RewardRange;
 import net.forthecrown.royalgrenadier.VanillaMappedArgument;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -16,7 +15,7 @@ public class RewardRangeArgument implements ArgumentType<RewardRange>, VanillaMa
         MinMaxBounds.Ints ints = RangeArgument.intRange().parse(reader);
 
         int min = ints.getMin() == null ? 0 : ints.getMin();
-        int max = ints.getMax() == null ? Vars.maxMoneyAmount : ints.getMax();
+        int max = ints.getMax() == null ? Integer.MAX_VALUE : ints.getMax();
 
         if (min < 100 || max < 100) {
             throw Exceptions.INVALID_REWARD_RANGE;

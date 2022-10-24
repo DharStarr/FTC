@@ -2,12 +2,12 @@ package net.forthecrown.events.economy;
 
 import net.forthecrown.commands.click.ClickableTextNode;
 import net.forthecrown.commands.click.ClickableTexts;
-import net.forthecrown.core.Main;
-import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.market.MarketManager;
+import net.forthecrown.economy.market.MarketShop;
 import net.forthecrown.economy.market.Markets;
 import net.forthecrown.economy.market.ShopEntrance;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Util;
@@ -50,7 +50,7 @@ public class MarketListener implements Listener {
         }
 
         String shopName = container.get(ShopEntrance.NOTICE_KEY, PersistentDataType.STRING);
-        MarketManager markets = Main.getEconomy().getMarkets();
+        MarketManager markets = Economy.get().getMarkets();
         MarketShop shop = markets.get(shopName);
 
         openPurchaseBook(markets, shop, user);

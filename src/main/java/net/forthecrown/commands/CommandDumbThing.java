@@ -1,7 +1,7 @@
 package net.forthecrown.commands;
 
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.utils.Util;
@@ -47,7 +47,7 @@ public class CommandDumbThing extends FtcCommand {
                     Bee bee = l.getWorld().spawn(l, Bee.class);
                     bee.setVelocity(player.getEyeLocation().getDirection().multiply(2));
 
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Crown.plugin(), () -> {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(FTC.getPlugin(), () -> {
                         final Location loc = bee.getLocation();
                         bee.remove();
                         loc.getWorld().createExplosion(loc, 0F);
@@ -69,7 +69,7 @@ public class CommandDumbThing extends FtcCommand {
 
                     cat.setVelocity(player.getEyeLocation().getDirection().multiply(2));
 
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Crown.plugin(), () -> {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(FTC.getPlugin(), () -> {
                         final Location loc = cat.getLocation();
                         cat.remove();
                         loc.getWorld().createExplosion(loc, 0F);

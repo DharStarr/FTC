@@ -14,7 +14,7 @@ import net.forthecrown.regions.RegionAccess;
 import net.forthecrown.regions.RegionManager;
 import net.forthecrown.regions.Regions;
 import net.forthecrown.regions.visit.RegionVisit;
-import net.forthecrown.text.Messages;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserTeleport;
 import net.forthecrown.user.data.UserHomes;
@@ -44,7 +44,7 @@ public class CommandHome extends FtcCommand {
 
                     //Check if they have home pole, and if they're in the correct world
                     if (homes.getHomeRegion() != null
-                            && user.getWorld().equals(regions.getWorld())
+                            && user.getWorld().equals(Regions.getWorld())
                     ) {
                         RegionAccess local = regions.getAccess(user.getRegionPos());
                         PopulationRegion region = regions.get(homes.getHomeRegion());

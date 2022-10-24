@@ -1,7 +1,10 @@
 package net.forthecrown.economy;
 
 import lombok.Getter;
+import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.DayChange;
+import net.forthecrown.core.config.ConfigManager;
+import net.forthecrown.economy.market.MarketConfig;
 import net.forthecrown.economy.market.MarketManager;
 import net.forthecrown.economy.sell.SellShop;
 import net.forthecrown.economy.shops.ShopManager;
@@ -11,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Economy {
+    private static final Economy INSTANCE = new Economy();
+
     @Getter
     private final SellShop sellShop;
 
@@ -23,7 +28,7 @@ public class Economy {
     @Getter
     private final Path directory;
 
-    public Economy() {
+    private Economy() {
         this.directory = PathUtil.getPluginDirectory("economy");
 
         this.sellShop = new SellShop(directory);
@@ -31,11 +36,24 @@ public class Economy {
 
         this.shops = new ShopManager();
 
-        if (!Files.exists(sellShop.getPath())) {
-            sellShop.createDefaults();
+        ConfigManager.get()
+                .registerConfig(MarketConfig.class);
+    }
+
+    public static Economy get() {
+        return INSTANCE;
+    }
+
+    static void init() {
+        if (!Files.exists(get().getSellShop().getPath())) {
+            get().getSellShop().createDefaults();
         }
 
-        DayChange.get().addListener(markets);
+        DayChange.get()
+                .addListener(get().getMarkets());
+
+        AutoSave.get()
+                .addCallback(get()::save);
     }
 
     public void save() {

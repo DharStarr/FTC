@@ -2,11 +2,11 @@ package net.forthecrown.events;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.FtcDiscord;
+import net.forthecrown.core.FTC;
 import net.forthecrown.events.economy.*;
 import net.forthecrown.events.player.*;
 import net.forthecrown.user.packet.PacketListeners;
+import net.forthecrown.utils.Util;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
@@ -68,16 +68,15 @@ public final class Events {
         register(new ResourceWorldListener());
         register(new WeaponListener());
 
-        register(new SellShopListener());
+        register(new AutoSellListener());
 
-        if (FtcDiscord.isActive()) {
-            Crown.logger().info("Discord listener registered");
-            FtcDiscord.getHandle().getJda().addEventListener(
-                    new DiscordListener()
-            );
+        // Listen for voting plugin votes
+        if (Util.isPluginEnabled("VotingPlugin")) {
+            register(new VoteListener());
         }
 
         PacketListeners.register(new PlayerPacketListener());
+        PacketListeners.register(new ChatPacketListener());
     }
 
     /**
@@ -85,7 +84,7 @@ public final class Events {
      * @param listener The listener to register
      */
     public static void register(Listener listener) {
-        Bukkit.getPluginManager().registerEvents(listener, Crown.plugin());
+        Bukkit.getPluginManager().registerEvents(listener, FTC.getPlugin());
     }
 
     /**
@@ -111,7 +110,7 @@ public final class Events {
 
             Exceptions.handleSyntaxException(sender, e);
         } catch (Throwable e) {
-            Crown.logger().error("Error running listener for event " + event.getClass().getSimpleName(), e);
+            FTC.getLogger().error("Error running listener for event " + event.getClass().getSimpleName(), e);
         }
     }
 }

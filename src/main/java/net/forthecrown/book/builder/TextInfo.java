@@ -1,14 +1,10 @@
 package net.forthecrown.book.builder;
 
-import net.forthecrown.core.Crown;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnegative;
 
 public final class TextInfo {
-    private static final Logger LOGGER = Crown.logger();
-
     public static int getCharPxWidth(char c) {
         return switch(c) {
             case '!', '\'', ',', '.', ':', ';', 'i', '|' -> 1;
@@ -40,6 +36,8 @@ public final class TextInfo {
 
         StringBuilder buffer = new StringBuilder();
 
+        // Test if pixel count is odd by testing
+        // the first bit of the pixel integer
         if ((pixels & 1) == 0) {
             pixels -= 3;
             buffer.append("`");

@@ -1,4 +1,4 @@
-package net.forthecrown.vars.types;
+package net.forthecrown.utils.io.types;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.serialization.DataResult;
@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
-public class WorldVarType implements SerializerParser<World> {
+public class WorldSerializerParser implements SerializerParser<World> {
     @Override
     public @NotNull String asString(@NotNull World value) {
         return value.getName();

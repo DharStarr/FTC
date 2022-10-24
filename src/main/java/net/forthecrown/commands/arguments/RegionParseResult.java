@@ -6,9 +6,10 @@ import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.regions.PopulationRegion;
 import net.forthecrown.regions.RegionManager;
-import net.forthecrown.regions.RegionPos;
+import net.forthecrown.regions.RegionProperty;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
+import net.forthecrown.user.data.UserHomes;
 
 public class RegionParseResult {
     private final UserParseResult userParse;
@@ -25,62 +26,62 @@ public class RegionParseResult {
     }
 
     /**
-     * Gets whether the parsed input is a player's name or target selector
-     * @return Read the above line
-     */
-    public boolean isUserRegion() {
-        return userParse != null;
-    }
-
-    /**
      * Gets a region
      * @param source The source getting the region
      * @param checkInvite Whether this should check if the source was invited to the region
      * @return The parsed region
-     * @throws CommandSyntaxException If {@link RegionParseResult#isUserRegion()} is true, then it will
+     * @throws CommandSyntaxException Ifis true, then it will
      * be thrown either by the user not having a home region, or if checkInvite is true, then it will
      * be thrown because the source is not invited to the parsed region
      */
     public PopulationRegion getRegion(CommandSource source, boolean checkInvite) throws CommandSyntaxException {
-        //If the given input is a player's name
-        if (!isUserRegion()) {
+        PopulationRegion region;
+
+        if (userParse == null) {
+            region = this.region;
+        } else {
+            User user = userParse.getUser(source, checkInvite);
+            boolean self = source.textName().equals(user.getName());
+
+            UserHomes homes = user.getHomes();
+            var homePos = homes.getHomeRegion();
+
+            if (homePos == null) {
+                if (self) {
+                    throw Exceptions.NO_HOME_REGION;
+                } else {
+                    throw Exceptions.noHomeRegion(user);
+                }
+            }
+
+            region = RegionManager.get()
+                    .get(homePos);
+        }
+
+        if (!source.isPlayer()
+                || !checkInvite
+                || source.hasPermission(Permissions.REGIONS_ADMIN)
+        ) {
             return region;
         }
 
-        User user = userParse.getUser(source, true);
-        boolean self = user.getName().equals(source.textName());
+        User sourceUser = Users.get(source.asPlayer());
+        boolean invited = region.hasValidInvite(sourceUser.getUniqueId());
 
-        //Get the region cords of their home,
-        //If they don't have, throw exception
-        RegionPos homeCords = user.getHomes().getHomeRegion();
-        if(homeCords == null) {
-            if (self) {
-                throw Exceptions.NO_HOME_REGION;
-            } else {
-                throw Exceptions.noHomeRegion(user);
-            }
+        if (invited) {
+            return region;
         }
-
-        region = RegionManager.get().get(homeCords);
 
         if (region.hasName()) {
-            return region;
-        }
-
-        if (self) {
-            return region;
-        }
-
-        //Check if source can access the region
-        if(source.isPlayer() && checkInvite && !source.hasPermission(Permissions.REGIONS_ADMIN)) {
-            User sourceUser = Users.get(source.asPlayer());
-
-            //If source is not allowed to access the region
-            if(!sourceUser.getInteractions().hasBeenInvited(user.getUniqueId())) {
-                throw Exceptions.notInvited(user);
+            if (region.hasProperty(RegionProperty.PRIVATE_POLE)) {
+                throw Exceptions.privateRegion(region);
             }
+
+            return region;
         }
 
-        return region;
+        throw Exceptions.notInvited(
+                region.getInviter(sourceUser.getUniqueId())
+        );
     }
 }

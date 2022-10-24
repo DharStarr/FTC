@@ -1,7 +1,7 @@
 package net.forthecrown.datafix;
 
 import lombok.Getter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Level;
@@ -41,7 +41,7 @@ public class UpdaterLogger extends ExtendedLoggerWrapper {
         // of if there's no file printer to print to,
         // or if an error's being printed, console
         // should know about that lmao
-        if (Crown.inDebugMode()
+        if (FTC.inDebugMode()
                 || output == null
                 || level == Level.ERROR
         ) {

@@ -7,14 +7,14 @@ import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.UserScoreMap;
 import net.kyori.adventure.text.Component;
 
-import static net.forthecrown.text.Text.format;
+import static net.forthecrown.utils.text.Text.format;
 
 public class UserMapCommand extends FtcCommand {
 

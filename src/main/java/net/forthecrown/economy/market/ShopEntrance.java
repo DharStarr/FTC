@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.Util;

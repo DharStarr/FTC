@@ -3,10 +3,11 @@ package net.forthecrown.dungeons.level.generator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.dungeons.level.*;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
+import net.forthecrown.dungeons.level.gate.GateType;
 import net.forthecrown.dungeons.level.gate.Gates;
 import net.forthecrown.utils.math.Transform;
 import org.apache.commons.lang3.Range;
@@ -16,15 +17,14 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.forthecrown.dungeons.level.generator.SectionGenerator.GATE_INDEX_ENTRANCE;
+import static net.forthecrown.dungeons.level.generator.PieceGenerator.GATE_INDEX_ENTRANCE;
 import static net.forthecrown.dungeons.level.generator.StepResult.*;
 
 @Getter
 public class TreeGenerator {
-    private static final Logger LOGGER = Crown.logger();
+    private static final Logger LOGGER = FTC.getLogger();
 
     public static final int MAX_OVERLAP = 2;
-    public static final int POTENTIAL_LEVELS = 200;
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
@@ -34,11 +34,35 @@ public class TreeGenerator {
     private DungeonLevel level;
     private boolean finished = false;
 
-    private final Deque<SectionGenerator> genQueue = new ArrayDeque<>();
+    private final Deque<PieceGenerator> genQueue = new ArrayDeque<>();
 
     private final List<LevelGenResult> generationResults = new ObjectArrayList<>();
 
     private final Comparator<LevelGenResult> comparator = Comparator.comparing(this::isValidLevel)
+            .thenComparing((o1, o2) -> {
+                // o1 less than o2 = -1
+                // o2 less than o1 =  1
+
+                if (o1.totalRoomCount < o2.totalRoomCount
+                        && o1.closedEndConnectors > o2.closedEndConnectors
+                ) {
+                    return -1;
+                }
+
+                if (o2.totalRoomCount < o1.totalRoomCount
+                        && o1.closedEndConnectors < o2.closedEndConnectors
+                ) {
+                    return 1;
+                }
+
+                return 0;
+            })
+
+            .thenComparing(
+                    Comparator.comparing(LevelGenResult::totalRoomCount)
+                            .reversed()
+            )
+
             .thenComparing(LevelGenResult::closedEndConnectors)
             .thenComparing(value -> ((double) value.nonConnectorRooms) / value.totalRoomCount);
 
@@ -69,13 +93,17 @@ public class TreeGenerator {
         createPotentialLevels();
 
         generationResults.sort(comparator);
-        return generationResults.get(0).level();
+
+        var level = generationResults.get(0).level();
+        generationResults.clear();
+
+        return level;
     }
 
     private void createPotentialLevels() {
         int created = 0;
 
-        while (created < POTENTIAL_LEVELS) {
+        while (created < config.getPotentialLevels()) {
             created++;
 
             reset();
@@ -142,10 +170,10 @@ public class TreeGenerator {
         level = new DungeonLevel();
         level.addPiece(root);
 
-        var gates = SectionGenerator.createGates(root, root.getType().getGates());
+        var gates = PieceGenerator.createGates(root, root.getType().getGates());
         genQueue.addAll(
                 gates.stream()
-                        .map(gate -> new PathSection(this, gate, null))
+                        .map(gate -> new PieceGenerator(SectionType.CONNECTOR, this, gate, null))
                         .toList()
         );
     }
@@ -174,74 +202,68 @@ public class TreeGenerator {
     }
 
     public void step() {
-        SectionGenerator<?> peeked = genQueue.poll();
+        PieceGenerator section = genQueue.poll();
 
-        if (peeked == null) {
+        if (section == null) {
             finished = true;
             return;
         }
 
-        var gate = peeked.origin;
-        var result = peeked.generate();
+        var gate = section.getOrigin();
+        var result = section.generate();
 
         switch (result.getResultCode()) {
             case SUCCESS -> {
                 result.getSections().forEach(genQueue::addLast);
-                peeked.origin.addChild(result.getRoom());
-
+                section.onSuccess(result.getRoom());
                 level.addPiece(result.getRoom());
             }
 
             case FAILED -> {
-                SectionGenerator parent = peeked.sectionParent();
+                PieceGenerator parent = section.sectionParent();
 
                 if (parent == null) {
                     gate.setOpen(false);
                     return;
                 }
 
-                parent.failedTypes.add(gate.getParent().getType());
-                parent.origin.clearChildren();
-
-                var parentRoot = parent.sectionRoot();
-                if (parentRoot == null) {
-                    parentRoot = parent;
-                }
-
-                parentRoot.roomCount--;
-
+                parent.onChildFail((RoomType) gate.getParent().getType());
                 genQueue.addFirst(parent);
             }
 
             case MAX_DEPTH -> {
-                var parent = peeked.parent;
+                var parent = section.getParent();
 
-                if (peeked.sectionDepth < peeked.optimalDepth || parent instanceof PathSection) {
-                    var root = peeked.sectionRoot();
+                if (section.getSectionDepth() < section.getData().getOptimalDepth()
+                        || (parent != null && parent.getType() == SectionType.CONNECTOR)
+                ) {
+                    var root = section.sectionRoot();
 
-                    root.origin.setOpen(true);
-                    root.origin.clearChildren();
+                    if (root == null) {
+                        section.getOrigin().setOpen(false);
+                        return;
+                    }
+
+                    root.getOrigin().setOpen(true);
+                    root.getOrigin().clearChildren();
 
                     genQueue.addFirst(root);
-                } else if (parent instanceof RoomSection) {
-                    peeked.origin.setOpen(false);
+                } else if (parent != null && parent.getType() == SectionType.ROOM) {
+                    section.getOrigin().setOpen(false);
                 }
             }
 
             case MAX_SECTION_DEPTH -> {
-                genQueue.addFirst(switchGeneratorType(peeked, peeked.origin, peeked.parent));
+                genQueue.addFirst(switchGeneratorType(section, section.getOrigin(), section.getParent()));
             }
 
             default -> throw new IllegalArgumentException("Invalid return code: " + result.getResultCode());
         }
     }
 
-    SectionGenerator switchGeneratorType(SectionGenerator existing, DungeonGate origin, SectionGenerator parent) {
-        if (existing instanceof RoomSection) {
-            return new PathSection(TreeGenerator.this, origin, parent);
-        } else {
-            return new RoomSection(TreeGenerator.this, origin, parent);
-        }
+    PieceGenerator switchGeneratorType(PieceGenerator existing, DungeonGate origin, PieceGenerator parent) {
+        var type = existing.getType().next();
+        return new PieceGenerator(type, this, origin, parent);
     }
 
     /* ----------------------------- CLEAN UP ------------------------------ */
@@ -259,7 +281,7 @@ public class TreeGenerator {
                 }
 
                 DungeonRoom parent = (DungeonRoom) gate.getParent();
-                var gateType = parent.getType().hasFlags(Rooms.FLAG_CONNECTOR)
+                Holder<GateType> gateType = parent.getType().hasFlags(Rooms.FLAG_CONNECTOR)
                         ? Gates.COLLAPSED_GATE : Gates.DECORATE_GATE;
 
                 DungeonGate g = gateType.getValue().create();
@@ -365,10 +387,6 @@ public class TreeGenerator {
         }
 
         for (DungeonGate g: result.endGates) {
-            if (!g.isOpen()) {
-                continue;
-            }
-
             DungeonRoom room = bossRoom.create();
 
             NodeAlign.align(
@@ -382,7 +400,6 @@ public class TreeGenerator {
                 g.addChild(room);
                 level.setBossRoom(room);
 
-                LOGGER.info("Appended boss room!");
                 return;
             }
         }

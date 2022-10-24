@@ -3,7 +3,7 @@ package net.forthecrown.user;
 import net.forthecrown.utils.Tasks;
 import org.bukkit.scheduler.BukkitTask;
 
-import static net.forthecrown.text.Messages.YOU_ARE_IN_VANISH;
+import static net.forthecrown.core.Messages.YOU_ARE_IN_VANISH;
 
 /**
  * A small class that ensures vanished users are told they are in vanish all the time

@@ -5,13 +5,13 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.Messages;
-import net.forthecrown.user.property.Properties;
-import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.Messages;
 import net.forthecrown.user.*;
-import net.forthecrown.utils.io.JsonUtils;
+import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.Time;
+import net.forthecrown.utils.io.JsonUtils;
+import net.forthecrown.utils.io.JsonWrapper;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
@@ -55,16 +55,6 @@ public class UserInteractions extends UserComponent {
      */
     @Getter
     private final Set<UUID> separated = new ObjectOpenHashSet<>();
-
-    /**
-     * Players this user has invited to visit
-     */
-    private transient final Set<UUID> sentInvites = new ObjectOpenHashSet<>();
-
-    /**
-     * Players that have invited this user to visit their region
-     */
-    private transient final Set<UUID> recievedInvitations = new ObjectOpenHashSet<>();
 
     /**
      * All incoming teleport requests
@@ -333,7 +323,7 @@ public class UserInteractions extends UserComponent {
         }
 
         return Time.isPast(
-                Vars.marriageCooldown + tracker.get(TimeField.MARRIAGE_CHANGE)
+                GeneralConfig.marriageCooldown + tracker.get(TimeField.MARRIAGE_CHANGE)
         );
     }
 
@@ -355,79 +345,6 @@ public class UserInteractions extends UserComponent {
      */
     public boolean isMarried() {
         return getSpouse() != null;
-    }
-
-    /**
-     * Checks if the user has been invited to the given UUID's home region
-     * @param by The inviter
-     * @return Whether the given UUID invited this user
-     */
-    public boolean hasBeenInvited(UUID by) {
-        return recievedInvitations.contains(by);
-    }
-
-    /**
-     * Checks whether the user invited the given UUID
-     * @param target the invitee
-     * @return Whether the given UUID was invited by this user
-     */
-    public boolean hasInvited(UUID target) {
-        return sentInvites.contains(target);
-    }
-
-    /**
-     * Invites the given UUID
-     * @param target the UUID to invite
-     */
-    public void addSentInvitation(UUID target) {
-        sentInvites.add(target);
-    }
-
-    /**
-     * Invites this user to the given UUID's home region
-     * @param sender The invite sender
-     */
-    public void addReceivedInvitation(UUID sender) {
-        recievedInvitations.add(sender);
-    }
-
-    /**
-     * Cancels or just removes an invite to the given UUID
-     * @param to the UUID to remove the invite from
-     */
-    public void removeInvite(UUID to) {
-        sentInvites.remove(to);
-    }
-
-    /**
-     * Removes an invite sent by the given UUID
-     * @param from the sender of the invite to remove
-     */
-    public void removeRecievedInvite(UUID from) {
-        recievedInvitations.remove(from);
-    }
-
-    /**
-     * Clears all sent and received region visit invites.
-     * Will also remove this user from the invite lists
-     * of the users this user invited or was invited by
-     */
-    public void clearInvites() {
-        UUID owner = user.getUniqueId();
-
-        for (UUID id: recievedInvitations) {
-            var user = Users.get(id);
-            user.getInteractions().removeInvite(owner);
-        }
-
-        recievedInvitations.clear();
-
-        for (UUID id: sentInvites) {
-            var user = Users.get(id);
-            user.getInteractions().removeRecievedInvite(owner);
-        }
-
-        recievedInvitations.clear();
     }
 
     @Override

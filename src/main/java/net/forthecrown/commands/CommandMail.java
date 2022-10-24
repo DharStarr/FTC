@@ -10,7 +10,7 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.CmdValidate;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.Mute;
@@ -19,12 +19,12 @@ import net.forthecrown.events.Events;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.inventory.FtcInventory;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.format.page.Footer;
-import net.forthecrown.text.format.page.PageEntry;
-import net.forthecrown.text.format.page.PageEntryIterator;
-import net.forthecrown.text.format.page.PageFormat;
-import net.forthecrown.text.writer.TextWriter;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.format.page.Footer;
+import net.forthecrown.utils.text.format.page.PageEntry;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
+import net.forthecrown.utils.text.format.page.PageFormat;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.UserOfflineException;
@@ -326,7 +326,7 @@ public class CommandMail extends FtcCommand {
                 .whenComplete((users, throwable) -> {
                     if (throwable != null) {
                         source.sendAdmin("Error sending mail to all users, check console");
-                        Crown.logger().error(throwable);
+                        FTC.getLogger().error(throwable);
 
                         return;
                     }

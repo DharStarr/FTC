@@ -1,8 +1,8 @@
 package net.forthecrown.regions;
 
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -72,7 +72,7 @@ public interface RegionAccess extends HoverEventSource<Component> {
     }
 
     default boolean hasName() {
-        return !Util.isNullOrBlank(getName());
+        return !Strings.isNullOrEmpty(getName());
     }
 
     String getName();

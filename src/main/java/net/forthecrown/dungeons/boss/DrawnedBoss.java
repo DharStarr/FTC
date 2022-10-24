@@ -1,7 +1,7 @@
 package net.forthecrown.dungeons.boss;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Worlds;
 import net.forthecrown.dungeons.BossItems;
 import net.forthecrown.dungeons.DungeonAreas;
@@ -84,7 +84,7 @@ public class DrawnedBoss extends SimpleBoss {
 
         // Sounds
         for(int i = 1; i < 6; i++) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Crown.plugin(), () -> {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(FTC.getPlugin(), () -> {
                 entity.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, entity.getLocation().getX(), entity.getLocation().getY() + 1.5, entity.getLocation().getZ(), 30, 0.2d, 0.1d, 0.2d, 1);
                 entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, SoundCategory.MASTER, 2f, 0.8f);
             }, i * 8L);
@@ -101,7 +101,7 @@ public class DrawnedBoss extends SimpleBoss {
 
         entity.getWorld().strikeLightningEffect(entity.getLocation());
 
-        Bukkit.getScheduler().runTaskLater(Crown.plugin(), () -> {
+        Bukkit.getScheduler().runTaskLater(FTC.getPlugin(), () -> {
             // Remove boss' godmode
             entity.setInvulnerable(false);
             entity.setGlowing(false);

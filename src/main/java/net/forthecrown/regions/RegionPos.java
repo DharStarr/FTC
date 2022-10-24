@@ -2,7 +2,6 @@ package net.forthecrown.regions;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.sk89q.worldedit.math.BlockVector2;
 import lombok.Getter;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.Tag;
@@ -100,8 +99,8 @@ public class RegionPos {
      * Creates a 2D vector with the absolute cords of this region
      * @return The region's absolute vector
      */
-    public BlockVector2 toAbsolute() {
-        return BlockVector2.at(getAbsoluteX(), getAbsoluteZ());
+    public Vector2i toAbsolute() {
+        return Vector2i.from(getAbsoluteX(), getAbsoluteZ());
     }
 
     /**

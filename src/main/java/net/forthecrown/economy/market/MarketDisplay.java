@@ -1,11 +1,11 @@
 package net.forthecrown.economy.market;
 
 import com.google.common.base.Joiner;
-import net.forthecrown.text.Text;
-import net.forthecrown.text.TextJoiner;
-import net.forthecrown.text.writer.PrefixedWriter;
-import net.forthecrown.text.writer.TextWriter;
-import net.forthecrown.text.writer.TextWriters;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
+import net.forthecrown.utils.text.writer.PrefixedWriter;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.Users;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;

@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.dungeons.boss.components.BossComponent;
 import net.forthecrown.utils.math.WorldBounds3i;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class AbstractBoss implements DungeonBoss {
-    protected static final Logger LOGGER = Crown.logger();
+    protected static final Logger LOGGER = FTC.getLogger();
 
     // Final variables that give details about boss
     private final String name;
@@ -88,7 +88,7 @@ public abstract class AbstractBoss implements DungeonBoss {
     protected void startTickTask() {
         stopTickTask(); // Ensure there isn't already a tick task running
 
-        tickTask = Bukkit.getScheduler().runTaskTimer(Crown.plugin(), () -> {
+        tickTask = Bukkit.getScheduler().runTaskTimer(FTC.getPlugin(), () -> {
             tick();
             runComponents(component -> component.onTick(this, currentContext()));
         }, 1L, 1L);
@@ -101,10 +101,10 @@ public abstract class AbstractBoss implements DungeonBoss {
     }
 
     protected void registerEvents() {
-        Bukkit.getPluginManager().registerEvents(this, Crown.plugin());
+        Bukkit.getPluginManager().registerEvents(this, FTC.getPlugin());
 
         runComponents(component -> {
-            Bukkit.getPluginManager().registerEvents(component, Crown.plugin());
+            Bukkit.getPluginManager().registerEvents(component, FTC.getPlugin());
         });
     }
 

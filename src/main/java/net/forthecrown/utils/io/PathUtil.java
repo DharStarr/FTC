@@ -3,7 +3,7 @@ package net.forthecrown.utils.io;
 import com.google.errorprone.annotations.FormatString;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,7 @@ public final class PathUtil {
     private PathUtil() {}
 
     public static Path getPluginDirectory() {
-        return Crown.plugin().getDataFolder().toPath();
+        return FTC.getPlugin().getDataFolder().toPath();
     }
 
     public static Path pluginPath(String first, String... others) {

@@ -1,8 +1,8 @@
 package net.forthecrown.commands.item;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.forthecrown.text.Messages;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;

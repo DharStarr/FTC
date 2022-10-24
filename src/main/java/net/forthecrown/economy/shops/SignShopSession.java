@@ -2,10 +2,11 @@ package net.forthecrown.economy.shops;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.text.Messages;
-import net.forthecrown.core.Crown;
-import net.forthecrown.core.Vars;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.core.Messages;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
@@ -118,7 +119,7 @@ public class SignShopSession {
      */
     public void expire() {
         // Remove this session from the manager, as it has expired
-        Crown.getEconomy().getShops().removeSession(this);
+        Economy.get().getShops().removeSession(this);
 
         // Nothing happened lol
         if (getAmount() <= 0) {
@@ -132,7 +133,7 @@ public class SignShopSession {
         if (shouldLog()) {
             // Brilliant logger statement, I can't wait until we have
             // an economy logger to throw this into
-            Crown.logger().info(
+            FTC.getLogger().info(
                     "{} {} {} {} at a{} shop, location: {} for {}, shop price: {}",
 
                     customer.getName(),
@@ -168,12 +169,12 @@ public class SignShopSession {
 
     /**
      * Checks if this session should be logged by two checking the value of
-     * one of two variables, {@link Vars#logAdminShop} or
-     * {@link Vars#logNormalShop}
+     * one of two variables, {@link GeneralConfig#logAdminShop} or
+     * {@link GeneralConfig#logNormalShop}
      * @return True, if this session should be logged to console, false otherwise
      */
     private boolean shouldLog() {
-        return type.isAdmin() ? Vars.logAdminShop : Vars.logNormalShop;
+        return type.isAdmin() ? GeneralConfig.logAdminShop : GeneralConfig.logNormalShop;
     }
 
     /**

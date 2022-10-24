@@ -3,7 +3,7 @@ package net.forthecrown.cosmetics.travel;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.forthecrown.core.Crown;
+import net.forthecrown.core.FTC;
 import net.forthecrown.utils.inventory.menu.Slot;
 import net.forthecrown.user.User;
 import net.kyori.adventure.text.Component;
@@ -31,7 +31,7 @@ public class BeamTravelEffect extends TravelEffect {
     @Override // Beam at destination pole, is 1 sec later (to give time to load)
     public void onPoleTeleport(User user, Location from, final Location pole) {
         summonBeam(from, 4096);
-        Bukkit.getScheduler().runTaskLater(Crown.plugin(), () -> {
+        Bukkit.getScheduler().runTaskLater(FTC.getPlugin(), () -> {
             summonBeam(pole, 4096);
             playSound(pole);
         }, 20L);
@@ -82,6 +82,6 @@ public class BeamTravelEffect extends TravelEffect {
                     counters.removeInt(id);
                 }
             }
-        }.runTaskTimer(Crown.plugin(), 0, 1);
+        }.runTaskTimer(FTC.getPlugin(), 0, 1);
     }
 }

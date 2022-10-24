@@ -1,7 +1,7 @@
 package net.forthecrown.inventory;
 
 import net.forthecrown.core.Worlds;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.utils.RomanNumeral;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -11,7 +11,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import static net.forthecrown.text.Text.nonItalic;
+import static net.forthecrown.utils.text.Text.nonItalic;
 import static net.kyori.adventure.text.Component.text;
 
 /**

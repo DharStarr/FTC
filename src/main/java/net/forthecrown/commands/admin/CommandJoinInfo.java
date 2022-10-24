@@ -1,14 +1,14 @@
 package net.forthecrown.commands.admin;
 
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import net.forthecrown.text.Text;
+import net.forthecrown.core.config.JoinInfo;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.kyori.adventure.text.Component;
 
-import static net.forthecrown.core.Crown.getJoinInfo;
 
 public class CommandJoinInfo extends FtcCommand {
 
@@ -37,7 +37,7 @@ public class CommandJoinInfo extends FtcCommand {
         command
                 .then(literal("view")
                         .executes(c -> {
-                            c.getSource().sendMessage(getJoinInfo().display());
+                            c.getSource().sendMessage(JoinInfo.display());
                             return 0;
                         })
                 )
@@ -46,7 +46,7 @@ public class CommandJoinInfo extends FtcCommand {
                         .executes(c -> {
                             c.getSource().sendMessage(
                                     Component.text("Should show join info: ")
-                                            .append(Component.text(getJoinInfo().isVisible()))
+                                            .append(Component.text(JoinInfo.visible))
                             );
                             return 0;
                         })
@@ -54,7 +54,7 @@ public class CommandJoinInfo extends FtcCommand {
                         .then(argument("shouldShow", BoolArgumentType.bool())
                                 .executes(c -> {
                                     boolean bool = c.getArgument("shouldShow", Boolean.class);
-                                    getJoinInfo().setVisible(bool);
+                                    JoinInfo.visible = bool;
 
                                     c.getSource().sendAdmin(
                                             Component.text("Set should show join message: ")
@@ -69,7 +69,7 @@ public class CommandJoinInfo extends FtcCommand {
                         .executes(c -> {
                             c.getSource().sendMessage(
                                     Component.text("Should show join end info: ")
-                                            .append(Component.text(getJoinInfo().isEndVisible()))
+                                            .append(Component.text(JoinInfo.endVisible))
                             );
                             return 0;
                         })
@@ -77,7 +77,7 @@ public class CommandJoinInfo extends FtcCommand {
                         .then(argument("shouldShow", BoolArgumentType.bool())
                                 .executes(c -> {
                                     boolean bool = c.getArgument("shouldShow", Boolean.class);
-                                    getJoinInfo().setEndVisible(bool);
+                                    JoinInfo.endVisible = bool;
 
                                     c.getSource().sendAdmin(
                                             Component.text("Set should show join end message: ")
@@ -92,10 +92,10 @@ public class CommandJoinInfo extends FtcCommand {
                         .then(argument("component", Arguments.CHAT)
                                 .executes(c -> {
                                     Component component = c.getArgument("component", Component.class);
-                                    getJoinInfo().setInfo(component);
+                                    JoinInfo.info = component;
 
                                     c.getSource().sendMessage(
-                                            Text.format("Set join info to '{0}'", command)
+                                            Text.format("Set join info to '{0}'", component)
                                     );
                                     return 0;
                                 })
@@ -106,10 +106,10 @@ public class CommandJoinInfo extends FtcCommand {
                         .then(argument("component", Arguments.CHAT)
                                 .executes(c -> {
                                     Component component = c.getArgument("component", Component.class);
-                                    getJoinInfo().setEndInfo(component);
+                                    JoinInfo.endInfo = component;
 
                                     c.getSource().sendMessage(
-                                            Text.format("Set end join info to '{0}'", command)
+                                            Text.format("Set end join info to '{0}'", component)
                                     );
                                     return 0;
                                 })

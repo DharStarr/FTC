@@ -76,7 +76,9 @@ public class DungeonGate extends DungeonPiece {
 
     @Override
     protected boolean canBeChild(DungeonPiece o) {
-        return o instanceof DungeonRoom && this.isOpen();
+        return o instanceof DungeonRoom
+                && this.isOpen()
+                && !hasChildren();
     }
 
     @Override

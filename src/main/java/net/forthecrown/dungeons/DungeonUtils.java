@@ -13,7 +13,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import static net.forthecrown.text.Messages.DUNGEON_LORE;
+import static net.forthecrown.core.Messages.DUNGEON_LORE;
 
 public final class DungeonUtils {
     private DungeonUtils() {}

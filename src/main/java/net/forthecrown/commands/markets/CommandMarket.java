@@ -13,21 +13,17 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Crown;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.Vars;
-import net.forthecrown.economy.market.MarketDisplay;
-import net.forthecrown.economy.market.MarketShop;
-import net.forthecrown.economy.market.MarketManager;
-import net.forthecrown.economy.market.ShopEntrance;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.economy.market.*;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
-import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.text.format.UnitFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.math.Vectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Location;
@@ -65,10 +61,10 @@ public class CommandMarket extends FtcCommand {
         command
                 .then(literal("refresh_all")
                         .executes(c -> {
-                            MarketManager markets = Crown.getEconomy().getMarkets();
+                            MarketManager markets = Economy.get().getMarkets();
 
                             for (MarketShop s: markets.getAllShops()) {
-                                s.refresh(markets.getWorld());
+                                s.refresh(Markets.getWorld());
                             }
 
                             c.getSource().sendAdmin("Refreshed all shops");
@@ -84,7 +80,7 @@ public class CommandMarket extends FtcCommand {
                                     RegionManager manager = WorldGuard.getInstance()
                                             .getPlatform()
                                             .getRegionContainer()
-                                            .get(BukkitAdapter.adapt(Crown.getEconomy().getMarkets().getWorld()));
+                                            .get(BukkitAdapter.adapt(Markets.getWorld()));
 
                                     ProtectedRegion region = manager.getRegion(rgName);
 
@@ -93,7 +89,7 @@ public class CommandMarket extends FtcCommand {
                                     }
 
                                     MarketShop shop = new MarketShop(region);
-                                    Crown.getEconomy().getMarkets().add(shop);
+                                    Economy.get().getMarkets().add(shop);
 
                                     c.getSource().sendAdmin("Created market shop tied to region '" + rgName + '\'');
                                     return 0;
@@ -104,7 +100,7 @@ public class CommandMarket extends FtcCommand {
                 //List all the region names
                 .then(literal("list")
                         .executes(c -> {
-                            MarketManager region = Crown.getEconomy().getMarkets();
+                            MarketManager region = Economy.get().getMarkets();
 
                             if(region.isEmpty()) {
                                 throw Exceptions.NO_SHOPS_EXIST;
@@ -132,13 +128,13 @@ public class CommandMarket extends FtcCommand {
 
                         .then(literal("wg_region")
                                 .executes(c -> {
-                                    MarketManager region = Crown.getEconomy().getMarkets();
+                                    MarketManager region = Economy.get().getMarkets();
                                     MarketShop shop = get(c);
 
                                     Actor actor = BukkitAdapter.adapt(c.getSource().asBukkit());
 
                                     RegionPrintoutBuilder builder = new RegionPrintoutBuilder(
-                                            region.getWorld().getName(),
+                                            Markets.getWorld().getName(),
                                             shop.getWorldGuard(),
                                             WorldGuard.getInstance().getProfileCache(),
                                             actor
@@ -152,9 +148,9 @@ public class CommandMarket extends FtcCommand {
                         .then(literal("refresh")
                                 .executes(c -> {
                                     MarketShop shop = get(c);
-                                    MarketManager region = Crown.getEconomy().getMarkets();
+                                    MarketManager region = Economy.get().getMarkets();
 
-                                    shop.refresh(region.getWorld());
+                                    shop.refresh(Markets.getWorld());
 
                                     c.getSource().sendAdmin(
                                             Component.text("Refreshed shop ")
@@ -167,7 +163,7 @@ public class CommandMarket extends FtcCommand {
                         .then(literal("reset")
                                 .executes(c -> {
                                     MarketShop shop = get(c);
-                                    MarketManager region = Crown.getEconomy().getMarkets();
+                                    MarketManager region = Economy.get().getMarkets();
 
                                     shop.reset();
 
@@ -224,7 +220,7 @@ public class CommandMarket extends FtcCommand {
                         .then(literal("delete")
                                 .executes(c -> {
                                     MarketShop shop = get(c);
-                                    MarketManager region = Crown.getEconomy().getMarkets();
+                                    MarketManager region = Economy.get().getMarkets();
 
                                     region.remove(shop);
 
@@ -272,7 +268,7 @@ public class CommandMarket extends FtcCommand {
                         )
 
                         .then(literal("price")
-                                .then(argument("price_actual", IntegerArgumentType.integer(-1, Vars.maxMoneyAmount))
+                                .then(argument("price_actual", IntegerArgumentType.integer(-1))
                                         .executes(c -> {
                                             MarketShop shop = get(c);
                                             int price = c.getArgument("price_actual", Integer.class);

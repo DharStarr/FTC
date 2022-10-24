@@ -8,14 +8,11 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import net.forthecrown.core.Crown;
-import net.forthecrown.economy.market.MarketReset;
-import net.forthecrown.economy.market.MarketScan;
-import net.forthecrown.economy.market.MarketShop;
-import net.forthecrown.economy.market.ShopEntrance;
-import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.economy.market.*;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.PathUtil;
+import net.forthecrown.utils.math.Vectors;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.nio.file.Path;
@@ -44,7 +41,7 @@ public class MarketsUpdate extends DataUpdater {
         RegionManager manager = WorldGuard.getInstance()
                 .getPlatform()
                 .getRegionContainer()
-                .get(BukkitAdapter.adapt(Crown.getEconomy().getMarkets().getWorld()));
+                .get(BukkitAdapter.adapt(Markets.getWorld()));
 
         for (var e: arr) {
             JsonObject marketJson = e.getAsJsonObject();
@@ -76,7 +73,7 @@ public class MarketsUpdate extends DataUpdater {
             MarketReset reset = new MarketReset(wgMin, copyPos, copySize);
             marketJson.add(MarketShop.KEY_RESET, reset.serialize());
 
-            Path newPath = Crown.getEconomy()
+            Path newPath = Economy.get()
                     .getMarkets()
                     .getDirectory()
                     .resolve(name + ".json");
