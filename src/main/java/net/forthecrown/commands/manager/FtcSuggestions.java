@@ -76,8 +76,8 @@ public interface FtcSuggestions {
             // suggest the one that matches what they're typing.
             // Check if we should suggest nicks before, as their
             // nick may just be a shortening of their name
-            if (user.hasNickname() && startsWith(token, user.getStringNickname())) {
-                builder.suggest(user.getStringNickname(), uuidTooltip(user.getUniqueId()));
+            if (user.hasNickname() && startsWith(token, user.getNickname())) {
+                builder.suggest(user.getNickname(), uuidTooltip(user.getUniqueId()));
             } else if (startsWith(token, user.getName())) {
                 builder.suggest(user.getName(), uuidTooltip(user.getUniqueId()));
             }

@@ -5,13 +5,14 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.utils.io.TagUtil;
-import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static net.forthecrown.utils.Util.getDataVersion;
 
 @RequiredArgsConstructor
 public class BlockStructure {
@@ -164,9 +165,5 @@ public class BlockStructure {
                     FunctionInfo::load
             ));
         }
-    }
-
-    private static int getDataVersion() {
-        return SharedConstants.getCurrentVersion().getDataVersion().getVersion();
     }
 }

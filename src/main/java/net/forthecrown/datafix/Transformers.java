@@ -31,6 +31,7 @@ public class Transformers {
     // A list of all current data transformers
     private static final DataUpdater[] CURRENT_TRANSFORMERS = {
             new UsablesJsonToTag(),
+            new VoteTopUpdater()
     };
 
     private static final Set<String> COMPLETED_TRANSFORMERS = new HashSet<>();

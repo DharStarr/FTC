@@ -58,6 +58,5 @@ public class PlayerJoinListener implements Listener {
         }
 
         AfkKicker.addOrDelay(user.getUniqueId());
-        TabList.update();
     }
 }

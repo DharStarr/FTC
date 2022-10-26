@@ -60,7 +60,7 @@ public class ActionCommand extends UsageAction {
         );
     }
 
-    private static String replaceSelectors(String name, String command) {
+    public static String replaceSelectors(String name, String command) {
         return command
                 .replaceAll("%plr", name)
                 .replaceAll("%player", name)

@@ -2,6 +2,7 @@ package net.forthecrown.commands.usables;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -9,7 +10,9 @@ import com.sk89q.worldedit.regions.Region;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
+import net.forthecrown.useables.TriggerType;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.UsableTrigger;
 import net.forthecrown.useables.Usables;
@@ -88,6 +91,41 @@ class TriggerNode extends InteractableNode<UsableTrigger> {
                     );
                     return 0;
                 });
+    }
+
+    @Override
+    protected void addEditArguments(RequiredArgumentBuilder<CommandSource, ?> command, UsageHolderProvider<UsableTrigger> provider) {
+        command
+                .then(literal("type")
+                        .executes(c -> {
+                            var trigger = provider.get(c);
+
+                            c.getSource().sendMessage(
+                                    Text.format("{0}'s type is '{1}'",
+                                            trigger.getName(),
+                                            trigger.getType().name().toLowerCase()
+                                    )
+                            );
+                            return 0;
+                        })
+
+                        .then(argument("type", EnumArgument.of(TriggerType.class))
+                                .executes(c -> {
+                                    var trigger = provider.get(c);
+                                    var type = c.getArgument("type", TriggerType.class);
+
+                                    trigger.setType(type);
+
+                                    c.getSource().sendAdmin(
+                                            Text.format("Set {0}'s type to {1}",
+                                                    trigger.getName(),
+                                                    type.name().toLowerCase()
+                                            )
+                                    );
+                                    return 0;
+                                })
+                        )
+                );
     }
 
     @Override

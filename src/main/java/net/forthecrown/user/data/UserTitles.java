@@ -3,14 +3,13 @@ package net.forthecrown.user.data;
 import com.google.gson.JsonElement;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
-import net.forthecrown.datafix.DataUpdater;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
 import net.forthecrown.user.UserOfflineException;
+import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
-import net.luckperms.api.LuckPermsProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +24,7 @@ import java.util.EnumSet;
  * @see #ensureSynced()
  */
 public class UserTitles extends UserComponent {
-
+    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
     /** The user's currently active title */
     @Getter
     private RankTitle title = RankTitle.DEFAULT;
@@ -36,6 +35,8 @@ public class UserTitles extends UserComponent {
 
     /** All non-default titles available to this user */
     private final EnumSet<RankTitle> available = EnumSet.noneOf(RankTitle.class);
+
+    /* ----------------------------- CONSTRUCTORS ------------------------------ */
 
     public UserTitles(User user, ComponentType<UserTitles> type) {
         super(user, type);
@@ -267,14 +268,6 @@ public class UserTitles extends UserComponent {
         var values = RankTier.values();
         ArrayUtils.reverse(values);
 
-        var lp = LuckPermsProvider.get();
-        var lpUser = lp.getUserManager().getUser(user.getUniqueId());
-
-        if (lpUser == null) {
-            FTC.getLogger().warn("{} is online but has no LuckPerms user :(", user.getName());
-            return;
-        }
-
         for (RankTier tier : values) {
             if (user.hasPermission("group." + tier.getLuckPermsGroup())) {
                 if (hasTier(tier)) {
@@ -282,19 +275,17 @@ public class UserTitles extends UserComponent {
                 }
 
                 FTC.getLogger().info("Adding tier {} to {}", tier, user.getName());
-                addTier(tier);
+                setTier(tier, false);
                 return;
-            } else {
-                if (hasTier(tier)) {
-                    DataUpdater.consoleCommand(
-                            "lp user %s parent add %s",
-                            user.getName(), tier.getLuckPermsGroup()
-                    );
+            } else if (hasTier(tier)) {
+                FTC.getLogger().info("Adding group {} to {}, due to title/group sync",
+                        tier.getLuckPermsGroup(), user.getName()
+                );
 
-                    continue;
-                }
-
-                addTier(tier);
+                Util.consoleCommand(
+                        "lp user %s parent add %s",
+                        user.getName(), tier.getLuckPermsGroup()
+                );
             }
         }
     }

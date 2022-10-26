@@ -1,14 +1,11 @@
 package net.forthecrown.datafix;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.errorprone.annotations.FormatMethod;
-import com.google.errorprone.annotations.FormatString;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DynamicOps;
 import net.forthecrown.utils.io.IOConsumer;
 import net.forthecrown.utils.io.PathUtil;
-import org.bukkit.Bukkit;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -180,17 +177,4 @@ public abstract class DataUpdater {
                 .orElse(0) > 0;
     }
 
-    /**
-     * Performs the given input as a command executed by the
-     * server's console
-     * @param format The command format
-     * @param args Any arguments to give to the format
-     */
-    @FormatMethod
-    public static void consoleCommand(@FormatString String format, Object... args) {
-        Bukkit.dispatchCommand(
-                Bukkit.getConsoleSender(),
-                format.formatted(args)
-        );
-    }
 }

@@ -1,13 +1,11 @@
 package net.forthecrown.core;
 
-import net.forthecrown.user.User;
-import net.forthecrown.user.Users;
-import net.forthecrown.user.property.Properties;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 
 import static net.forthecrown.utils.text.Text.gradient;
@@ -70,12 +68,12 @@ public final class TabList {
         return builder.build();
     }
 
-    public static Component createFooter(User user) {
+    public static Component createFooter(Player user) {
         int onlineCount = 0;
         final boolean seeVanished = user.hasPermission(Permissions.VANISH_SEE);
 
-        for (var u: Users.getOnline()) {
-            if (seeVanished && u.get(Properties.VANISHED)) {
+        for (Player p: Bukkit.getOnlinePlayers()) {
+            if (!seeVanished && !user.canSee(p)) {
                 continue;
             }
 
@@ -97,7 +95,7 @@ public final class TabList {
     public static void update() {
         Component formatted = createHeader();
 
-        for (User u: Users.getOnline()) {
+        for (Player u: Bukkit.getOnlinePlayers()) {
             u.sendPlayerListHeaderAndFooter(formatted, createFooter(u));
         }
     }

@@ -2,6 +2,8 @@ package net.forthecrown.utils;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.regions.Region;
@@ -167,5 +169,19 @@ public final class Util {
 
     public static boolean isPluginEnabled(String s) {
         return Bukkit.getPluginManager().isPluginEnabled(s);
+    }
+
+    /**
+     * Performs the given input as a command executed by the
+     * server's console
+     * @param format The command format
+     * @param args Any arguments to give to the format
+     */
+    @FormatMethod
+    public static void consoleCommand(@FormatString String format, Object... args) {
+        Bukkit.dispatchCommand(
+                Bukkit.getConsoleSender(),
+                format.formatted(args)
+        );
     }
 }

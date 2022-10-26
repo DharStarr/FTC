@@ -18,21 +18,11 @@ import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
 public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements JsonSerializable {
-    protected int
+    protected final int
         minX, minY, minZ,
         maxX, maxY, maxZ;
 
     protected AbstractBounds3i(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        setBounds(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    protected AbstractBounds3i(int[] arr) {
-        this(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-    }
-
-    protected abstract T cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
-
-    private void setBounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         this.minX = Math.min(minX, maxX);
         this.minY = Math.min(minY, maxY);
         this.minZ = Math.min(minZ, maxZ);
@@ -40,6 +30,12 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         this.maxY = Math.max(maxY, minY);
         this.maxZ = Math.max(maxZ, minZ);
     }
+
+    protected AbstractBounds3i(int[] arr) {
+        this(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+    }
+
+    protected abstract T cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
 
     public T set(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         return cloneAt(minX, minY, minZ, maxX, maxY, maxZ);
@@ -329,7 +325,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     }
 
     public org.bukkit.util.BoundingBox toBukkit() {
-        return new org.bukkit.util.BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+        return new org.bukkit.util.BoundingBox(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
     }
 
     @Override

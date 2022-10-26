@@ -130,11 +130,11 @@ public class UserMapTopCommand extends FtcCommand {
         );
 
         new UserMapTopCommand(
-                "votetop",
+                "topvoters",
                 users.getVotes(),
                 UnitFormat::votes,
                 Component.text("Top voters"),
-                "topvoters"
+                "votetop"
         );
 
         new UserMapTopCommand(

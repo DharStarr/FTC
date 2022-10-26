@@ -6,10 +6,9 @@ import lombok.Setter;
 /**
  * Provides a simple base for implementing the {@link CheckHolder} interface
  */
+@Getter @Setter
 public abstract class AbstractCheckable implements CheckHolder {
-    @Getter
     protected final UsageTypeList<UsageTest> checks = UsageTypeList.newTestList();
 
-    @Getter @Setter
-    protected boolean silent;
+    protected boolean silent = false;
 }

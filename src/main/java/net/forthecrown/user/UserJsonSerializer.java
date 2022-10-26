@@ -49,10 +49,6 @@ public class UserJsonSerializer implements UserSerializer {
 
         user.getPreviousNames().addAll(json.getList("previousNames", JsonElement::getAsString));
 
-        if (json.has("nickname")) {
-            user.setNickname(json.getComponent("nickname"));
-        }
-
         if (json.has("ip")) {
             user.setIp(json.getString("ip"));
         }
@@ -74,10 +70,6 @@ public class UserJsonSerializer implements UserSerializer {
 
         if (!user.getPreviousNames().isEmpty()) {
             json.addList("previousNames", user.getPreviousNames(), JsonPrimitive::new);
-        }
-
-        if (user.hasNickname()) {
-            json.addComponent("nickname", user.getNickname());
         }
 
         if (!Util.isNullOrBlank(user.getIp())) {

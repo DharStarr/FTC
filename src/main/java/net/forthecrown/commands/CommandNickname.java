@@ -5,17 +5,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserLookup;
 import net.forthecrown.user.UserLookupEntry;
 import net.forthecrown.user.UserManager;
-import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
 
 public class CommandNickname extends FtcCommand {
     public static final String CLEAR = "-clear";
@@ -40,7 +37,9 @@ public class CommandNickname extends FtcCommand {
             throw Exceptions.nickTooLong(nick.length());
         }
 
-        UserLookup cache = UserManager.get().getUserLookup();
+        UserLookup cache = UserManager.get()
+                .getUserLookup();
+
         UserLookupEntry entry = cache.get(nick);
 
         if(entry != null) {
@@ -66,10 +65,12 @@ public class CommandNickname extends FtcCommand {
 
                         .executes(c -> {
                             User user = getUserSender(c);
-                            String nickname = c.getArgument("nick", String.class);
-                            checkNickAllowed(nickname);
+                            String nick = c.getArgument("nick", String.class);
+                            checkNickAllowed(nick);
 
-                            Component nick = format(nickname, user.getPlayer());
+                            if (nick.startsWith(Messages.DASH_CLEAR.content())) {
+                                nick = null;
+                            }
 
                             if (nick == null) {
                                 user.sendMessage(Messages.NICK_CLEARED);
@@ -91,10 +92,13 @@ public class CommandNickname extends FtcCommand {
 
                                 .executes(c -> {
                                     User user = Arguments.getUser(c, "user");
-                                    String nickname = c.getArgument("nick", String.class);
-                                    checkNickAllowed(nickname);
+                                    String nick = c.getArgument("nick", String.class);
+                                    checkNickAllowed(nick);
 
-                                    Component nick = format(nickname, c.getSource().asBukkit());
+                                    if (nick.startsWith(Messages.DASH_CLEAR.content())) {
+                                        nick = null;
+                                    }
+
                                     boolean self = c.getSource().textName().equals(user.getName());
 
                                     if (nick == null) {
@@ -120,13 +124,5 @@ public class CommandNickname extends FtcCommand {
                                 })
                         )
                 );
-    }
-
-    private Component format(String nick, CommandSender sender) {
-        if (nick.startsWith(CLEAR)) {
-            return null;
-        }
-
-        return Text.renderString(sender, nick);
     }
 }

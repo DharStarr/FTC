@@ -7,10 +7,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.FTC;
-import net.forthecrown.core.Permissions;
-import net.forthecrown.core.TabList;
-import net.forthecrown.core.Worlds;
+import net.forthecrown.core.*;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.EntryNote;
 import net.forthecrown.core.admin.Punishments;
@@ -23,10 +20,6 @@ import net.forthecrown.events.player.PlayerRidingListener;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.AbstractCommand;
 import net.forthecrown.regions.RegionPos;
-import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.writer.TextWriter;
-import net.forthecrown.utils.text.writer.TextWriters;
 import net.forthecrown.user.data.*;
 import net.forthecrown.user.property.BoolProperty;
 import net.forthecrown.user.property.Properties;
@@ -34,6 +27,8 @@ import net.forthecrown.user.property.PropertyMap;
 import net.forthecrown.user.property.UserProperty;
 import net.forthecrown.utils.ArrayIterator;
 import net.forthecrown.utils.Time;
+import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.identity.Identity;
@@ -95,12 +90,6 @@ public class User implements ForwardingAudience.Single,
      */
     @Getter
     private final ObjectList<String> previousNames = new ObjectArrayList<>();
-
-    /**
-     * The user's current nickname
-     */
-    @Getter
-    private Component nickname;
 
     /**
      * The user's AFK status
@@ -425,14 +414,13 @@ public class User implements ForwardingAudience.Single,
      *         logged on
      */
     public boolean onJoin() {
+        UserManager.get().getOnline().put(getUniqueId(), this);
+
         // If player logged out while hulk smash landing
         if (hulkSmashing) {
             this.visitListener = new HulkSmashListener(this, getCosmeticData().get(Cosmetics.TRAVEL));
             visitListener.beginListening();
         }
-
-        // Send them the formatted tab header
-        sendPlayerListHeader(TabList.createHeader());
 
         // Update IP
         ip = getPlayer().getAddress().getHostString();
@@ -449,9 +437,9 @@ public class User implements ForwardingAudience.Single,
         updateFlying();
         updateVanished();
         updateGodMode();
-        updateTabName();
 
-        UserManager.get().getOnline().put(getUniqueId(), this);
+        updateTabName();
+        TabList.update();
 
         // If in end, but end not open, leave end lol
         if(getWorld().equals(Worlds.end()) && !EndConfig.open) {
@@ -478,7 +466,7 @@ public class User implements ForwardingAudience.Single,
             Users.getOnline()
                     .stream()
                     .filter(user -> {
-                        if (user.hasPermission(Permissions.PUNISH_NOTES)) {
+                        if (!user.hasPermission(Permissions.PUNISH_NOTES)) {
                             return false;
                         }
 
@@ -1104,11 +1092,14 @@ public class User implements ForwardingAudience.Single,
      * @return The user's nickname or name
      */
     public String getNickOrName() {
-        return hasNickname() ? getStringNickname() : getName();
+        return hasNickname() ? getNickname() : getName();
     }
 
-    public String getStringNickname() {
-        return nickname == null ? null : Text.plain(nickname);
+    public String getNickname() {
+        return UserManager.get()
+                .getUserLookup()
+                .getEntry(getUniqueId())
+                .getNickname();
     }
 
     /**
@@ -1131,18 +1122,13 @@ public class User implements ForwardingAudience.Single,
      * Sets the user's nickname and updates the {@link UserLookup}
      * @param component The new nickname
      */
-    public void setNickname(Component component) {
-        this.nickname = component;
-
+    public void setNickname(String component) {
         // Update the user cache
         UserLookup cache = UserManager.get().getUserLookup();
-        cache.onNickChange(
-                cache.getEntry(getUniqueId()),
-                component == null ? null : Text.plain(component)
-        );
+        cache.onNickChange(cache.getEntry(getUniqueId()), component);
 
         // If online, update tab name
-        if(isOnline()) {
+        if (isOnline()) {
             updateTabName();
         }
     }
@@ -1165,17 +1151,6 @@ public class User implements ForwardingAudience.Single,
 
         // Otherwise return an empty prefix
         return Component.empty();
-    }
-
-    /**
-     * Sets the user's custom prefix.
-     * <p>
-     * Delegate method that sets {@link Properties#PREFIX}
-     * equal to the given component
-     * @param component The new tab prefix
-     */
-    public void setCustomPrefix(Component component) {
-        set(Properties.PREFIX, component);
     }
 
     /**
@@ -1450,6 +1425,7 @@ public class User implements ForwardingAudience.Single,
                     user.sendMessage(Messages.afkOthers(this, showReason));
                 });
 
+        AfkKicker.onAfk(getUniqueId());
         sendMessage(Messages.afkSelf(selfReason));
     }
 

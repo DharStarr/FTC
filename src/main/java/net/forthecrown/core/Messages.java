@@ -1671,7 +1671,7 @@ public interface Messages {
      * @param nick The set nickname
      * @return The formatted message
      */
-    static Component nickSetSelf(Component nick) {
+    static Component nickSetSelf(String nick) {
         return format("Nickname set to '&f{0}&r'", NamedTextColor.GRAY, nick);
     }
 
@@ -1682,7 +1682,7 @@ public interface Messages {
      * @param nick The value their nick was set to
      * @return The formatted message
      */
-    static Component nickSetOther(User user, Component nick) {
+    static Component nickSetOther(User user, String nick) {
         return format("Set &e{0}&r's nickname to '&f{1}&r'",
                 NamedTextColor.GRAY,
                 user.displayName(), nick
@@ -2187,13 +2187,13 @@ public interface Messages {
     Component EMOTE_POKE_COOLDOWN = text("You poke people too often lol");
 
     static Component pokeSender(User target, Component bodyPart) {
-        return format("You poked &e{0}&r's {1}.",
+        return format("You poked &e{0, user}&r's {1}.",
                 target, bodyPart
         );
     }
 
     static Component pokeTarget(User sender, Component bodyPart) {
-        return format("&e{0}&r poke your {1}.",
+        return format("&e{0, user}&r poke your {1}.",
                 sender, bodyPart
         );
     }

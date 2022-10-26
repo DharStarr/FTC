@@ -21,12 +21,7 @@ public class AfkKicker {
     private static final Map<UUID, KickEntry> ENTRIES = new HashMap<>();
 
     public static void addOrDelay(UUID uuid) {
-        var entry = ENTRIES.get(uuid);
-
-        if (entry == null) {
-            entry = new KickEntry(uuid);
-            ENTRIES.put(uuid, entry);
-        }
+        KickEntry entry = ENTRIES.computeIfAbsent(uuid, KickEntry::new);
 
         entry.setStage(Stage.NONE);
         entry.schedule(GeneralConfig.autoAfkDelay);
@@ -40,6 +35,12 @@ public class AfkKicker {
         }
 
         entry.cancel();
+    }
+
+    public static void onAfk(UUID uuid) {
+        KickEntry entry = ENTRIES.computeIfAbsent(uuid, KickEntry::new);
+        entry.setStage(Stage.AWAITING_KICK);
+        entry.schedule(GeneralConfig.afkKickDelay);
     }
 
     @Getter

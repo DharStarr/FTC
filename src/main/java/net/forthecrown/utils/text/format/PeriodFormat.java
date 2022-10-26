@@ -110,6 +110,10 @@ public class PeriodFormat implements ComponentLike {
             // Otherwise loop through as many units as
             // possible and add their values to the format
             for (var unit: SUPPORTED_UNITS) {
+                if (unit == ChronoUnit.MILLIS) {
+                    continue;
+                }
+
                 var amount = unit.between(start, end);
                 start = start.plus(amount, unit);
 
