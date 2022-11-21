@@ -1,19 +1,17 @@
 package net.forthecrown.waypoint.type;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.waypoint.Waypoint;
+import net.forthecrown.waypoint.WaypointProperties;
 import net.forthecrown.waypoint.Waypoints;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.math.vector.Vector3i;
 
-import java.util.Optional;
-
-public class RegionPoleType extends WaypointType {
+public class RegionPoleType extends PlayerWaypointType {
     public RegionPoleType() {
-        super("Region Pole");
+        super("Region Pole", Waypoints.REGION_POLE_COLUMN);
     }
 
     @Override
@@ -30,6 +28,10 @@ public class RegionPoleType extends WaypointType {
     }
 
     private void clearPole(Waypoint waypoint) {
+        if (!waypoint.get(WaypointProperties.INVULNERABLE)) {
+            return;
+        }
+
         var oldBounds = waypoint.getBounds()
                 .toWorldBounds(waypoint.getWorld());
 
@@ -39,7 +41,7 @@ public class RegionPoleType extends WaypointType {
     }
 
     @Override
-    public @NotNull Bounds3i createSize() {
+    public @NotNull Bounds3i createBounds() {
         var halfSize = Waypoints.poleSize()
                 .div(2, 1, 2);
 
@@ -51,11 +53,10 @@ public class RegionPoleType extends WaypointType {
 
     @Override
     public void onPostMove(Waypoint waypoint) {
-        Waypoints.placePole(waypoint);
-    }
+        if (!waypoint.get(WaypointProperties.INVULNERABLE)) {
+            return;
+        }
 
-    @Override
-    public Optional<CommandSyntaxException> isValid(Waypoint waypoint) {
-        return Waypoints.validatePoleExists(waypoint);
+        Waypoints.placePole(waypoint);
     }
 }

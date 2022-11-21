@@ -4,9 +4,14 @@ package net.forthecrown.core.challenge;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.utils.text.writer.TextWriter;
 import org.bukkit.inventory.ItemStack;
 
 @Getter
@@ -38,6 +43,12 @@ public class JsonReward {
 
         if (rhines > 0) {
             user.addBalance(rhines);
+
+            Transactions.builder()
+                    .type(TransactionType.CHALLENGE_REWARD)
+                    .target(user.getUniqueId())
+                    .amount(rhines)
+                    .log();
         }
 
         if (guildExp > 0) {
@@ -55,6 +66,24 @@ public class JsonReward {
                     user.getLocation(),
                     getItem()
             );
+        }
+    }
+
+    public void write(TextWriter writer) {
+        if (rhines > 0) {
+            writer.field("Rhines", UnitFormat.rhines(rhines));
+        }
+
+        if (gems > 0) {
+            writer.field("Gems", UnitFormat.gems(gems));
+        }
+
+        if (guildExp > 0) {
+            writer.field("Guild Exp", Text.NUMBER_FORMAT.format(guildExp));
+        }
+
+        if (ItemStacks.notEmpty(item)) {
+            writer.field("Item", Text.itemAndAmount(item));
         }
     }
 }

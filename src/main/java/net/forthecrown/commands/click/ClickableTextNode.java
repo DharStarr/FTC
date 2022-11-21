@@ -88,7 +88,7 @@ public class ClickableTextNode {
         for (ClickableTextNode n: getNodes().values()) {
             Component prompt = n.prompt(user);
 
-            if(prompt != null) {
+            if (prompt != null) {
                 builder
                         .append(Component.newline())
                         .append(prompt);

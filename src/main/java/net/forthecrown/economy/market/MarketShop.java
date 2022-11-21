@@ -886,4 +886,9 @@ public class MarketShop {
                 .append(getOwner())
                 .toHashCode();
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

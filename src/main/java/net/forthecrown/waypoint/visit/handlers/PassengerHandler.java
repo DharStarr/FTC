@@ -12,18 +12,26 @@ public class PassengerHandler implements VisitHandler {
     @Override
     public void onStart(WaypointVisit visit) {
         Player player = visit.getUser().getPlayer();
-        visit.setHulkSmashSafe(player.getPassengers().isEmpty());
-
         root = RidingNode.create(player);
 
         if (ArrayUtils.isEmpty(root.getPassengers())) {
+            visit.setHulkSmashSafe(true);
             root = null;
+        } else {
+            visit.setHulkSmashSafe(false);
+
+            root.forEach(entity -> {
+                visit.modifyHandler(
+                        OwnedEntityHandler.class,
+                        handler -> handler.ignored.add(entity.getUniqueId())
+                );
+            });
         }
     }
 
     @Override
     public void onTeleport(WaypointVisit visit) {
-        if (root != null && !visit.hulkSmash()) {
+        if (root != null) {
             root.remount(null);
         }
     }

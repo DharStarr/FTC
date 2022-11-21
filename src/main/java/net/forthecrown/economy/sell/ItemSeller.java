@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.TransactionType;
 import net.forthecrown.economy.Transactions;
@@ -38,7 +39,7 @@ public final class ItemSeller {
     /**
      * The user selling items
      */
-    private final User user;
+    private final User player;
 
     /**
      * The sell calculation instance
@@ -61,6 +62,9 @@ public final class ItemSeller {
      * of an item being picked up.
      */
     private final boolean autoSell;
+
+    // Used by the challenge with getEarned() to award points
+    private int earned = 0;
 
     /**
      * Runs the sell logic of this seller.
@@ -92,37 +96,47 @@ public final class ItemSeller {
             // this might need to send the message to the actionbar
             // of the given seller instead
 
-            Exceptions.handleSyntaxException(user, result.getFailure());
+            Exceptions.handleSyntaxException(player, result.getFailure());
             return result;
         }
 
+        earned = result.getEarned();
         int afterPrice = sell.getItemData().calculatePrice(sell.getTotalEarned()) * sell.getScalar();
 
         // Actually remove the items lol
         removeItems(result);
 
-        user.addBalance(result.getEarned());
-        user.getComponent(UserShopData.class)
+        player.addBalance(result.getEarned());
+        player.getComponent(UserShopData.class)
                 .add(sell.getItemData().getMaterial(), result.getEarned());
 
         // Log transaction
         Transactions.builder()
-                .target(user.getUniqueId().toString())
+                .target(player.getUniqueId().toString())
                 .extra("item_type=%s sold=%s", material, result.getSold())
                 .type(TransactionType.SELL_SHOP)
                 .amount(result.getEarned())
                 .log();
 
+        triggerChallenge();
+
         if (send) {
-            user.sendMessage(Messages.soldItems(result, material));
+            player.sendMessage(Messages.soldItems(result, material));
         }
 
         // If price dropped
         if (afterPrice < beforePrice) {
-            user.sendMessage(Messages.priceDropped(material, beforePrice, afterPrice));
+            player.sendMessage(Messages.priceDropped(material, beforePrice, afterPrice));
         }
 
         return result;
+    }
+
+    void triggerChallenge() {
+        ChallengeManager.getInstance()
+                .getChallengeRegistry()
+                .get("daily/sell")
+                .ifPresent(challenge -> challenge.trigger(this));
     }
 
     void removeItems(SellResult result) {

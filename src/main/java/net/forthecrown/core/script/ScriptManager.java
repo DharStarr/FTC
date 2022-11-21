@@ -9,8 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
-import javax.script.ScriptException;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -47,41 +45,15 @@ public class ScriptManager {
                 .orElseGet(ObjectLists::emptyList);
     }
 
-    public ScriptResult readAndRunScript(String name, String... args) {
-        Path file = getScriptFile(name);
+    public NashornScriptEngine createEngine(String name, String... args) {
+        var engine = (NashornScriptEngine) factory.getScriptEngine(
+                args,
+                getClassLoader(),
+                className -> true
+        );
 
-        if (!Files.exists(file)) {
-            return ScriptResult.error(
-                    "Script '%s' does not exist",
-                    name
-            );
-        }
-
-        try {
-            var reader = Files.newBufferedReader(file);
-            NashornScriptEngine engine = (NashornScriptEngine) factory.getScriptEngine(
-                    args,
-                    getClassLoader(),
-                    className -> true
-            );
-
-            ScriptsBuiltIn.populate(name, engine);
-
-            try {
-                var value = engine.eval(reader);
-                return ScriptResult.success(engine, value);
-            } catch (ScriptException exc) {
-                return ScriptResult.error(engine, exc.getMessage());
-            }
-
-        } catch (IOException e) {
-            LOGGER.error("IO exception reading script:", e);
-
-            return ScriptResult.error(
-                    "IO Exception during file read: '%s'",
-                    e.getMessage()
-            );
-        }
+        ScriptsBuiltIn.populate(name, engine);
+        return engine;
     }
 
     private ClassLoader getClassLoader() {
@@ -90,7 +62,7 @@ public class ScriptManager {
                 .getClassLoader();
     }
 
-    private Path getScriptFile(String name) {
+    public Path getScriptFile(String name) {
         return directory.resolve(ensureSuffix(name));
     }
 

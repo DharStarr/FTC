@@ -8,14 +8,17 @@ import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public class ChallengeDataStorage {
@@ -44,7 +47,7 @@ public class ChallengeDataStorage {
             LOGGER.debug("Created challenges.json");
         }
 
-        String[] scripts = {
+        /*String[] scripts = {
                 "move_1k_blocks.js",
                 "on_join.js"
         };
@@ -52,11 +55,42 @@ public class ChallengeDataStorage {
         for (var s: scripts) {
             String path = "scripts/challenges/" + s;
 
-            if (Files.exists(Path.of(path))) {
+            if (Files.exists(PathUtil.pluginPath(path))) {
                 continue;
             }
 
             FTC.getPlugin().saveResource(path, false);
+        }*/
+
+        Map<String, String> env = new HashMap<>();
+        env.put("create", "true");
+
+        try {
+            URI jarUri = getClass()
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI();
+
+            URI uri = new URI("jar", jarUri.toString(), null);
+
+            try (var system = FileSystems.newFileSystem(uri, env, getClass().getClassLoader())) {
+                var path = system.getPath("scripts", "challenges");
+
+                try (var stream = Files.newDirectoryStream(path)) {
+                    for (var p: stream) {
+                        String name = p.toString();
+
+                        if (Files.exists(PathUtil.pluginPath(name))) {
+                            continue;
+                        }
+
+                        FTC.getPlugin().saveResource(name, false);
+                    }
+                }
+            }
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

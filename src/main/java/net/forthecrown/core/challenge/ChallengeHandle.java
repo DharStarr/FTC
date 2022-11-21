@@ -26,9 +26,13 @@ public class ChallengeHandle {
         }
 
         var player = getPlayer(playerObject);
+        var manager = ChallengeManager.getInstance();
 
-        ChallengeManager.getInstance()
-                .getOrCreateEntry(player.getUniqueId())
+        if (!manager.getActiveChallenges().contains(challenge)) {
+            return;
+        }
+
+        manager.getOrCreateEntry(player.getUniqueId())
                 .addProgress(challenge, (float) score);
     }
 

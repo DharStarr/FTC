@@ -176,6 +176,17 @@ public class WaypointVisit implements Runnable {
         hulkSmash(hulkSmash && hulkSmash());
     }
 
+    public <T extends VisitHandler> void modifyHandler(Class<T> type,
+                                                       Consumer<T> consumer
+    ) {
+        for (var h: handlers) {
+            if (type.isInstance(h)) {
+                consumer.accept(type.cast(h));
+                return;
+            }
+        }
+    }
+
     @Override
     public void run() {
         try {

@@ -204,7 +204,7 @@ public class Waypoint implements BoundsHolder {
 
         setWorld(world);
         this.position = position;
-        this.bounds = type.createSize().move(position);
+        this.bounds = type.createBounds().move(position);
 
         if (hasBeenAdded()) {
             // If the type is region pole, it'll need to
@@ -424,7 +424,7 @@ public class Waypoint implements BoundsHolder {
             setWorld(world);
         }
 
-        this.bounds = type.createSize()
+        this.bounds = type.createBounds()
                 .move(position);
 
         if (tag.contains(TAG_LAST_VALID)) {

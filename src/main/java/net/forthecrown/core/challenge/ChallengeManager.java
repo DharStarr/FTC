@@ -31,7 +31,7 @@ public class ChallengeManager implements DayChangeListener {
     @Getter
     private LocalDate date;
 
-    private final Collection<Challenge>
+    private final List<Challenge>
             activeChallenges = new ObjectArrayList<>();
 
     private final Map<UUID, ChallengeEntry>

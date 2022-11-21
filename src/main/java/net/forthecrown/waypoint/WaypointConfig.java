@@ -10,15 +10,22 @@ import java.util.concurrent.TimeUnit;
 
 @ConfigData(filePath = "waypoints.json")
 public @UtilityClass class WaypointConfig {
+    /** The required X Y Z size of player-made waypoints */
     public Vector3i
             playerWaypointSize      = Vector3i.from(5);
 
+    /** Name of the spawn waypoint */
     public String
             spawnWaypoint           = "Hazelguard";
 
+    /** Worlds players cannot move their waypoints to */
     public String[]
             disabledPlayerWorlds    = { "world_void", "world_resource", "world_the_end" };
 
+    /**
+     * Delay between a waypoint being marked for
+     * removal and when it's actually deleted
+     */
     public long
             waypointDeletionDelay   = TimeUnit.DAYS.toMillis(7);
 

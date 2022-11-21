@@ -5,6 +5,8 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
@@ -67,6 +69,12 @@ public class CommandBecomeBaron extends FtcCommand {
                             user.removeBalance(GeneralConfig.baronPrice);
                             user.getTitles().addTitle(RankTitle.BARON);
                             user.getTitles().addTitle(RankTitle.BARONESS);
+
+                            Transactions.builder()
+                                    .type(TransactionType.BECOME_BARON)
+                                    .sender(user.getUniqueId())
+                                    .amount(GeneralConfig.baronPrice)
+                                    .log();
 
                             user.sendMessage(Messages.becomeBaron());
                             return 0;

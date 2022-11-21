@@ -10,6 +10,7 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.text.Text;
 import org.dynmap.markers.Marker;
+import org.dynmap.markers.MarkerIcon;
 import org.dynmap.markers.MarkerSet;
 
 import java.util.Objects;
@@ -51,13 +52,19 @@ import java.util.UUID;
         var name = waypoint.get(WaypointProperties.NAME);
         var marker = set.findMarker(waypoint.getMarkerId());
 
-        if (Strings.isNullOrEmpty(name)) {
+        if (Strings.isNullOrEmpty(name)
+                || !waypoint.get(WaypointProperties.ALLOWS_MARKER)
+        ) {
             if (marker != null) {
                 marker.deleteMarker();
             }
 
             return;
         }
+
+        MarkerIcon icon = waypoint.get(WaypointProperties.SPECIAL_MARKER)
+                ? FtcDynmap.getSpecialIcon()
+                : FtcDynmap.getNormalIcon();
 
         if (marker == null) {
             marker = set.createMarker(
@@ -71,20 +78,14 @@ import java.util.UUID;
                     waypoint.getPosition().z(),
 
                     // Icon
-                    waypoint.get(WaypointProperties.SPECIAL_MARKER) ?
-                            FtcDynmap.getSpecialIcon()
-                            : FtcDynmap.getNormalIcon(),
+                    icon,
 
+                    // Persistent
                     true
             );
         } else {
             marker.setLabel(name);
-
-            marker.setMarkerIcon(
-                    waypoint.get(WaypointProperties.SPECIAL_MARKER) ?
-                            FtcDynmap.getSpecialIcon()
-                            : FtcDynmap.getNormalIcon()
-            );
+            marker.setMarkerIcon(icon);
 
             marker.setLocation(
                     waypoint.getWorld().getName(),

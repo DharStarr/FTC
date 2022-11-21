@@ -29,16 +29,23 @@ import static net.forthecrown.user.data.UserTimeTracker.UNSET;
 public class WaypointManager extends SerializableObject.NbtDat implements DayChangeListener {
     private static final Logger LOGGER = FTC.getLogger();
 
+    /** The waypoint manager singleton instance */
     @Getter
     private static final WaypointManager instance = new WaypointManager();
 
+    /** Name lookup map */
     private final Map<String, Waypoint> byName = new Object2ObjectOpenHashMap<>();
+
+    /** ID lookup map */
     private final Map<UUID, Waypoint> byId = new Object2ObjectOpenHashMap<>();
 
+    /** Collision and spatial lookup map */
     @Getter
     final WorldChunkMap<Waypoint> chunkMap = new WorldChunkMap<>();
 
-    public WaypointManager() {
+    /* ---------------------------- CONSTRUCTOR ----------------------------- */
+
+    private WaypointManager() {
         super(PathUtil.pluginPath("waypoints.dat"));
     }
 
@@ -50,6 +57,8 @@ public class WaypointManager extends SerializableObject.NbtDat implements DayCha
         ConfigManager.get().registerConfig(WaypointConfig.class);
         DayChange.get().addListener(getInstance());
     }
+
+    /* ------------------------------ METHODS ------------------------------- */
 
     @Override
     public void onDayChange(ZonedDateTime time) {
@@ -118,6 +127,7 @@ public class WaypointManager extends SerializableObject.NbtDat implements DayCha
         return Time.isPast(deletionTime);
     }
 
+    /** Clears all waypoints */
     public void clear() {
         for (var w: byId.values()) {
             w.manager = null;
@@ -128,6 +138,10 @@ public class WaypointManager extends SerializableObject.NbtDat implements DayCha
         chunkMap.clear();
     }
 
+    /**
+     * Call back for when a region's name is
+     * changed to update the name lookup map
+     */
     void onRename(Waypoint waypoint, String oldName, String newName) {
         if (!Strings.isNullOrEmpty(oldName)) {
             byName.remove(oldName);
@@ -146,6 +160,7 @@ public class WaypointManager extends SerializableObject.NbtDat implements DayCha
         if (!Strings.isNullOrEmpty(name)) {
             byName.put(name.toLowerCase(), waypoint);
 
+            // Ensure the marker exists, since we have a name
             if (DynmapUtil.isInstalled()) {
                 WaypointDynmap.updateMarker(waypoint);
             }

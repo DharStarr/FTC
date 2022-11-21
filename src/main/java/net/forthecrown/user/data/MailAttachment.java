@@ -9,6 +9,8 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.script.Scripts;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.Util;
@@ -150,6 +152,12 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
     public void claim(User user) {
         if (rhines > 0) {
             user.addBalance(rhines);
+
+            Transactions.builder()
+                    .type(TransactionType.MAIL_ATTACHMENT)
+                    .amount(rhines)
+                    .target(user.getUniqueId())
+                    .log();
         }
 
         if (gems > 0) {

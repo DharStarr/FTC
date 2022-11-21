@@ -6,14 +6,14 @@ function onEvent(event, handle) {
     // EntityDamageByEntityEvent
 
     // Check if entity was damaged by lightning
-    Entity damager = event.getDamager();
+    var damager = event.getDamager();
     if (damager.getType() == EntityType.LIGHTNING) {
-        LightningStrike lightningStrike = (LightningStrike) damager;
+        var lightningStrike = damager;
 
         // Check if source of lightning is player
-        Entity caster = lightningStrike.getCausingEntity();
+        var caster = lightningStrike.getCausingEntity();
         if (caster != null && caster.getType() == EntityType.PLAYER) {
-            handle.givePoint((Player) caster);
+            handle.givePoint(caster);
         }
     }
 }

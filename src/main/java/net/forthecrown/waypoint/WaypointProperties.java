@@ -48,7 +48,9 @@ public class WaypointProperties {
             WaypointManager.getInstance()
                     .onRename(waypoint, oldValue, value);
 
-            if (waypoint.getType() == WaypointTypes.REGION_POLE) {
+            if (waypoint.getType() == WaypointTypes.REGION_POLE
+                    && waypoint.get(INVULNERABLE)
+            ) {
                 Waypoints.placePole(waypoint);
             } else if (waypoint.getType() instanceof PlayerWaypointType) {
                 Waypoints.setNameSign(waypoint, value);

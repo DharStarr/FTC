@@ -19,7 +19,15 @@ public class RidingVehicleHandler implements VisitHandler {
 
         if (riding) {
             Entity vehicle = player.getVehicle();
+
             root = RidingNode.create(vehicle);
+            root.forEach(entity -> {
+                visit.modifyHandler(
+                        OwnedEntityHandler.class,
+                        handler -> handler.ignored.add(entity.getUniqueId())
+                );
+            });
+
         } else {
             root = null;
         }

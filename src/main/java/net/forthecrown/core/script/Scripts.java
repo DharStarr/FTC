@@ -3,18 +3,19 @@ package net.forthecrown.core.script;
 import lombok.experimental.UtilityClass;
 
 public @UtilityClass class Scripts {
-    public ScriptResult read(String scriptFile, String... args) {
-        return ScriptManager.getInstance()
-                .readAndRunScript(scriptFile, args)
-                .logIfError();
+    public Script read(String scriptFile) {
+        return Script.of(scriptFile)
+                .load()
+                .logError();
     }
 
-    public ScriptResult run(String scriptFile,
+    public Script run(String scriptFile,
                             String function,
                             Object... args
     ) {
-        return read(scriptFile)
+        return Script.of(scriptFile)
+                .load()
                 .invoke(function, args)
-                .logIfError();
+                .logError();
     }
 }

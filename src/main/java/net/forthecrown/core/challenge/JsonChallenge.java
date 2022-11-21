@@ -1,16 +1,20 @@
 package net.forthecrown.core.challenge;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.ScriptResult;
+import net.forthecrown.core.script.Scripts;
 import net.forthecrown.user.User;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -72,6 +76,17 @@ public class JsonChallenge implements Challenge {
             }
         }
 
+        if (!reward.isEmpty()) {
+            var writer = TextWriters.wrap(hoverBuilder);
+            writer.newLine();
+            writer.newLine();
+
+            writer.setFieldStyle(Style.style(NamedTextColor.GRAY));
+            writer.setFieldValueStyle(Style.style(NamedTextColor.GRAY));
+
+            reward.write(writer);
+        }
+
         return name
                 .color(NamedTextColor.YELLOW)
                 .hoverEvent(hoverBuilder.build());
@@ -81,8 +96,8 @@ public class JsonChallenge implements Challenge {
     public String activate() {
         registerListener();
 
-        if (getListener().getEngine() != null) {
-            ScriptResult.success(getListener().getEngine())
+        if (getListener().getScript() != null) {
+            getListener().getScript()
                     .invoke(METHOD_ON_ACTIVATE, getListener().getHandle());
         }
 
@@ -93,8 +108,8 @@ public class JsonChallenge implements Challenge {
     public void deactivate() {
         unregisterListener();
 
-        if (getListener().getEngine() != null) {
-            ScriptResult.success(getListener().getEngine())
+        if (getListener().getScript() != null) {
+            getListener().getScript()
                     .invoke(METHOD_ON_RESET, getListener().getHandle());
         }
     }
@@ -106,15 +121,17 @@ public class JsonChallenge implements Challenge {
 
         reloadListener();
 
-        Bukkit.getPluginManager()
-                .registerEvent(
-                        eventClass,
-                        listener,
-                        EventPriority.NORMAL,
-                        listener,
-                        FTC.getPlugin(),
-                        true
-                );
+        if (eventClass != null) {
+            Bukkit.getPluginManager()
+                    .registerEvent(
+                            eventClass,
+                            listener,
+                            EventPriority.NORMAL,
+                            listener,
+                            FTC.getPlugin(),
+                            true
+                    );
+        }
 
         listenerRegistered = true;
     }
@@ -124,25 +141,34 @@ public class JsonChallenge implements Challenge {
             return;
         }
 
-        HandlerList.unregisterAll(listener);
+        if (eventClass != null) {
+            HandlerList.unregisterAll(listener);
+        }
+
         listenerRegistered = false;
     }
 
     public void reloadListener() {
-        listener.engine = ChallengeParser.readListener(script)
-                .toDataResult()
-                .result()
-                .orElse(null);
+        if (Strings.isNullOrEmpty(script)) {
+            listener.script = null;
+            return;
+        }
+
+        listener.script = Scripts.read(script);
     }
 
     @Override
     public boolean canComplete(User user) {
-        var result = ScriptResult.success(getListener().getEngine())
-                .invoke(METHOD_CAN_COMPLETE, user);
-
-        if (result.isMissingMethod()) {
+        if (getListener().getScript() == null) {
             return true;
         }
+
+        if (!getListener().getScript().hasMethod(METHOD_CAN_COMPLETE)) {
+            return true;
+        }
+
+        var result = getListener().getScript()
+                .invoke(METHOD_CAN_COMPLETE, user);
 
         return result
                 .resultAsBoolean()
@@ -151,12 +177,59 @@ public class JsonChallenge implements Challenge {
 
     @Override
     public void onComplete(User user) {
-        ScriptResult.success(getListener().getEngine())
-                .invoke(METHOD_ON_COMPLETE, user);
+        if (getListener().getScript() != null) {
+            getListener().getScript()
+                    .invoke(METHOD_ON_COMPLETE, user);
+        }
 
         if (!reward.isEmpty()) {
             reward.give(user);
         }
+    }
+
+    @Override
+    public void trigger(Object input) {
+        if (input instanceof Player
+                && eventClass == null
+                && Strings.isNullOrEmpty(script)
+        ) {
+            listener.getHandle().givePoint(input);
+            return;
+        }
+
+        if (getListener().getScript() == null) {
+            FTC.getLogger().error(
+                    "Cannot manually invoke script {}! No script set",
+                    getListener().getScript()
+            );
+
+            return;
+        }
+
+        if (eventClass != null) {
+            FTC.getLogger().error(
+                    "Cannot manually invoke script {}! Event class has "
+                            + "been specified!",
+                    getListener().getScript()
+            );
+
+            return;
+        }
+
+        if (!getListener().getScript().hasMethod(METHOD_ON_EVENT)) {
+            FTC.getLogger().error(
+                    "Cannot manually invoke script {}! No onEvent method set",
+                    getListener().getScript()
+            );
+
+            return;
+        }
+
+        getListener().getScript().invoke(
+                METHOD_ON_EVENT,
+                input,
+                getListener().getHandle()
+        );
     }
 
     /* -------------------------- OBJECT OVERRIDES -------------------------- */

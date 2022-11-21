@@ -14,12 +14,9 @@ import net.forthecrown.structure.Structures;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.utils.math.WorldBounds3i;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.waypoint.type.PlayerWaypointType;
-import net.forthecrown.waypoint.type.RegionPoleType;
 import net.kyori.adventure.text.Component;
-import org.apache.logging.log4j.Logger;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -36,8 +33,6 @@ import java.util.Set;
 import static net.kyori.adventure.text.Component.text;
 
 public @UtilityClass class Waypoints {
-    private static final Logger LOGGER = FTC.getLogger();
-
     public final Material[] GUILD_COLUMN = {
             Material.STONE_BRICKS,
             Material.STONE_BRICKS,
@@ -48,6 +43,12 @@ public @UtilityClass class Waypoints {
             Material.STONE_BRICKS,
             Material.STONE_BRICKS,
             Material.CHISELED_STONE_BRICKS,
+    };
+
+    public final Material[] REGION_POLE_COLUMN = {
+            Material.GLOWSTONE,
+            Material.GLOWSTONE,
+            Material.SEA_LANTERN
     };
 
     /** Name of the Region pole {@link net.forthecrown.structure.BlockStructure} */
@@ -225,7 +226,7 @@ public @UtilityClass class Waypoints {
                                                                 World w,
                                                                 boolean testOverlap
     ) {
-        var bounds = type.createSize()
+        var bounds = type.createBounds()
                 .move(pos)
                 .expand(0, 1, 0, 0, 0, 0)
                 .toWorldBounds(w);
@@ -248,17 +249,17 @@ public @UtilityClass class Waypoints {
                     // If the column block is not the block
                     // that is required to be here, then
                     // return exception, else, skip this block
-                    if (b.getType() != required) {
-                        return Optional.of(
-                                Exceptions.brokenWaypoint(
-                                        pos.add(0, offset, 0),
-                                        b.getType(),
-                                        required
-                                )
-                        );
-                    } else {
+                    if (b.getType() == required) {
                         continue;
                     }
+
+                    return Optional.of(
+                            Exceptions.brokenWaypoint(
+                                    pos.add(0, offset, 0),
+                                    b.getType(),
+                                    required
+                            )
+                    );
                 }
             }
 
@@ -269,11 +270,11 @@ public @UtilityClass class Waypoints {
             if (bounds.minY() == b.getY()) {
                 if (b.isSolid()) {
                     continue;
-                } else {
-                    return Optional.of(
-                            Exceptions.waypointPlatform()
-                    );
                 }
+
+                return Optional.of(
+                        Exceptions.waypointPlatform()
+                );
             }
 
             // Test if block is empty
@@ -326,81 +327,5 @@ public @UtilityClass class Waypoints {
             sign.line(2, text("Waypoint"));
             sign.update();
         }
-    }
-
-    public Optional<CommandSyntaxException> validatePoleExists(Waypoint waypoint) {
-        if (!(waypoint.getType() instanceof RegionPoleType)) {
-            throw new IllegalStateException(
-                    "Only region poles can apply to this method"
-            );
-        }
-
-        var bounds = waypoint.getBounds()
-                .toWorldBounds(waypoint.getWorld());
-
-        var pos = waypoint.getPosition();
-
-        for (var b: bounds) {
-            if (b.getY() == bounds.minY()) {
-                Material required = Material.STONE_BRICKS;
-
-                if (isCorner(b.getX(), b.getZ(), bounds)
-                        && b.getType() == Material.CHISELED_STONE_BRICKS
-                ) {
-                    continue;
-                }
-
-                if (b.getType() != Material.STONE_BRICKS) {
-                    return Optional.of(
-                            Exceptions.brokenWaypoint(
-                                    Vectors.from(b),
-                                    b.getType(),
-                                    required
-                            )
-                    );
-                } else {
-                    continue;
-                }
-            }
-
-             if (b.getX() == pos.x() && b.getZ() == pos.z()) {
-                 int yOffset = b.getY() - pos.y();
-
-                 Material required = switch (yOffset) {
-                     case 1, 2 -> Material.GLOWSTONE;
-                     case 3 -> Material.SEA_LANTERN;
-                     case 4 -> Material.OAK_SIGN;
-                     default -> null;
-                 };
-
-                 if (required != null
-                         && required != b.getType()
-                 ) {
-                     return Optional.of(
-                             Exceptions.brokenWaypoint(
-                                     Vectors.from(b),
-                                     b.getType(),
-                                     required
-                             )
-                     );
-                 }
-             }
-
-            // Test if block is empty
-            if (b.isEmpty() || !b.isCollidable() || b.isPassable()) {
-                continue;
-            }
-
-            return Optional.of(
-                    Exceptions.waypointBlockNotEmpty(b)
-            );
-        }
-
-        return Optional.empty();
-    }
-
-    private boolean isCorner(int x, int z, WorldBounds3i bounds) {
-        return (x == bounds.minX() || x == bounds.maxX())
-                && (z == bounds.minZ() || z == bounds.maxZ());
     }
 }

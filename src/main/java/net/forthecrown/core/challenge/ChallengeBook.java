@@ -2,7 +2,14 @@ package net.forthecrown.core.challenge;
 
 import it.unimi.dsi.fastutil.ints.IntIntMutablePair;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.forthecrown.commands.click.ClickableTextNode;
+import net.forthecrown.commands.click.ClickableTexts;
+import net.forthecrown.commands.manager.Exceptions;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.book.BookBuilder;
 import net.forthecrown.utils.book.TextInfo;
@@ -13,10 +20,48 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 
 public class ChallengeBook {
+    public static final int PAY_COST = 10_000;
+
+    public static final ClickableTextNode PAY_NODE = ClickableTexts.register(
+            new ClickableTextNode("challenge_pay")
+                    .setExecutor(user -> {
+                        if (!user.hasBalance(PAY_COST)) {
+                            throw Exceptions.cannotAfford(PAY_COST);
+                        }
+
+                        ChallengeManager.getInstance()
+                                .getChallengeRegistry()
+                                .get("daily/pay")
+                                .ifPresent(challenge -> {
+                                    user.removeBalance(PAY_COST);
+
+                                    challenge.trigger(user);
+
+                                    Transactions.builder()
+                                            .type(TransactionType.PAY_CHALLENGE)
+                                            .sender(user.getUniqueId())
+                                            .amount(PAY_COST)
+                                            .log();
+                                });
+
+                        open(user);
+                    })
+
+                    .setPrompt(user -> {
+                        return Text.format("[{0, rhines}]",
+                                NamedTextColor.DARK_AQUA,
+                                PAY_COST
+                        )
+                                .hoverEvent(text("Click to pay"));
+                    })
+    );
+
     public static void open(User user) {
         BookBuilder builder = new BookBuilder()
                 .setAuthor("")
@@ -86,16 +131,24 @@ public class ChallengeBook {
                                       ChallengeEntry entry,
                                       ResetInterval interval
     ) {
-        List<Challenge> active = new ObjectArrayList<>();
-        active.addAll(
+        List<Challenge> activeList = new ObjectArrayList<>();
+        activeList.addAll(
                 ChallengeManager.getInstance()
                         .getActiveChallenges()
         );
 
-        active.removeIf(challenge -> challenge.getResetInterval() != interval);
+        activeList.removeIf(challenge -> challenge.getResetInterval() != interval);
 
-        if (active.isEmpty()) {
+        if (activeList.isEmpty()) {
             return;
+        }
+
+        Object2BooleanMap<Challenge>
+                completed = new Object2BooleanOpenHashMap<>();
+
+        for (var c: activeList) {
+            boolean isCompleted = Challenges.hasCompleted(c, entry.getId());
+            completed.put(c, isCompleted);
         }
 
         builder.addCentered(
@@ -105,11 +158,18 @@ public class ChallengeBook {
         float totalProgress = 0.0F;
         float totalRequired = 0.0F;
 
-        for (var c: active) {
+        for (var e: completed.object2BooleanEntrySet()) {
+            var c = e.getKey();
+            boolean isCompleted = e.getBooleanValue();
+
             totalRequired += c.getGoal();
 
-            float progress = entry.getProgress().getFloat(c);
-            totalProgress += progress;
+            if (!isCompleted) {
+                float progress = entry.getProgress().getFloat(c);
+                totalProgress += progress;
+            } else {
+                totalProgress += c.getGoal();
+            }
         }
 
         if (totalRequired != 0.0F && totalProgress != 0.0F) {
@@ -124,19 +184,29 @@ public class ChallengeBook {
         }
 
         builder.addEmptyLine();
+        Challenge payChallenge = ChallengeManager.getInstance()
+                .getChallengeRegistry()
+                .get("daily/pay")
+                .orElse(null);
 
-        for (var c: active) {
+        for (var e: completed.object2BooleanEntrySet()) {
+            var c = e.getKey();
+            boolean isCompleted = e.getBooleanValue();
+
             float progress = entry.getProgress()
                     .getFloat(c);
 
-            boolean completed = Challenges.hasCompleted(c, entry.getId());
-
-            if (completed) {
+            if (isCompleted) {
                 progress = c.getGoal();
             }
 
             Component displayName = c.displayName()
                     .color(null);
+
+            if (Objects.equals(payChallenge, c) && !isCompleted) {
+                displayName = displayName.append(space())
+                        .append(PAY_NODE.prompt(entry.getUser()));
+            }
 
             int displayNameSize = TextInfo.getPxWidth(Text.plain(displayName));
             int filler = BookBuilder.PIXELS_PER_LINE - displayNameSize;
@@ -160,15 +230,15 @@ public class ChallengeBook {
                     .addText(displayName)
 
                     .justifyRight(
-                            Text.format("{0, number}/{1, number}",
-                                    completed
+                            Text.format("{0, number, #.##}/{1, number}",
+                                    isCompleted
                                             ? NamedTextColor.DARK_GREEN
                                             : NamedTextColor.GRAY,
 
                                     progress, c.getGoal()
                             )
                                     .hoverEvent(
-                                            text(completed
+                                            text(isCompleted
                                                     ? "Completed"
                                                     : "Uncompleted"
                                             )

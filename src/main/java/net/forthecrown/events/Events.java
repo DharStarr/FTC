@@ -32,6 +32,7 @@ public final class Events {
         register(new MotdListener());
         register(new PlayerTeleportListener());
         register(new TrapDoorListener());
+        register(new PlaytimeChallengeListener());
 
         // Join / Quit listeners
         register(new PlayerJoinListener());

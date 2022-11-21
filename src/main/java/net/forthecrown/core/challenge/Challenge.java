@@ -22,4 +22,5 @@ public interface Challenge {
 
     String activate();
 
+    void trigger(Object input);
 }

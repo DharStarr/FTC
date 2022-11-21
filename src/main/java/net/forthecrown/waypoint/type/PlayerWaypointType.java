@@ -23,7 +23,7 @@ public class PlayerWaypointType extends WaypointType {
     }
 
     @Override
-    public @NotNull Bounds3i createSize() {
+    public @NotNull Bounds3i createBounds() {
         Vector3i halfSize = WaypointConfig.playerWaypointSize
                 .div(2, 1, 2);
 

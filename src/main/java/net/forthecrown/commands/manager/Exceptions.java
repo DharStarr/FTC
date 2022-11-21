@@ -634,7 +634,10 @@ public interface Exceptions {
 
     static CommandSyntaxException waypointPlatform() {
         var size = WaypointConfig.playerWaypointSize;
+        return waypointPlatform(size);
+    }
 
+    static CommandSyntaxException waypointPlatform(Vector3i size) {
         return format("Waypoint requires a {0}x{1} platform under it!",
                 size.x(), size.z()
         );

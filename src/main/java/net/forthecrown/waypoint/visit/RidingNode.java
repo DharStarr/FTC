@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 @Getter
 @RequiredArgsConstructor
@@ -58,16 +59,24 @@ public class RidingNode {
         return packageName.contains(GSitMain.class.getPackageName());
     }
 
-    public void dismount() {
-        entity.leaveVehicle();
+    public void forEach(Consumer<Entity> entityConsumer) {
+        entityConsumer.accept(entity);
 
         if (ArrayUtils.isEmpty(passengers)) {
             return;
         }
 
-        for (var n : passengers) {
-            n.dismount();
+        for (var p: passengers) {
+            if (p == null) {
+                continue;
+            }
+
+            p.forEach(entityConsumer);
         }
+    }
+
+    public void dismount() {
+        forEach(Entity::leaveVehicle);
     }
 
     public void remount(@Nullable Entity seat) {
@@ -80,6 +89,10 @@ public class RidingNode {
         }
 
         for (var p : passengers) {
+            if (p == null) {
+                continue;
+            }
+
             p.entity.teleport(entity);
             Tasks.runLater(() -> p.remount(entity), 1);
         }

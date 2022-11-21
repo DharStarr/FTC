@@ -3,7 +3,7 @@ package net.forthecrown.core.challenge;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.ScriptResult;
+import net.forthecrown.core.script.Script;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -15,19 +15,19 @@ import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 
 @Getter
 @AllArgsConstructor
 public class ScriptEventListener implements Listener, EventExecutor {
     private static final Logger LOGGER = FTC.getLogger();
 
-    NashornScriptEngine engine;
+    Script script;
 
     final ChallengeHandle handle;
 
     @Override
-    public void execute(@NotNull Listener listener, @NotNull Event event
+    public void execute(@NotNull Listener listener,
+                        @NotNull Event event
     ) throws EventException {
         if (event instanceof Cancellable cancellable
                 && cancellable.isCancelled()
@@ -35,40 +35,55 @@ public class ScriptEventListener implements Listener, EventExecutor {
             return;
         }
 
-        if (engine != null) {
-            var result = ScriptResult.success(engine)
-                    .invoke(Challenges.METHOD_ON_EVENT, event, handle);
-
-            if (!result.isMissingMethod()) {
-                return;
-            }
+        if (event.getClass() != handle.getChallenge().getEventClass()) {
+            return;
         }
 
-        Player player;
+        if (script != null
+                && script.hasMethod(Challenges.METHOD_ON_EVENT)
+        ) {
+            var res = script.invoke(Challenges.METHOD_ON_EVENT, event, handle);
 
-        if (engine != null) {
-            var runResult = ScriptResult.success(engine)
-                    .invoke(Challenges.METHOD_GET_PLAYER, event);
+            res.error().ifPresent(throwable -> {
+                LOGGER.error("Failed on event {}", event.getClass().getName());
+            });
 
-            if (runResult.isMissingMethod()) {
-                player = getFromEvent(event);
-            } else {
-                if (!runResult.hasResult()) {
-                    LOGGER.error("No result returned by getPlayer in script!");
-                    return;
-                }
-
-                player = ChallengeHandle.getPlayer(runResult.getResult());
-            }
-        } else {
-            player = getFromEvent(event);
+            return;
         }
 
+        Player player = findPlayer(event);
         if (player == null) {
             return;
         }
 
         handle.givePoint(player);
+    }
+
+    private Player findPlayer(Event event) {
+        if (script == null) {
+            return getFromEvent(event);
+        }
+
+        if (script.hasMethod(Challenges.METHOD_GET_PLAYER)) {
+            return getFromEvent(event);
+        }
+
+        var runResult = script
+                .invoke(Challenges.METHOD_GET_PLAYER, event);
+
+        if (runResult.errorIsMissingMethod()) {
+            return getFromEvent(event);
+        }
+
+        if (runResult.result().isEmpty()) {
+            LOGGER.error(
+                    "{}: No result returned by getPlayer in script!",
+                    script
+            );
+            return null;
+        }
+
+        return ChallengeHandle.getPlayer(runResult.result().get());
     }
 
     private @Nullable Player getFromEvent(Event event) {
@@ -81,9 +96,10 @@ public class ScriptEventListener implements Listener, EventExecutor {
         }
 
         LOGGER.error(
-                "Cannot execute challenge event! No getPlayer " +
+                "{}: Cannot execute challenge event! No getPlayer " +
                         "method specified in script and event " +
                         "is not a player event!",
+                script,
                 new RuntimeException()
         );
 

@@ -18,7 +18,7 @@ public class AdminWaypoint extends WaypointType {
     }
 
     @Override
-    public @NotNull Bounds3i createSize() {
-        return super.createSize();
+    public @NotNull Bounds3i createBounds() {
+        return super.createBounds();
     }
 }

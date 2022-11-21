@@ -4,15 +4,14 @@ import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.ScriptManager;
-import net.forthecrown.core.script.ScriptResult;
+import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script.Scripts;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.Results;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerEvent;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 
 public class ChallengeParser {
     public static final String
@@ -24,7 +23,7 @@ public class ChallengeParser {
 
             KEY_RESET_INTERVAL = "type",
 
-            KEY_REWARD = "rewards",
+            KEY_REWARD = "reward",
             KEY_R_RHINES = "rhines",
             KEY_R_GEMS = "gems",
             KEY_R_ITEM = "item",
@@ -107,13 +106,6 @@ public class ChallengeParser {
                         className
                 );
             }
-        } else {
-            if (Strings.isNullOrEmpty(builder.script())) {
-                return DataResult.error(
-                        "Custom callback was given, however no script was " +
-                                "specified to handle it"
-                );
-            }
         }
 
         if (json.has(KEY_REWARD)) {
@@ -123,7 +115,7 @@ public class ChallengeParser {
                     JsonReward.builder()
                             .gems(rewards.getInt(KEY_R_GEMS, 0))
                             .rhines(rewards.getInt(KEY_R_RHINES, 0))
-                            .guildExp(rewards.getInt(KEY_R_GUILD))
+                            .guildExp(rewards.getInt(KEY_R_GUILD, 0))
                             .item(rewards.getItem(KEY_R_ITEM, null))
                             .build()
             );
@@ -133,22 +125,14 @@ public class ChallengeParser {
             return build(builder, null);
         }
 
-        return readListener(builder.script())
-                .toDataResult()
-                .flatMap(engine -> build(builder, engine));
+        return build(builder, Scripts.read(builder.script()));
     }
-
-    static ScriptResult readListener(String script) {
-        return ScriptManager.getInstance()
-                .readAndRunScript(script);
-    }
-
     static DataResult<JsonChallenge> build(JsonChallenge.Builder builder,
-                                           NashornScriptEngine engine
+                                           Script script
     ) {
         JsonChallenge challenge = builder.build();
         ChallengeHandle handle = new ChallengeHandle(challenge);
-        challenge.listener = new ScriptEventListener(engine, handle);
+        challenge.listener = new ScriptEventListener(script, handle);
 
         return DataResult.success(challenge);
     }

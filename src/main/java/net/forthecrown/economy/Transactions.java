@@ -16,14 +16,44 @@ import net.forthecrown.utils.io.FtcCodecs;
 
 import java.util.Objects;
 
+/**
+ * Utility class for logging transaction data
+ */
 public @UtilityClass class Transactions {
+
+    /** Schema for transaction logs */
     public final Holder<LogSchema> TRANSACTION_SCHEMA;
 
+    /**
+     * Field that represents the receiver, aka the
+     * target, of the transaction, may be unset, in
+     * the case of money being given to the server
+     */
     public final SchemaField<String>            T_TARGET;
+
+    /**
+     * Represents the entity in a transaction sending
+     * rhines to the other party, may be unset, in
+     * the case of the server giving money to a user
+     */
     public final SchemaField<String>            T_SENDER;
+
+    /**
+     * Arbitrary random data about the transaction,
+     * unique to each {@link TransactionType}
+     */
     public final SchemaField<String>            T_EXTRA;
+
+    /**
+     * The amount of Rhines that were exchanged
+     * in the transaction
+     */
     public final SchemaField<Integer>           T_AMOUNT;
+
+    /** The timestamp of when the transaction occurred */
     public final SchemaField<Long>              T_TIME;
+
+    /** The transaction's type */
     public final SchemaField<TransactionType>   T_TYPE;
 
     static {
@@ -35,6 +65,7 @@ public @UtilityClass class Transactions {
 
         T_AMOUNT = builder.add("amount", Codec.INT);
         T_TIME = builder.add("timestamp", FtcCodecs.TIMESTAMP_CODEC);
+
         T_TYPE = builder.add(
                 "type",
                 FtcCodecs.enumCodec(TransactionType.class)
@@ -83,7 +114,8 @@ public @UtilityClass class Transactions {
 
             LogEntry entry = LogEntry.of(TRANSACTION_SCHEMA)
                     .set(T_TIME, time)
-                    .set(T_TYPE, type);
+                    .set(T_TYPE, type)
+                    .set(T_AMOUNT, amount);
 
             if (!Strings.isNullOrEmpty(target)) {
                 entry.set(T_TARGET, target);
@@ -95,10 +127,6 @@ public @UtilityClass class Transactions {
 
             if (!Strings.isNullOrEmpty(extra)) {
                 entry.set(T_EXTRA, extra);
-            }
-
-            if (amount != 0) {
-                entry.set(T_AMOUNT, amount);
             }
 
             DataLogs.log(TRANSACTION_SCHEMA, entry);

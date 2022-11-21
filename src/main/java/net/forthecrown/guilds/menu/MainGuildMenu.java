@@ -2,6 +2,7 @@ package net.forthecrown.guilds.menu;
 
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
+import net.forthecrown.core.challenge.ChallengeBook;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;
@@ -46,6 +47,23 @@ public class MainGuildMenu extends MenuPage {
         builder.add(Slot.of(2, 2), stats);
         builder.add(Slot.of(3, 2), messageBoard);
         builder.add(Slot.of(5, 2), upgradesMenu);
+
+        builder.add(Slot.of(4, 2),
+                MenuNode.builder()
+                        .setItem((user, context) -> {
+                            return ItemStacks.builder(Material.KNOWLEDGE_BOOK)
+                                    .setName("&eChallenges")
+                                    .addLore("&7Challenges to gain guild Exp")
+                                    .build();
+                        })
+
+                        .setRunnable((user, context) -> {
+                            context.shouldReloadMenu(false);
+                            ChallengeBook.open(user);
+                        })
+
+                        .build()
+        );
 
         builder.add(Slot.of(6, 2),
                 MenuNode.builder()

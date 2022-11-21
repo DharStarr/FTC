@@ -10,6 +10,7 @@ import org.apache.commons.lang3.Range;
 import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 @Getter
@@ -63,13 +64,29 @@ public class LogQuery implements Predicate<LogEntry> {
             return (Builder<T>) this;
         }
 
+        public Builder<F> set(Predicate<F> predicate) {
+            Objects.requireNonNull(lastField, "Field not set");
+            predicates[lastField.id()] = predicate;
+            return this;
+        }
+
+        public Builder<F> addOr(Predicate<F> predicate) {
+            return _add(predicate, Predicate::or);
+        }
+
         public Builder<F> add(Predicate<F> predicate) {
+            return  _add(predicate, Predicate::and);
+        }
+
+        private Builder<F> _add(Predicate<F> predicate,
+                                BiFunction<Predicate<F>, Predicate<F>, Predicate<F>> combiner
+        ) {
             Objects.requireNonNull(lastField, "Field not set");
 
             var existing = predicates[lastField.id()];
 
             if (existing != null) {
-                predicates[lastField.id()] = predicate.and(existing);
+                predicates[lastField.id()] = combiner.apply(existing, predicate);
             } else {
                 predicates[lastField.id()] = predicate;
             }

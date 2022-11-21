@@ -4,10 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.TransactionType;
 import net.forthecrown.economy.Transactions;
+import net.forthecrown.economy.market.MarketShop;
+import net.forthecrown.log.DataLogs;
+import net.forthecrown.log.LogQuery;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
@@ -17,6 +21,9 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -98,14 +105,24 @@ public class SignShopSession {
 
         growAmount(getExampleItem().getAmount());
 
+        MarketShop market = Economy.get()
+                .getMarkets()
+                .get(shop.getPosition());
+
+        // Trigger challenge for using shops
+        if (market != null) {
+            triggerChallenge(market);
+        }
+
         // Log the transaction occurring
         Transactions.builder()
                 .type(TransactionType.SHOP)
                 .extra(
-                        "shop=%s item=%s type=%s",
+                        "shop=%s item=%s type=%s market=%s",
                         getShop().getName(),
                         ItemStacks.toNbtString(getExampleItem()),
-                        getType()
+                        getType(),
+                        market == null ? null : market.getName()
                 )
                 .sender(
                         type.isBuyType()
@@ -119,6 +136,50 @@ public class SignShopSession {
                 )
                 .amount(getPrice())
                 .log();
+    }
+
+    /**
+     * Attempts to trigger the daily shop purchase challenge.
+     * @param market The market shop this session's shop is located in
+     */
+    private void triggerChallenge(@NotNull MarketShop market) {
+        ChallengeManager.getInstance()
+                .getChallengeRegistry()
+                .get("daily/buy")
+                .ifPresent(challenge -> {
+                    // Create initial query to find if they've bought
+                    // from this shop before
+                    var query = LogQuery.builder(Transactions.TRANSACTION_SCHEMA)
+                            .maxResults(1)
+
+                            .field(Transactions.T_EXTRA)
+                            .add(Objects::nonNull)
+                            .addOr(s -> s.contains("market=" + market.getName()));
+
+                    // Set the correct field to be the active field
+                    //
+                    // If user is buying from shop, they're sending
+                    // money, if they're selling to the shop, they're
+                    // getting the money, aka being the target
+                    if (shop.getType().isBuyType()) {
+                        query.field(Transactions.T_SENDER);
+                    } else {
+                        query.field(Transactions.T_TARGET);
+                    }
+
+                    // Add predicates to the new active field
+                    query.add(Objects::nonNull)
+                            .add(s -> s.contains(customer.getUniqueId().toString()));
+
+                    // Great variable name
+                    boolean hasBoughtFromMarketBefore = DataLogs.query(query.build())
+                            .findAny()
+                            .isPresent();
+
+                    if (!hasBoughtFromMarketBefore) {
+                        challenge.trigger(customer);
+                    }
+                });
     }
 
     /**

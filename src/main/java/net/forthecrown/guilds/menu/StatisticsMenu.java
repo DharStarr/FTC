@@ -179,7 +179,7 @@ public class StatisticsMenu extends MenuPage {
 
     @Override
     public @Nullable ItemStack createItem(@NotNull User user, @NotNull InventoryContext context) {
-        return ItemStacks.builder(Material.KNOWLEDGE_BOOK)
+        return ItemStacks.builder(Material.NAME_TAG)
                 .setName(Component.text("Statistics", NamedTextColor.YELLOW)
                         .decoration(TextDecoration.ITALIC, false))
                 .addLore(Component.text("Information about the guild.", NamedTextColor.GRAY))

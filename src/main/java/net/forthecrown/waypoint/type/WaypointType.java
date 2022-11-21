@@ -30,7 +30,7 @@ public abstract class WaypointType {
 
     }
 
-    public @NotNull Bounds3i createSize() {
+    public @NotNull Bounds3i createBounds() {
         return Bounds3i.EMPTY;
     }
 
