@@ -10,16 +10,160 @@
       "guildExp": 5
     }
   },
+  "daily/vote": {
+    "displayName": "Vote",
+    "eventClass": "com.bencodez.votingplugin.events.PlayerPostVoteEvent",
+    "script": "challenges/on_vote.js",
+    "description": [
+      "Vote for the server"
+    ],
+    "reward": {
+      "guildExp": 5
+    }
+  },
+  "daily/bank_run": {
+    "displayName": "Bank Run",
+    "eventClass": "custom",
+    "script": "challenges/on_bank_run.js",
+    "description": [
+      "Complete a bank run"
+    ],
+    "reward": {
+      "guildExp": 10
+    }
+  },
+  "daily/sleep": {
+    "displayName": "Sleep",
+    "eventClass": "org.bukkit.event.player.PlayerBedLeaveEvent",
+    "script": "challenges/on_sleep.js",
+    "description": [
+      "Sleep through the night"
+    ],
+    "reward": {
+      "guildExp": 10
+    }
+  },
   "daily/walk_1000_blocks": {
     "displayName": "Walk 1,000 blocks",
     "goal": 1000,
     "eventClass": "org.bukkit.event.player.PlayerMoveEvent",
     "script": "challenges/move_1k_blocks.js",
     "description": [
-      "Walk 1,000 blocks in a day"
+      "Walk 1,000 blocks on the ground"
     ],
     "reward": {
       "guildExp": 10
+    }
+  },
+  "daily/advancement": {
+    "displayName": "Advancement",
+    "eventClass": "org.bukkit.event.player.PlayerAdvancementDoneEvent",
+    "script": "challenges/on_advancement.js",
+    "description": [
+      "Get any advancement"
+    ],
+    "reward": {
+      "guildExp": 15
+    }
+  },
+  "daily/sell": {
+    "displayName": "Selling",
+    "goal": 10000,
+    "eventClass": "custom",
+    "script": "challenges/on_sell.js",
+    "description": [
+      "Sell items in /shop worth 10,000 Rhines"
+    ],
+    "reward": {
+      "guildExp": 15
+    }
+  },
+  "daily/buy": {
+    "displayName": "Buying",
+    "goal": 3,
+    "eventClass": "custom",
+    "script": "challenges/on_buy.js",
+    "description": [
+      "Buy items from 3 different shop buildings in Hazelguard"
+    ],
+    "reward": {
+      "guildExp": 15
+    }
+  },
+  "daily/wither": {
+    "displayName": "Wither",
+    "eventClass": "org.bukkit.event.entity.EntityDeathEvent",
+    "script": "challenges/on_wither_kill.js",
+    "description": [
+      "Kill a wither"
+    ],
+    "reward": {
+      "guildExp": 20
+    }
+  },
+  "daily/warden": {
+    "displayName": "Warden",
+    "eventClass": "org.bukkit.event.entity.EntityDeathEvent",
+    "script": "challenges/on_warden_kill.js",
+    "description": [
+      "Kill a warden"
+    ],
+    "reward": {
+      "guildExp": 20
+    }
+  },
+  "daily/pay": {
+    "displayName": "Pay",
+    "eventClass": "custom",
+    "script": "challenges/on_pay.js",
+    "description": [
+      "Complete by paying 10,000 Rhines"
+    ],
+    "reward": {
+      "guildExp": 20
+    }
+  },
+  "daily/lightning": {
+    "displayName": "Lightning",
+    "eventClass": "org.bukkit.event.entity.EntityDamageByEntityEvent",
+    "script": "challenges/on_lightning.js",
+    "description": [
+      "Damage any entity by summoning lightning"
+    ],
+    "reward": {
+      "guildExp": 20
+    }
+  },
+  "daily/elite_bank_run": {
+    "displayName": "Elite Bank Run",
+    "eventClass": "custom",
+    "script": "challenges/on_bank_run.js",
+    "description": [
+      "Complete an elite bank run"
+    ],
+    "reward": {
+      "guildExp": 20
+    }
+  },
+  "daily/playtime": {
+    "displayName": "Playtime",
+    "goal": 30,
+    "eventClass": "custom",
+    "description": [
+      "Play for 30 minutes"
+    ],
+    "reward": {
+      "guildExp": 25
+    }
+  },
+  "daily/headhunt": {
+    "displayName": "Headhunt",
+    "eventClass": "custom",
+    "description": [
+      "Complete the Daily Challenge in /shop"
+    ],
+    "reward": {
+      "guildExp": 40
     }
   }
 }

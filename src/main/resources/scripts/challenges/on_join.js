@@ -7,3 +7,7 @@ function onActivate(handle) {
         handle.givePoint(user);
     });
 }
+
+function onComplete(user) {
+    logger.warn("Login challenge completed by: {}", user.getName())
+}
