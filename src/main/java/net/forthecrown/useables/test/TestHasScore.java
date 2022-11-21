@@ -1,17 +1,15 @@
 package net.forthecrown.useables.test;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.core.FTC;
-import net.forthecrown.utils.text.Text;
+import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.scoreboard.ObjectiveArgument;
 import net.forthecrown.useables.*;
-import net.forthecrown.grenadier.CommandSource;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.google.gson.JsonElement;
 import net.forthecrown.useables.util.UsageUtil;
-import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -105,18 +103,6 @@ public class TestHasScore extends UsageTest {
                 parsed.get(OBJ_ARG).getName(),
                 parsed.get(BOUNDS_ARG)
         );
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestHasScore fromJson(JsonElement element) throws CommandSyntaxException {
-        JsonWrapper wrapper = JsonWrapper.wrap(element.getAsJsonObject());
-
-        Objective objective = ObjectiveArgument.objective()
-                .parse(new StringReader(wrapper.getString("objective")));
-
-        int amount = wrapper.getInt("amount");
-
-        return new TestHasScore(objective.getName(), MinMaxBounds.Ints.atLeast(amount));
     }
 
     @UsableConstructor(ConstructType.TAG)

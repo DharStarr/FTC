@@ -1,16 +1,15 @@
 package net.forthecrown.useables.test;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.Pair;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.useables.*;
 import net.forthecrown.useables.util.UsageUtil;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserScoreMap;
+import net.forthecrown.user.UserDataMap;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -23,7 +22,7 @@ public class TestUserMapValue extends UsageTest {
         TYPE_GEMS    = UsageType.of(TestUserMapValue.class),
         TYPE_VOTES   = UsageType.of(TestUserMapValue.class);
 
-    private final UserScoreMap map;
+    private final UserDataMap map;
     private final MinMaxBounds.Ints bounds;
     private final String unit;
 
@@ -37,7 +36,7 @@ public class TestUserMapValue extends UsageTest {
         this.bounds = bounds;
     }
 
-    private static Pair<UserScoreMap, String> findMap(UsageType type) {
+    private static Pair<UserDataMap, String> findMap(UsageType type) {
         var users = UserManager.get();
 
         if (type == TYPE_BALANCE) {
@@ -79,11 +78,6 @@ public class TestUserMapValue extends UsageTest {
     @UsableConstructor
     public static TestUserMapValue parse(UsageType type, StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new TestUserMapValue(type, MinMaxBounds.Ints.fromReader(reader));
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestUserMapValue fromJson(UsageType type, JsonElement element) {
-        return new TestUserMapValue(type, MinMaxBounds.Ints.atLeast(element.getAsInt()));
     }
 
     @UsableConstructor(ConstructType.TAG)

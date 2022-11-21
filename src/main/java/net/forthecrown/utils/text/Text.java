@@ -1,6 +1,7 @@
 package net.forthecrown.utils.text;
 
 import io.papermc.paper.adventure.PaperAdventure;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.admin.CommandTeleportExact;
@@ -10,9 +11,9 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.AbstractCommand;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
-import net.forthecrown.utils.text.format.ComponentFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
+import net.forthecrown.utils.text.format.ComponentFormat;
 import net.kyori.adventure.text.*;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -37,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -529,14 +531,113 @@ public final class Text {
             return Component.keybind(like);
         }
 
-        // Some kind of an object, we don't what it is,
+        // Some kind of object, we don't know what it is,
         // maybe a string or who knows, so just call
         // String#valueOf(Object) on it and translate any
         // resulting color codes, links and emotes into text
         return renderString(String.valueOf(arg));
     }
 
-    /* ----------------------------- ARG JOINERS ------------------------------ */
+    /* ------------------------- REGEX OPERATIONS -------------------------- */
+
+    /**
+     * Tests if the given component contains the given
+     * pattern value.
+     * @param component The text to test
+     * @param pattern The pattern to test
+     * @return True, if the component contains the given text
+     * @throws NullPointerException If either the component or pattern were null
+     */
+    public static boolean contains(@NotNull Component component,
+                                   @NotNull Pattern pattern
+    ) throws NullPointerException {
+        Objects.requireNonNull(component, "Component was null");
+        Objects.requireNonNull(pattern, "Pattern was null");
+
+        var plain = plain(component);
+
+        return pattern.matcher(plain)
+                .find();
+    }
+
+    /**
+     * Tests if the given component completely matches the given pattern
+     * @param component The text to test
+     * @param pattern The pattern to test
+     * @return True, if the entire text matches the pattern,
+     *         false otherwise
+     * @throws NullPointerException If either the component or pattern were null
+     */
+    public static boolean matches(@NotNull Component component,
+                                  @NotNull Pattern pattern
+    ) throws NullPointerException {
+        Objects.requireNonNull(component, "Component was null");
+        Objects.requireNonNull(pattern, "Pattern was null");
+
+        var plain = plain(component);
+
+        return pattern.matcher(plain)
+                .matches();
+    }
+
+    /**
+     * Recursively splits the given text using the given
+     * pattern.
+     * <p>
+     * As well as splitting, this will, in effect, also flatten
+     * the component-children tree. As it flattens, it will attempt
+     * to retain the visual look of the components by merging their
+     * styles.
+     *
+     * @param pattern The Pattern the component will be split with
+     * @param component The text to split
+     * @return The split result, will have 1 entry
+     *         if the text was not split at all
+     *
+     * @throws NullPointerException If either the regex or component
+     *                              parameters were null
+     */
+    private static @NotNull List<Component> split(@NotNull String pattern,
+                                                  @NotNull Component component
+    ) throws NullPointerException {
+        Objects.requireNonNull(pattern);
+
+        return split(Pattern.compile(pattern), component);
+    }
+
+    /**
+     * Recursively splits the given text using the given
+     * pattern.
+     * <p>
+     * As well as splitting, this will, in effect, also flatten
+     * the component-children tree. As it flattens, it will attempt
+     * to retain the visual look of the components by merging their
+     * styles.
+     *
+     * @param pattern The Pattern the component will be split with
+     * @param component The text to split
+     * @return The split result, will have 1 entry
+     *         if the text was not split at all
+     *
+     * @throws NullPointerException If either the regex or component
+     *                              parameters were null
+     */
+    public static @NotNull List<Component> split(@NotNull Pattern pattern,
+                                                 @NotNull Component component
+    ) throws NullPointerException {
+        Objects.requireNonNull(pattern, "Pattern was null");
+        Objects.requireNonNull(component, "Component was null");
+
+        if (!contains(component, pattern)) {
+            return ObjectLists.singleton(component);
+        }
+
+        return new TextSplitter(component, pattern)
+                .build()
+                .getResult();
+    }
+
+    /* ---------------------------- ARG JOINERS ----------------------------- */
 
     public static ArgJoiner argJoiner(AbstractCommand command) {
         return argJoiner("/" + command.getName());

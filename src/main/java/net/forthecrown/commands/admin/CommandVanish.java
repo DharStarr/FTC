@@ -4,13 +4,12 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.UserParseResult;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.events.player.PlayerJoinListener;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.property.Properties;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 
 public class CommandVanish extends FtcCommand {
     public CommandVanish() {
@@ -49,14 +48,14 @@ public class CommandVanish extends FtcCommand {
                 .then(argument("user", Arguments.USER)
                         .executes(c -> vanish(
                                         c.getSource(),
-                                        c.getArgument("user", UserParseResult.class).getUser(c.getSource(), false),
+                                        c.getArgument("user", UserParseResult.class).get(c.getSource(), false),
                                         false
                         ))
 
                         .then(literal("-joinLeaveMessage")
                                 .executes(c -> vanish(
                                         c.getSource(),
-                                        c.getArgument("user", UserParseResult.class).getUser(c.getSource(), false),
+                                        c.getArgument("user", UserParseResult.class).get(c.getSource(), false),
                                         true
                                 ))
                         )
@@ -67,8 +66,11 @@ public class CommandVanish extends FtcCommand {
         boolean vanished = user.get(Properties.VANISHED);
 
         if (joinLeaveMsg) {
-            Component message = vanished ? Messages.joinMessage(user) : Messages.leaveMessage(user);
-            Bukkit.getServer().sendMessage(message);
+            if (vanished) {
+                PlayerJoinListener.sendLoginMessage(user);
+            } else {
+                PlayerJoinListener.sendLogoutMessage(user);
+            }
         }
 
         user.set(Properties.VANISHED, !vanished);

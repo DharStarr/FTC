@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.registry.Registries;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
@@ -170,7 +169,7 @@ public class PropertyMap extends UserComponent {
         var obj = element.getAsJsonObject();
         for (var e: obj.entrySet()) {
             // Get property by entry name
-            UserProperty property = Registries.USER_PROPERTIES.orNull(e.getKey());
+            UserProperty property = Properties.USER_PROPERTIES.orNull(e.getKey());
 
             // Test the property isn't null
             if (property == null) {
@@ -194,7 +193,7 @@ public class PropertyMap extends UserComponent {
         // length with the first read entry
         for (int i = values.length - 1; i >= 0; i--) {
             // Get the property by the current index
-            UserProperty property = Registries.USER_PROPERTIES.orNull(i);
+            UserProperty property = Properties.USER_PROPERTIES.orNull(i);
 
             // contains() check here to test if the
             // set value is null or the default, if

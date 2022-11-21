@@ -18,6 +18,11 @@ public class AnvilListener implements Listener {
 
         ItemStack first = event.getInventory().getFirstItem();
         ItemStack second = event.getInventory().getSecondItem();
+
+        if (ItemStacks.isEmpty(second)) {
+            return;
+        }
+
         ItemMeta firstMeta = first.getItemMeta();
         ItemMeta secondMeta = second.getItemMeta();
 

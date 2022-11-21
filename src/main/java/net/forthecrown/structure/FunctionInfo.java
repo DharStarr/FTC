@@ -5,7 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.commands.arguments.Readers;
+import net.forthecrown.commands.manager.Readers;
 import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;

@@ -3,26 +3,26 @@ package net.forthecrown.commands.help;
 import github.scarsz.discordsrv.commands.CommandLink;
 import github.scarsz.discordsrv.commands.CommandUnlink;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.*;
+import net.forthecrown.core.Messages;
+import net.forthecrown.core.Permissions;
+import net.forthecrown.core.Worlds;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.config.ServerRules;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.regions.PopulationRegion;
-import net.forthecrown.regions.RegionManager;
-import net.forthecrown.regions.RegionPos;
-import net.forthecrown.regions.Regions;
-import net.forthecrown.regions.visit.RegionVisit;
-import net.forthecrown.core.Messages;
+import net.forthecrown.user.User;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.text.writer.TextWriters;
-import net.forthecrown.user.User;
+import net.forthecrown.waypoint.WaypointConfig;
+import net.forthecrown.waypoint.WaypointManager;
+import net.forthecrown.waypoint.Waypoints;
+import net.forthecrown.waypoint.visit.WaypointVisit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.spongepowered.math.vector.Vector2i;
 
 import static net.forthecrown.core.Messages.DYNMAP_HELP_MESSAGE;
 import static net.forthecrown.core.Messages.POLEHELP_MESSAGE;
@@ -84,7 +84,7 @@ public abstract class HelpCommand extends FtcCommand {
         public HelpFindPost() {
             super("findpost");
 
-            setAliases("findpole");
+            setAliases("findpole", "findwaypoint");
             setDescription("Shows you the nearest region pole.");
             setPermission(Permissions.HELP);
 
@@ -125,18 +125,28 @@ public abstract class HelpCommand extends FtcCommand {
                     return 0;
                 }
 
-                RegionPos cords = RegionPos.of(loc);
-                PopulationRegion region = RegionManager.get().get(cords);
-                Regions.placePole(region);
+                var nearestPoint = WaypointManager.getInstance()
+                        .getChunkMap()
+                        .findNearest(loc)
+                        .left();
 
-                Vector2i vec2 = region.getPolePosition();
+                if (nearestPoint == null) {
+                    return 0;
+                }
+
+                var pos = nearestPoint.getBounds().center()
+                                .toInt();
 
                 player.sendMessage(
                         Component.text()
                                 .append(Messages.FTC_PREFIX)
-                                .append(Component.text("Closest region pole: ").color(NamedTextColor.YELLOW))
+                                .append(Component.text("Closest region pole: ", NamedTextColor.YELLOW))
                                 .append(Component.newline())
-                                .append(Component.text("x= " + vec2.x() + " z= " + vec2.y()))
+                                .append(
+                                        Text.format("&7x&r{0} &7y&r{1} &7z&r{2}",
+                                                pos.x(), pos.y(), pos.z()
+                                        )
+                                )
                 );
 
                 return 0;
@@ -355,16 +365,17 @@ public abstract class HelpCommand extends FtcCommand {
             command.executes(c ->{
                 User sender = getUserSender(c);
 
-                PopulationRegion region = RegionManager.get().get(GeneralConfig.spawnRegion);
-                if (region != null) {
-                    Vector2i pole = RegionManager.get()
-                            .getAccess(sender.getRegionPos())
-                            .getPolePosition();
+                var spawnWaypoint = WaypointManager.getInstance()
+                                .get(WaypointConfig.spawnWaypoint);
 
-                    if(Regions.isCloseToPole(pole, sender)) {
-                        RegionVisit.visitRegion(sender, region);
-                        return 0;
-                    }
+                var nearest = Waypoints.getColliding(sender.getPlayer());
+
+                if (spawnWaypoint != null
+                        && nearest != null
+                        && nearest.getBounds().contains(sender.getPlayer())
+                ) {
+                    WaypointVisit.visit(sender, spawnWaypoint);
+                    return 0;
                 }
 
                 sender.sendMessage(MESSAGE);

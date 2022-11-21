@@ -50,7 +50,7 @@ class NotesPage extends ListUiPage<EntryNote> {
     @Override
     protected ItemStack getItem(EntryNote note, PunishEntry punishEntry) {
         var builder = ItemStacks.builder(Material.MAP)
-                .setName(
+                .setNameRaw(
                         Text.format("Note by: '{0}', written: {1, date}",
                                 nonItalic(NamedTextColor.GRAY),
                                 note.source(), note.issued()

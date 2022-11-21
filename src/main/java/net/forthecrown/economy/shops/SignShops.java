@@ -51,6 +51,12 @@ public final class SignShops {
      */
     public static final int DEFAULT_INV_SIZE  = 27;
 
+    /** The sign line that has the shop's type */
+    public static final int LINE_TYPE = 0;
+
+    /** The sign line that has the shop's price */
+    public static final int LINE_PRICE = 3;
+
     /**
      * Buy type label
      */
@@ -85,7 +91,7 @@ public final class SignShops {
      * The barrier item displayed in the Example Inventory
      */
     static final ItemStack EXAMPLE_BARRIER = ItemStacks.builder(Material.BARRIER, 1)
-            .setName(Component.text(""))
+            .setNameRaw(Component.text(""))
             .build();
 
     /* ----------------------------- UTILITY METHODS ------------------------------ */

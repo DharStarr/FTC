@@ -8,12 +8,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import net.forthecrown.commands.manager.FtcSuggestions;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.grenadier.CompletionProvider;
-import net.forthecrown.utils.Time;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.JsonUtils;
-import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.SerializableObject;
 import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.commons.lang3.time.StopWatch;
@@ -104,50 +101,21 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
 
     protected void save(JsonArray array) {
         entryStream()
-                .forEach(reader -> {
-                    JsonWrapper json = JsonWrapper.create();
-                    json.addUUID("uuid", reader.getUniqueId());
-                    json.add("name", reader.getName());
-
-                    if (reader.getNickname() != null) {
-                        json.add("nick", reader.getNickname());
-                    }
-
-                    if(reader.getLastName() != null
-                            && Time.isPast(GeneralConfig.dataRetentionTime + reader.getLastNameChange())
-                    ) {
-                        json.add("lastName", reader.getLastName());
-                        json.add("lastNameChange", reader.getLastNameChange());
-                    }
-
-                    array.add(json.getSource());
-                });
+                .forEach(reader -> array.add(reader.serialize()));
 
         unsaved = false;
     }
 
     protected void load(JsonArray array) {
-        LOGGER.info("Beginning profile map load");
-        StopWatch watch = StopWatch.create();
-        watch.start();
+        if (FTC.inDebugMode()) {
+            LOGGER.info("Beginning profile map load");
+        }
 
+        StopWatch watch = StopWatch.createStarted();
         clear();
 
         for (JsonElement e: array) {
-            JsonWrapper json = JsonWrapper.wrap(e.getAsJsonObject());
-            UserLookupEntry entry = new UserLookupEntry(json.getUUID("uuid"));
-
-            entry.name = json.getString("name");
-            entry.nickname = json.getString("nick", null);
-            entry.lastName = json.getString("lastName", null);
-            entry.lastNameChange = json.getLong("lastNameChange", NO_NAME_CHANGE);
-
-            if (entry.lastNameChange != NO_NAME_CHANGE
-                    && Time.isPast(GeneralConfig.dataRetentionTime + entry.lastNameChange)
-            ) {
-                entry.lastName = null;
-                entry.lastNameChange = NO_NAME_CHANGE;
-            }
+            UserLookupEntry entry = UserLookupEntry.deserialize(e);
 
             if (!Users.hasVanillaData(entry.getUniqueId())) {
                 LOGGER.warn("Found player that has not played before, ID: {}, name: {}, deleting",
@@ -162,7 +130,10 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
         }
 
         watch.stop();
-        LOGGER.info("Loaded profile map, took {}ms", watch.getTime());
+        if (FTC.inDebugMode()) {
+            LOGGER.info("Loaded profile map, took {}ms", watch.getTime());
+        }
+
         unsaved = false;
     }
 
@@ -436,13 +407,13 @@ public class UserLookup extends SerializableObject.AbstractSerializer<JsonArray>
      * @return The cache entry for the given string
      */
     public UserLookupEntry get(String str) {
-        UserLookupEntry entry = getNamed(str);
-        if (entry != null) {
+        UserLookupEntry entry;
+
+        if ((entry = getNamed(str)) != null) {
             return entry;
         }
 
-        entry = getByLastName(str);
-        if (entry != null) {
+        if ((entry = getByLastName(str)) != null) {
             return entry;
         }
 

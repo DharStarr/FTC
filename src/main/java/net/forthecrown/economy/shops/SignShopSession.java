@@ -3,13 +3,16 @@ package net.forthecrown.economy.shops;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.economy.Economy;
-import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
+import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.text.Text;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -94,6 +97,28 @@ public class SignShopSession {
         customer.sendMessage(Messages.sessionInteraction(this));
 
         growAmount(getExampleItem().getAmount());
+
+        // Log the transaction occurring
+        Transactions.builder()
+                .type(TransactionType.SHOP)
+                .extra(
+                        "shop=%s item=%s type=%s",
+                        getShop().getName(),
+                        ItemStacks.toNbtString(getExampleItem()),
+                        getType()
+                )
+                .sender(
+                        type.isBuyType()
+                                ? customer.getUniqueId()
+                                : shop.getOwner()
+                )
+                .target(
+                        type.isBuyType()
+                                ? shop.getOwner()
+                                : customer.getUniqueId()
+                )
+                .amount(getPrice())
+                .log();
     }
 
     /**

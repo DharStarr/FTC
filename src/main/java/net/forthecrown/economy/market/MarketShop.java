@@ -11,9 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.FtcDiscord;
-import net.forthecrown.economy.Economy;
 import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.MailMessage;
@@ -24,6 +25,7 @@ import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -43,7 +45,6 @@ import java.util.function.Consumer;
 
 import static net.forthecrown.core.FtcDiscord.C_MARKETS;
 import static net.forthecrown.economy.market.MarketEviction.SOURCE_AUTOMATIC;
-import static net.forthecrown.economy.market.MarketEviction.SOURCE_UNKNOWN;
 import static net.forthecrown.economy.market.MarketReset.TEMPLATE_DEPTH;
 import static net.forthecrown.user.data.UserTimeTracker.UNSET;
 
@@ -254,7 +255,9 @@ public class MarketShop {
             throw Exceptions.MARKET_ALREADY_OWNER;
         }
 
-        //If the shop already has an owner, idk how this could even be triggered lol
+        // If the shop already has an owner, could be triggered in the
+        // unlikely scenario where 2 people open the purchase books, 1
+        // buys it and then the other person attempts to purchase as well
         if (hasOwner()) {
             throw Exceptions.MARKET_ALREADY_OWNED;
         }
@@ -269,6 +272,14 @@ public class MarketShop {
         }
 
         user.removeBalance(price);
+
+        // Log transaction
+        Transactions.builder()
+                .type(TransactionType.MARKET_PURCHASE)
+                .sender(user.getUniqueId())
+                .extra("shop=%s", getName())
+                .amount(price)
+                .log();
 
         //Claim it
         user.sendMessage(Messages.MARKET_BOUGHT);
@@ -538,11 +549,15 @@ public class MarketShop {
      * @throws IllegalArgumentException If the shop has no owner or is already marked
      *                                  for eviction
      */
-    public void beginEviction(long evictionDate, Component reason, String source)
-            throws IllegalArgumentException
-    {
+    public void beginEviction(long evictionDate,
+                              Component reason,
+                              String source
+    ) throws IllegalArgumentException {
         Validate.isTrue(hasOwner(), "Cannot evict shop with no owner");
-        Validate.isTrue(!markedForEviction(), "Shop '%s' is already marked for eviction", getName());
+        Validate.isTrue(!markedForEviction(),
+                "Shop '%s' is already marked for eviction",
+                getName()
+        );
 
         MarketEviction data = new MarketEviction(
                 this,
@@ -552,8 +567,10 @@ public class MarketShop {
 
         setEviction(data);
 
-        User user = ownerUser();
         MailMessage m = MailMessage.of(Messages.evictionMail(data));
+
+        User user = ownerUser();
+        user.getMail().add(m);
 
         if (user.isOnline()) {
             user.sendMessage(Messages.evictionNotice(data));
@@ -563,8 +580,6 @@ public class MarketShop {
         FtcDiscord.staffLog(C_MARKETS, "{}, owner `{}`, has been marked for eviction, reason: `{}`, source: `{}`",
                 getName(), user.getNickOrName(), Text.plain(reason), source
         );
-
-        user.getMail().add(m);
     }
 
     /**
@@ -623,10 +638,8 @@ public class MarketShop {
      * or if the rate of stocked shop to unstocked shop is
      * higher than {@link MarketConfig#minStockRequired}, then
      * this begins the automatic eviction.
-     *
-     * @param markets The markets manager
      */
-    public void validateOwnership(MarketManager markets) {
+    public void validateOwnership() {
         if (!hasOwner()) {
             return;
         }
@@ -646,6 +659,14 @@ public class MarketShop {
                     SOURCE_AUTOMATIC
             );
 
+            return;
+        }
+
+        long nextScanTime = scans.isEmpty()
+                ? 0L
+                : scans.get(0).date() + MarketConfig.scanInterval;
+
+        if (!Time.isPast(nextScanTime)) {
             return;
         }
 
@@ -671,7 +692,9 @@ public class MarketShop {
 
             // If there is enough shops and if enough are in stock
             // skip this scan
-            if (totalShops >= MarketConfig.minShopAmount && s.stockedCount() >= requiredStock) {
+            if (totalShops >= MarketConfig.minShopAmount
+                    && s.stockedCount() >= requiredStock
+            ) {
                 return;
             }
 
@@ -689,7 +712,11 @@ public class MarketShop {
                 Messages.MARKET_EVICT_STOCK
                 : Messages.tooLittleShops();
 
-        beginEviction(System.currentTimeMillis() + MarketConfig.evictionDelay, reason, SOURCE_AUTOMATIC);
+        beginEviction(
+                System.currentTimeMillis() + MarketConfig.evictionDelay,
+                reason,
+                SOURCE_AUTOMATIC
+        );
     }
 
     /**
@@ -798,21 +825,16 @@ public class MarketShop {
 
             if(ownership.has("merged")) {
                 mergedName = ownership.getString(KEY_MERGED);
+            } else {
+                mergedName = null;
             }
 
             memberEditingAllowed = ownership.getBool(KEY_EDITING, true);
 
-            if(ownership.has("evictionDate")) {
-                MarketEviction data = new MarketEviction(
-                        this,
-                        ownership.getDate("evictionData").getTime(),
-                        Component.text("Admin"),
-                        SOURCE_UNKNOWN
-                );
-
-                setEviction(data);
-            } else if (ownership.has(KEY_EVICTION)) {
+            if (ownership.has(KEY_EVICTION)) {
                 setEviction(MarketEviction.deserialize(ownership.get(KEY_EVICTION), this));
+            } else {
+                setEviction(null);
             }
         } else {
             owner = null;

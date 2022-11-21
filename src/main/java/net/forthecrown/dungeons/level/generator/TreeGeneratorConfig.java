@@ -4,8 +4,8 @@ import com.google.gson.JsonElement;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.math.Vectors;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.util.Random;

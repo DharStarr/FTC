@@ -1,6 +1,6 @@
 package net.forthecrown.core.holidays;
 
-import com.sk89q.worldedit.bukkit.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.user.User;

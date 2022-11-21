@@ -1,7 +1,6 @@
 package net.forthecrown.useables.command;
 
 import com.google.common.collect.Iterators;
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import net.forthecrown.utils.io.SerializableObject;
@@ -106,6 +105,5 @@ public class CmdUsables<T extends CommandUsable> extends SerializableObject.NbtD
 
     public interface EntryFactory<E> {
         E create(String name, CompoundTag tag) throws CommandSyntaxException;
-        E create(String name, JsonElement element) throws CommandSyntaxException;
     }
 }

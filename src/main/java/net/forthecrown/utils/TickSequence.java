@@ -1,10 +1,10 @@
 package net.forthecrown.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import lombok.Getter;
 import net.forthecrown.core.FTC;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -24,11 +24,9 @@ public class TickSequence {
     protected final List<SequenceNode> nodes;
     protected int nodeIndex = 0;
     protected BukkitTask task;
-    protected boolean running;
 
-    public TickSequence(SequenceNode... nodes) {
-        this(Arrays.asList(nodes));
-    }
+    @Getter
+    protected boolean running;
 
     public TickSequence(Collection<SequenceNode> nodes) {
         this.nodes = new ObjectArrayList<>(nodes);
@@ -57,10 +55,6 @@ public class TickSequence {
         task = Tasks.cancel(task);
         running = false;
         nodeIndex = 0;
-    }
-
-    public boolean isRunning() {
-        return running;
     }
 
     private void run() {

@@ -16,8 +16,7 @@ public final class FtcFlags {
 
     public static final StateFlag
             SHOP_CREATION   = new StateFlag("shop-creation", true),
-            TRAPDOOR_USE    = new StateFlag("trapdoor-use", true),
-            RIDING_ALLOWED  = new StateFlag("player-riding", true);
+            TRAPDOOR_USE    = new StateFlag("trapdoor-use", true);
 
     static void init() {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
@@ -25,7 +24,6 @@ public final class FtcFlags {
         try {
             registry.register(SHOP_CREATION);
             registry.register(TRAPDOOR_USE);
-            registry.register(RIDING_ALLOWED);
         } catch (FlagConflictException e){
             e.printStackTrace();
         }

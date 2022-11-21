@@ -1,15 +1,13 @@
 package net.forthecrown.dungeons.usables;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.useables.*;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.Tag;
 import org.bukkit.entity.Player;
@@ -50,11 +48,6 @@ public class ActionEntranceInfo extends UsageAction {
     @UsableConstructor(ConstructType.PARSE)
     public static ActionEntranceInfo parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new ActionEntranceInfo(TYPE_PARSER.parse(reader));
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionEntranceInfo fromJson(JsonElement element) {
-        return new ActionEntranceInfo(JsonUtils.readEnum(Type.class, element));
     }
 
     @UsableConstructor(ConstructType.TAG)

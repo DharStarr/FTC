@@ -48,13 +48,13 @@ public abstract class AbstractListIterator<T> implements ListIterator<T> {
     public boolean hasPrevious() {
         // Same thing as hasNext(), but in
         // reverse :D
-        while (pos > -1
-                && shouldSkip(get(pos))
+        while (pos > 0
+                && shouldSkip(get(pos - 1))
         ) {
             pos--;
         }
 
-        return pos > -1;
+        return pos > 0;
     }
 
     @Override

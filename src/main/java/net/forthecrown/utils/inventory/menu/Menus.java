@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static net.forthecrown.utils.inventory.menu.Slot.COLUMN_SIZE;
+import static net.forthecrown.utils.inventory.menu.Slot.ROW_SIZE;
 
 /**
  * Utility class for menus
@@ -29,7 +30,7 @@ public final class Menus {
     public static final int MIN_INV_SIZE = 9;
 
     /** Maximum size of an inventory */
-    public static final int MAX_INV_SIZE = 54;
+    public static final int MAX_INV_SIZE = COLUMN_SIZE * ROW_SIZE;
 
     /** Default border item, gray stained-glass pane */
     private static final ItemStack DEFAULT_BORDER = createBorderItem(Material.GRAY_STAINED_GLASS_PANE);

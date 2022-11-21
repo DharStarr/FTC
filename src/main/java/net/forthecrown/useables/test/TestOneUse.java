@@ -1,15 +1,9 @@
 package net.forthecrown.useables.test;
 
-import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.useables.CheckHolder;
-import net.forthecrown.useables.ConstructType;
-import net.forthecrown.useables.UsableConstructor;
-import net.forthecrown.useables.UsageTest;
-import net.forthecrown.useables.UsageType;
-import net.forthecrown.utils.io.JsonUtils;
+import net.forthecrown.useables.*;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.Tag;
@@ -59,19 +53,6 @@ public class TestOneUse extends UsageTest {
     @UsableConstructor(ConstructType.EMPTY)
     public static TestOneUse create() {
         return new TestOneUse();
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestOneUse fromJson(JsonElement element) {
-        var result = create();
-
-        for (var e: element.getAsJsonArray()) {
-            result.used.add(
-                    JsonUtils.readUUID(e)
-            );
-        }
-
-        return result;
     }
 
     @UsableConstructor(ConstructType.TAG)

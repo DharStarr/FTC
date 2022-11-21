@@ -17,7 +17,7 @@ abstract class PrimitiveSerializerParser<T> implements SerializerParser<T> {
     }
 
     @Override
-    public <V> V serialize(DynamicOps<V> ops, T value) {
+    public <V> @NotNull V serialize(@NotNull DynamicOps<V> ops, @NotNull T value) {
         if (value instanceof Number number) {
             return ops.createNumeric(number);
         }

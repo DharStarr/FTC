@@ -58,11 +58,13 @@ public class HomeArgument implements ArgumentType<HomeParseResult>, VanillaMappe
 
         if (source.hasPermission(Permissions.HOME_OTHERS)) {
             boolean containsDelimiter = remaining.contains(":");
-            FtcSuggestions.suggestPlayerNames((CommandSource) context.getSource(), builder, !containsDelimiter);
+            FtcSuggestions.suggestPlayerNames((CommandSource) context.getSource(), builder, true);
 
             if (containsDelimiter) {
                 String name = remaining.substring(0, remaining.indexOf(':'));
-                var entry =  UserManager.get().getUserLookup().get(name);
+                var entry =  UserManager.get()
+                        .getUserLookup()
+                        .get(name);
 
                 if (entry != null) {
                     User user = Users.get(entry);

@@ -1,14 +1,17 @@
 package net.forthecrown.utils.io;
 
-import com.google.errorprone.annotations.FormatString;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public final class PathUtil {
     private PathUtil() {}
@@ -103,7 +106,7 @@ public final class PathUtil {
                                                        IOConsumer<Path> fileConsumer
     ) {
         if (!Files.isDirectory(dir)) {
-            return errorResult("Path '%s' is not a directory", dir);
+            return Results.errorResult("Path '%s' is not a directory", dir);
         }
 
         try (var stream = Files.newDirectoryStream(dir)) {
@@ -131,7 +134,7 @@ public final class PathUtil {
                     deleted++;
                 } catch (IOException exc) {
                     if (!tolerateErrors) {
-                        return partialResult(deleted,
+                        return Results.partialResult(deleted,
                                 "Couldn't perform operation on file '%s': '%s'",
                                 p, exc.getMessage()
                         );
@@ -141,7 +144,7 @@ public final class PathUtil {
 
             return DataResult.success(deleted);
         } catch (IOException e) {
-            return errorResult("Couldn't iterate through directory '%s': '%s'", e);
+            return Results.errorResult("Couldn't iterate through directory '%s': '%s'", e);
         }
     }
 
@@ -211,7 +214,7 @@ public final class PathUtil {
                 // Don't test for error toleration here because
                 // if a directory isn't empty when we try to delete it,
                 // it'll fail anyway
-                return partialResult(deleted,
+                return Results.partialResult(deleted,
                         "Couldn't recursively delete directory '%s': '%s'", path, e.getMessage()
                 );
             }
@@ -223,21 +226,135 @@ public final class PathUtil {
 
             return DataResult.success(deleted);
         } catch (IOException e) {
-            return partialResult(deleted,
+            return Results.partialResult(deleted,
                     "Couldn't delete file: '%s': '%s'",
                     path, e.getMessage()
             );
         }
     }
 
-    public static <T> DataResult<T> errorResult(String msgFormat, Object... args) {
-        return DataResult.error(String.format(msgFormat, args));
+    public static void archive(Path source, Path dest) throws IOException {
+        var parent = dest.getParent();
+
+        if (!Files.exists(parent)) {
+            Files.createDirectories(parent);
+        }
+
+        try (var stream = new ZipOutputStream(Files.newOutputStream(dest))) {
+            try (var pStream = Files.walk(source)) {
+                pStream
+                        .filter(path -> !Files.isDirectory(path))
+                        .forEach(path -> {
+                            ZipEntry entry = new ZipEntry(
+                                    source.relativize(path).toString()
+                            );
+
+                            try {
+                                stream.putNextEntry(entry);
+                                Files.copy(path, stream);
+                                stream.closeEntry();
+                            } catch (IOException exc) {
+                                exc.printStackTrace();
+                            }
+                        });
+            }
+        }
     }
 
-    public static <T> DataResult<T> partialResult(T partial, @FormatString String msgFormat, Object... args) {
-        return DataResult.error(
-                String.format(msgFormat, args),
-                partial
+    public static DataResult<List<String>> findAllFiles(Path directory,
+                                                        boolean includeFileFormats,
+                                                        boolean includeRoot
+    ) {
+        FileFinderWalker walker = new FileFinderWalker(
+                includeFileFormats, includeRoot, directory
         );
+
+        try {
+            Files.walkFileTree(directory, walker);
+            return DataResult.success(walker.results);
+        } catch (IOException exc) {
+            return Results.partialResult(walker.results,
+                    "Error walking tree! %s",
+                    exc.getMessage()
+            );
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class FileFinderWalker implements FileVisitor<Path> {
+        private final boolean includeFormats;
+        private final boolean includeRoot;
+        private final Path root;
+
+        private final List<String> results = new ObjectArrayList<>();
+        private String prefix = "";
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            if (!includeRoot && root.equals(dir)) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            if (!prefix.isEmpty()) {
+                prefix += "/";
+            }
+
+            prefix += fileName(dir);
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+            String fName = prefix;
+
+            if (!fName.isEmpty()) {
+                fName += "/";
+            }
+
+            fName += fileName(file);
+            results.add(fName);
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            throw exc;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+            if (!includeRoot && root.equals(dir)) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            var dirPrefix = fileName(dir);
+            int l = dirPrefix.length();
+
+            if (prefix.endsWith("/" + dirPrefix)) {
+                prefix = prefix.substring(0, prefix.length() - l - 1);
+            } else if (prefix.endsWith(dirPrefix)) {
+                prefix = prefix.substring(0, prefix.length() - l);
+            }
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        private String fileName(Path path) {
+            String fileName = path.getFileName()
+                    .toString();
+
+            if (includeFormats) {
+                return fileName;
+            }
+
+            int dotIndex = fileName.indexOf('.');
+
+            if (dotIndex == -1) {
+                return fileName;
+            }
+
+            return fileName.substring(0, dotIndex);
+        }
     }
 }

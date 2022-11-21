@@ -2,7 +2,7 @@ package net.forthecrown.commands;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.forthecrown.book.SettingsBook;
+import net.forthecrown.core.SettingsBook;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
@@ -171,16 +171,6 @@ public class ToggleCommand extends FtcCommand {
         );
 
         new ToggleCommand(
-                "toggleriding",
-                "Player Riding",
-                Properties.PLAYER_RIDING,
-                TOGGLE_RIDING,
-                Permissions.DEFAULT,
-                "Toggles being able to ride and be ridden by players",
-                "ridingtoggle"
-        );
-
-        new ToggleCommand(
                 "tpatoggle",
                 "TPA",
                 Properties.TPA,
@@ -255,7 +245,7 @@ public class ToggleCommand extends FtcCommand {
                 "Region Invites",
                 Properties.REGION_INVITING,
                 TOGGLE_INVITE,
-                Permissions.REGIONS,
+                Permissions.WAYPOINTS,
                 "Toggles being able to invite and be invited to regions",
                 "allowinvites", "denyinvites"
         );
@@ -265,7 +255,7 @@ public class ToggleCommand extends FtcCommand {
                 "Hulk Smashing",
                 Properties.HULK_SMASHING,
                 TOGGLE_HULK,
-                Permissions.REGIONS,
+                Permissions.WAYPOINTS,
                 "Toggles whether you quickly teleport to poles or hulk smash onto them",
                 "togglehulk", "togglehulksmash"
         );
@@ -297,6 +287,26 @@ public class ToggleCommand extends FtcCommand {
                 Permissions.DEFAULT,
                 "Toggles seeing item breaking warnings",
                 "itemdurability", "durabilitywarnings"
+        );
+
+        new ToggleCommand(
+                "rankchat",
+                "Ranks in chat",
+                Properties.RANKED_NAME_TAGS,
+                TOGGLE_CHAT_RANKS,
+                Permissions.DEFAULT,
+                "Toggles seeing ranks in chat",
+                "chatranks"
+        );
+
+        new ToggleCommand(
+                "guildrankchat",
+                "Rank in gc",
+                Properties.GUILD_RANKED_TAGS,
+                "N{1} seeing ranks in guild chat",
+                Permissions.GUILD,
+                "Toggles seeing ranks in guild chat",
+                "gcranks", "gchatranks"
         );
 
         createEavesdrop();
@@ -341,6 +351,15 @@ public class ToggleCommand extends FtcCommand {
                 Permissions.ADMIN,
                 "Toggles seeing what people say in marriage dms",
                 "seemchat", "seemarriage", "see_mchat", "see_marriage"
+        );
+
+        new ToggleCommand(
+                "eavesdrop_gchat",
+                "Spy on guilds",
+                Properties.EAVES_DROP_GUILD_CHAT,
+                TOGGLE_EAVESDROP_GCHAT,
+                Permissions.ADMIN,
+                "Toggles seeing guild chats"
         );
     }
 }

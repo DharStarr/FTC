@@ -120,6 +120,11 @@ public final class Permissions {
             CMD_NICKNAME            = register(COMMAND_PREFIX + "nickname"),
             CMD_SUICIDE             = register(COMMAND_PREFIX + "suicide"),
 
+            HAT                     = register(COMMAND_PREFIX + "hat"),
+
+            GUILD                   = register("ftc.guild"),
+            GUILD_ADMIN             = registerPrefixed(GUILD, "admin"),
+
             CMD_GAMEMODE            = register(COMMAND_PREFIX + "gamemode"),
             CMD_GAMEMODE_OTHERS     = registerPrefixed(CMD_GAMEMODE, "others"),
             CMD_GAMEMODE_CREATIVE   = registerPrefixed(CMD_GAMEMODE, "creative"),
@@ -132,8 +137,11 @@ public final class Permissions {
             CMD_TELEPORT            = register(COMMAND_PREFIX + "teleport"),
             CMD_LIST                = register(COMMAND_PREFIX + "list"),
 
-            REGIONS                 = register("ftc.regions"),
-            REGIONS_ADMIN           = register(REGIONS.getName() + ".admin"),
+            WAYPOINTS               = register("ftc.waypoints"),
+            WAYPOINTS_ADMIN         = registerPrefixed(WAYPOINTS, "admin"),
+            WAYPOINTS_FLAGS         = registerPrefixed(WAYPOINTS, "flags"),
+
+            CHALLENGES              = register("ftc.challenges"),
 
             MARKETS                 = register("ftc.markets"),
             MARKET_WARNING          = register("ftc.markets.warning"),

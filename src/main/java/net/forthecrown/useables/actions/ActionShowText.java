@@ -1,14 +1,12 @@
 package net.forthecrown.useables.actions;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.Tag;
 import org.bukkit.entity.Player;
@@ -42,11 +40,6 @@ public class ActionShowText extends UsageAction {
     @UsableConstructor(ConstructType.PARSE)
     public static ActionShowText parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new ActionShowText(Arguments.CHAT.parse(reader));
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionShowText readJson(JsonElement element) {
-        return new ActionShowText(JsonUtils.readText(element));
     }
 
     @UsableConstructor(ConstructType.TAG)

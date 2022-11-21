@@ -57,7 +57,7 @@ public class DungeonListeners implements Listener {
 
     public static ItemStack createFork() {
         ItemStack item = ItemStacks.builder(Material.TRIDENT, 1)
-                .setName(Component.text("Fork").decorate(TextDecoration.BOLD))
+                .setNameRaw(Component.text("Fork").decorate(TextDecoration.BOLD))
                 .build();
 
         FtcEnchants.addEnchant(item, FtcEnchants.DOLPHIN_SWIMMER, 1);

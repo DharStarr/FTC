@@ -1,9 +1,7 @@
 package net.forthecrown.useables.actions;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.admin.CommandTeleportExact;
 import net.forthecrown.commands.economy.CommandShopHistory;
 import net.forthecrown.grenadier.CommandSource;
@@ -12,15 +10,11 @@ import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.args.ParsedArgs;
 import net.forthecrown.grenadier.types.pos.Position;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
-import net.forthecrown.useables.ActionHolder;
-import net.forthecrown.useables.ConstructType;
-import net.forthecrown.useables.UsableConstructor;
-import net.forthecrown.useables.UsageAction;
-import net.forthecrown.useables.UsageType;
+import net.forthecrown.useables.*;
 import net.forthecrown.user.UserTeleport;
 import net.forthecrown.user.Users;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.Tag;
 import org.bukkit.Location;
@@ -93,11 +87,6 @@ public class ActionTeleport extends UsageAction {
         loc.setPitch(args.getOrDefault(CommandTeleportExact.PITCH, loc.getPitch()));
 
         return new ActionTeleport(loc);
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionTeleport fromJson(JsonElement element) {
-        return new ActionTeleport(JsonUtils.readLocation(element.getAsJsonObject()));
     }
 
     @UsableConstructor(ConstructType.TAG)

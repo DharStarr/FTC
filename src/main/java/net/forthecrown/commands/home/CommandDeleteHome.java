@@ -1,18 +1,18 @@
 package net.forthecrown.commands.home;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.HomeParseResult;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Permissions;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.UserHomes;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Location;
 
 public class CommandDeleteHome extends FtcCommand {
@@ -54,8 +54,8 @@ public class CommandDeleteHome extends FtcCommand {
         // Because of how the HomeParseResult works, we need to actually
         // get the home location for it to check permissions, because you
         // might've inputted 'JulieWoolie:home' or something
-        Pair<String, Location> h = result.getHome(source, false);
-        var name = h.getKey();
+        Pair<String, Location> h = result.get(source, true);
+        var name = h.getFirst();
 
         User user;
 

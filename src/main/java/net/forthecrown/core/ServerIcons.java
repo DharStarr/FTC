@@ -1,5 +1,7 @@
 package net.forthecrown.core;
 
+import net.forthecrown.core.registry.Registries;
+import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.Util;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
@@ -9,12 +11,13 @@ import java.io.File;
 import java.time.Month;
 import java.time.ZonedDateTime;
 
-import static net.forthecrown.core.registry.Registries.SERVER_ICONS;
-
 /**
  * Dynamically/randomly changes the server icon
  */
 public class ServerIcons {
+    /** Server icons */
+    public static final Registry<CachedServerIcon> SERVER_ICONS = Registries.newFreezable();
+
     private static final Logger LOGGER = FTC.getLogger();
 
     /**

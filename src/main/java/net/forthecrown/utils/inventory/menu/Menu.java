@@ -83,7 +83,15 @@ public class Menu implements InventoryHolder, MenuCloseConsumer {
 
         nodes.int2ObjectEntrySet()
                 .forEach(entry -> {
-                    var slot = Slot.of(entry.getIntKey());
+                    Slot slot = Slot.of(entry.getIntKey());
+
+                    if (slot.getIndex() >= inv.getSize()) {
+                        throw new IllegalStateException(
+                                "Slot " + slot + " is too big for inventory size: " +
+                                inv.getSize()
+                        );
+                    }
+
                     var item = entry.getValue().createItem(user, context);
 
                     if (ItemStacks.isEmpty(item)) {

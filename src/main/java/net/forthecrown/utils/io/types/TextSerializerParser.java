@@ -20,7 +20,7 @@ public class TextSerializerParser implements SerializerParser<Component> {
     }
 
     @Override
-    public <V> V serialize(DynamicOps<V> ops, Component value) {
+    public <V> @NotNull V serialize(@NotNull DynamicOps<V> ops, @NotNull Component value) {
         if (ops instanceof JsonOps) {
             return (V) serialize(value);
         }
@@ -29,7 +29,7 @@ public class TextSerializerParser implements SerializerParser<Component> {
     }
 
     @Override
-    public <V> DataResult<Component> deserialize(DynamicOps<V> ops, V element) {
+    public <V> @NotNull DataResult<Component> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
         if (ops instanceof JsonOps) {
             return DataResult.success(deserialize((JsonElement) element));
         }

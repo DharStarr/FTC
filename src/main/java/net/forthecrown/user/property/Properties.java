@@ -1,6 +1,8 @@
 package net.forthecrown.user.property;
 
 import net.forthecrown.core.registry.Registries;
+import net.forthecrown.core.registry.Registry;
+import net.forthecrown.guilds.MemberSort;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.SellAmount;
 import net.kyori.adventure.text.Component;
@@ -10,11 +12,17 @@ import net.kyori.adventure.text.Component;
  * constants.
  */
 public class Properties {
+    /** Registry of all properties */
+    public static final Registry<UserProperty> USER_PROPERTIES = Registries.newFreezable();
+
     /**
      * The amount a user will sell in /shop.
      */
     public static final EnumProperty<SellAmount>
     SELL_AMOUNT             = new EnumProperty<>("sellAmount",       SellAmount.PER_1);
+
+    public static final EnumProperty<MemberSort>
+    MEMBER_SORT             = new EnumProperty<>("memberSort",       MemberSort.BY_RANK);
 
     /**
      * Determines whether a user is allowed to send
@@ -116,6 +124,12 @@ public class Properties {
     EAVES_DROP_MINING       = new BoolProperty("eavesDrop_mining",   false),
 
     /**
+     * Determines if a user sees eaves dropper messages when guild
+     * members use their respective guild's guild chat.
+     */
+    EAVES_DROP_GUILD_CHAT   = new BoolProperty("eavesDrop_guildChat",false),
+
+    /**
      * /shop property, determines if the selling system
      * should also sell named items, or ignore them.
      */
@@ -147,18 +161,16 @@ public class Properties {
      * pass a certain durability threshold.
      * @see net.forthecrown.events.player.DurabilityListener
      */
-    DURABILITY_ALERTS       = new BoolProperty("durabilityAlerts",   true);
+    DURABILITY_ALERTS       = new BoolProperty("durabilityAlerts",   true),
 
     /**
-     * Determines if a player can ride other players
-     * or be ridden by other players.
+     * Determines whether a user will see ranks besides name
+     * tags in chat and in the player name
      */
-    public static final BoolProperty PLAYER_RIDING = new BoolProperty("playerRiding", true) {
-        @Override
-        public void onUpdate(User user) {
-            user.updateRiding();
-        }
-    };
+    RANKED_NAME_TAGS        = new BoolProperty("rankedNameTags",     false),
+
+    /** Determines if the user sees other users' guild ranks in guild chat */
+    GUILD_RANKED_TAGS       = new BoolProperty("guildRankedNameTags",false);
 
     /**
      * Determines a player's TAB prefix.
@@ -224,6 +236,6 @@ public class Properties {
 
     /** Empty initializer method to freeze property registry */
     static void init() {
-        Registries.USER_PROPERTIES.freeze();
+        USER_PROPERTIES.freeze();
     }
 }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.inventory.menu.Menu;
+import net.forthecrown.utils.inventory.menu.Menus;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.WordUtils;
 
@@ -56,7 +57,7 @@ public class CosmeticType<T extends Cosmetic> {
             Class loaded = Class.forName(c.getName(), true, c.getClassLoader());
             type.effects.freeze();
 
-            type.initializeInventory();
+            type.initializeInventory(36);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -66,15 +67,15 @@ public class CosmeticType<T extends Cosmetic> {
         effects.register(val.getSerialId(), val);
     }
 
-    private void initializeInventory() {
-        var builder = CosmeticMenus.baseInventory(36, displayName, true)
-                .add(4, 3, CosmeticMenus.createUnSelectNode(this));
+    void initializeInventory(int invSize) {
+        var builder = CosmeticMenus.baseInventory(invSize, displayName, true)
+                .add(
+                        invSize - (Menus.MIN_INV_SIZE / 2) - 1,
+                        CosmeticMenus.createUnSelectNode(this)
+                );
 
         for (var v: effects) {
-            builder.add(
-                    v.getSlot(),
-                    v.getDisplayData().getOption()
-            );
+            builder.add(v.getSlot(), v.createNode());
         }
 
         this.menu = builder.build();
@@ -102,6 +103,6 @@ public class CosmeticType<T extends Cosmetic> {
 
     @Override
     public int hashCode() {
-        return getId();
+        return name.hashCode();
     }
 }

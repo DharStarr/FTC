@@ -4,6 +4,8 @@ import com.google.common.collect.Iterators;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.inventory.FtcItems;
 import net.forthecrown.core.Messages;
@@ -38,7 +40,7 @@ public class CommandDeposit extends FtcCommand {
      * Main Author: Julie
      */
 
-    private static final Pattern WORTH_PATTERN = Pattern.compile("Worth [0-9]+ Rhine(s|)");
+    private static final Pattern WORTH_PATTERN = Pattern.compile("Worth [\\d,.]+ Rhine(s|)");
 
     @Override
     protected void createCommand(BrigadierCommand command) {
@@ -104,6 +106,15 @@ public class CommandDeposit extends FtcCommand {
 
         user.addBalance(earned);
         user.sendMessage(Messages.deposit(coins, earned));
+
+        // Log deposit
+        Transactions.builder()
+                .type(TransactionType.DEPOSIT)
+                .target(user.getUniqueId())
+                .extra("coins=%s", coins)
+                .amount(earned)
+                .log();
+
         return 0;
     }
 

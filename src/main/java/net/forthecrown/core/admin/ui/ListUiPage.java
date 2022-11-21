@@ -30,7 +30,8 @@ abstract class ListUiPage<T> extends AdminUiPage {
         // Calculate details about how many entries
         // fit onto the page
         Slot startSlot = Slot.of(1, 1);
-        Slot endSlot = Slot.of(builder.getSize() - 1).add(-1, -1);
+        Slot endSlot = Slot.of(builder.getSize() - 1)
+                .add(-1, -1);
 
         // Difference between start and end slots
         Slot size = endSlot.add(-startSlot.getColumn(), -startSlot.getRow());
@@ -80,7 +81,7 @@ abstract class ListUiPage<T> extends AdminUiPage {
                                 return getItem(list.get(index), entry);
                             })
                             .setRunnable((user, context, click) -> {
-                                // Copy-pasted from above
+                                // Copy-pasted from above :(
                                 var entry = context.get(ENTRY);
                                 var page = context.get(PAGE);
                                 var index = ((pageSize * page) + finalI);
@@ -159,6 +160,7 @@ abstract class ListUiPage<T> extends AdminUiPage {
                     context.set(PAGE, newPage);
                     click.shouldReloadMenu(true);
                 })
+
                 .build();
     }
 

@@ -199,12 +199,10 @@ public class CommandMergeShop extends FtcCommand {
                 throw Exceptions.MERGE_SELF;
             }
 
-            if (Users.testBlocked(user, target,
+            Users.testBlockedException(user, target,
                     MARKET_MERGE_BLOCKED_SENDER,
                     MARKET_MERGE_BLOCKED_TARGET
-            )) {
-                return false;
-            }
+            );
 
             if (!Markets.ownsShop(user)) {
                 throw Exceptions.NO_SHOP_OWNED;
@@ -218,7 +216,7 @@ public class CommandMergeShop extends FtcCommand {
                 throw Exceptions.marketTargetMerged(target);
             }
 
-            if (Markets.ownsShop(target)) {
+            if (!Markets.ownsShop(target)) {
                 throw Exceptions.marketTargetHasShop(target);
             }
 

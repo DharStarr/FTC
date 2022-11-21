@@ -40,8 +40,10 @@ public class PacketHandlerList<T extends Packet> {
                     throwable = exc.getCause();
                 }
 
-                PacketListeners.LOGGER.error("Error running packet listener executor '{}'",
-                        v.getExecutorClass().getSimpleName(), throwable
+                PacketListeners.LOGGER.error(
+                        "Error running packet listener executor '{}'",
+                        v.getExecutorClass().getSimpleName(),
+                        throwable
                 );
             }
         }

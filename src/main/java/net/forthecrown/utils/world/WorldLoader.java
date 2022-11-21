@@ -39,7 +39,7 @@ public @UtilityClass class WorldLoader {
      * Determines if the loader should log an
      * excessive amount of info or not
      */
-    public boolean VERBOSE = false;
+    public boolean VERBOSE = FTC.inDebugMode();
 
     /**
      * The amount of chunks that have to be loaded before
@@ -50,7 +50,7 @@ public @UtilityClass class WorldLoader {
     /**
      * The size of a {@link LoadSection} in chunks
      */
-    private final int SECTION_SIZE        = 50;
+    private final int SECTION_SIZE        = 32;
 
     /**
      * The max chunks we can be loading at any time
@@ -114,7 +114,7 @@ public @UtilityClass class WorldLoader {
         LoaderInstance instance = new LoaderInstance(world);
         ONGOING.put(world.getKey(), instance);
 
-        EXECUTOR.execute(instance);
+        instance.run();
 
         return instance.result;
     }
@@ -197,6 +197,7 @@ public @UtilityClass class WorldLoader {
             if (lastLog >= LOG_INTERVAL) {
                 lastLog = 0;
                 float progressPercent = (float) loaded / (float) chunkCount * 100;
+                System.gc();
 
                 LOGGER.info("[{}] Loading progress: {} / {}, or {}%",
                         world.getName(),
@@ -225,7 +226,6 @@ public @UtilityClass class WorldLoader {
      */
     private class LoaderInstance implements Runnable {
         private final CompletableFuture<World> result = new CompletableFuture<>();
-        private final ExecutorService executor;
         private final LoadSection[] sections;
         private final LoadProgress progress;
 
@@ -267,15 +267,6 @@ public @UtilityClass class WorldLoader {
                 sections[i] = new LoadSection(this, new ChunkPos(start.x + xOffset, start.z + zOffset));
             }
 
-            // Create the executor which will handle the load sections
-            this.executor = Executors.newFixedThreadPool(sectionedSize, r -> {
-                Thread t = new Thread(r);
-                t.setDaemon(true);
-                t.setUncaughtExceptionHandler((t1, e) -> LOGGER.error("Error in LoadSection", e));
-
-                return t;
-            });
-
             // Log load data
             LOGGER.info(world.getName() + " load data:");
             LOGGER.info("LoadSections used: " + sections.length);
@@ -291,7 +282,9 @@ public @UtilityClass class WorldLoader {
             // Check if all sections have been loaded
             // If any have not been loaded, stop
             for (LoadSection s: sections) {
-                if(!s.completed) return;
+                if (!s.completed) {
+                    return;
+                }
             }
 
             // Shutdown this loader instance
@@ -309,14 +302,13 @@ public @UtilityClass class WorldLoader {
 
             // Start all sections
             for (LoadSection s: sections) {
-                executor.execute(s);
+                EXECUTOR.execute(s);
             }
         }
 
         public void onCancel() {
             // Set stopped to true and kill the executor
             this.stopped = true;
-            executor.shutdownNow();
         }
     }
 
@@ -347,7 +339,8 @@ public @UtilityClass class WorldLoader {
                     }
 
                     // The position of the chunk we're loading
-                    ChunkPos p = new ChunkPos(start.x + x, start.z + z);
+                    int cX = start.x + x;
+                    int cZ = start.z + z;
 
                     // In the case that we're loading a massive world
                     // we can't be loading too many chunks at once, that'll
@@ -356,17 +349,22 @@ public @UtilityClass class WorldLoader {
                     SEMAPHORE.acquireUninterruptibly();
 
                     // Load chunk, are these comments obvious enough
-                    loader.world.getChunkAtAsync(p.x, p.z, true, false)
+                    loader.world.getChunkAtAsync(cX, cZ, true, false)
                                     .whenComplete((chunk, throwable) -> {
                                         if (throwable != null) {
                                             LOGGER.error("Error while loading chunk", throwable);
                                             return;
                                         }
 
+                                        if (chunk == null) {
+                                            LOGGER.warn("Couldn't load chunk at [x={}, z={}]", cX, cZ);
+                                            return;
+                                        }
+
                                         // Logging every chunk normally clutters the console
                                         // So only do it if we're testing
                                         if (VERBOSE) {
-                                            LOGGER.info("Loaded chunk [" + p.x + " " + p.z + "]");
+                                            LOGGER.info("Loaded chunk [x={}, z={}]", cX, cZ);
                                         }
 
                                         // Unload the chunk to make sure it doesn't stay in RAM
@@ -374,6 +372,8 @@ public @UtilityClass class WorldLoader {
                                         // trying to overwhelm the server here
                                         if (!Bukkit.isPrimaryThread()) {
                                             VanillaAccess.getServer().execute(() -> chunk.unload(true));
+                                        } else {
+                                            chunk.unload(true);
                                         }
 
                                         //Update progress tracker and release the semaphore permit

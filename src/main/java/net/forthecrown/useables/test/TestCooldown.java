@@ -1,20 +1,14 @@
 package net.forthecrown.useables.test;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.TimeArgument;
-import net.forthecrown.useables.CheckHolder;
-import net.forthecrown.useables.ConstructType;
-import net.forthecrown.useables.UsableConstructor;
-import net.forthecrown.useables.UsageTest;
-import net.forthecrown.useables.UsageType;
-import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.useables.*;
 import net.forthecrown.utils.Time;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +16,6 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import org.bukkit.entity.Player;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -109,19 +102,6 @@ public class TestCooldown extends UsageTest {
     @UsableConstructor(ConstructType.PARSE)
     public static TestCooldown parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new TestCooldown(TimeArgument.time().parse(reader));
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestCooldown fromJson(JsonElement element) {
-        JsonWrapper json = JsonWrapper.wrap(element.getAsJsonObject());
-
-        long duration = json.getLong("duration");
-        Map<UUID, Long> onCooldown = json.getMap("onCooldown", UUID::fromString, JsonElement::getAsLong);
-
-        var result = new TestCooldown(duration);
-        result.entries.putAll(onCooldown);
-
-        return result;
     }
 
     @UsableConstructor(ConstructType.TAG)

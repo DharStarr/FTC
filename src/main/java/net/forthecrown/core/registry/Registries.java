@@ -8,10 +8,6 @@ import net.forthecrown.inventory.ExtendedItemType;
 import net.forthecrown.useables.UsageAction;
 import net.forthecrown.useables.UsageTest;
 import net.forthecrown.useables.UsageType;
-import net.forthecrown.user.property.Properties;
-import net.forthecrown.user.property.PropertyMap;
-import net.forthecrown.user.property.UserProperty;
-import org.bukkit.util.CachedServerIcon;
 
 /**
  * Class that provides registry constants for some features of
@@ -32,22 +28,12 @@ import org.bukkit.util.CachedServerIcon;
 public interface Registries {
     // --- CONSTANTS ---
 
-    /** Root registry that stores all other registry constants */
-    Registry<Registry>          ROOT            = newRegistry();
-
-    /**
-     * User properties registry
-     * @see Properties
-     * @see PropertyMap
-     */
-    Registry<UserProperty>      USER_PROPERTIES = newFreezable("user_properties");
-
     /**
      * Jail cell registry
      * @see net.forthecrown.core.admin.Punishments
      * @see net.forthecrown.core.admin.PunishType
      */
-    Registry<JailCell>          JAILS           = newRegistry("jails");
+    Registry<JailCell>          JAILS           = newRegistry();
 
     /**
      * Registry of cosmetic types, each type holds its own
@@ -55,43 +41,28 @@ public interface Registries {
      * @see CosmeticType
      * @see net.forthecrown.cosmetics.Cosmetics
      */
-    Registry<CosmeticType>      COSMETIC        = newFreezable("cosmetic_type");
+    Registry<CosmeticType>      COSMETIC        = newFreezable();
 
     /**
      * Registry of currently existing dungeon bosses
      * @see net.forthecrown.dungeons.boss.DungeonBoss
      * @see net.forthecrown.dungeons.Bosses
      */
-    Registry<KeyedBoss>         DUNGEON_BOSSES  = newFreezable("dungeon_bosses");
+    Registry<KeyedBoss>         DUNGEON_BOSSES  = newFreezable();
 
     /**
      * Registry of all intractable NPCs
      */
-    Registry<SimpleNpc>         NPCS            = newRegistry("npcs");
-
-    /** Server icons */
-    Registry<CachedServerIcon>  SERVER_ICONS    = newFreezable("server_icons");
+    Registry<SimpleNpc>         NPCS            = newRegistry();
 
     /** Types of special items */
-    Registry<ExtendedItemType>  ITEM_TYPES      = newFreezable("item_types");
+    Registry<ExtendedItemType>  ITEM_TYPES      = newFreezable();
 
     // Usables
-    Registry<UsageType<? extends UsageAction>>  USAGE_ACTIONS   = newFreezable("usage_actions");
-    Registry<UsageType<? extends UsageTest>>    USAGE_CHECKS    = newFreezable("usage_tests");
+    Registry<UsageType<? extends UsageAction>>  USAGE_ACTIONS   = newFreezable();
+    Registry<UsageType<? extends UsageTest>>    USAGE_CHECKS    = newFreezable();
 
     // --- STATIC FUNCTIONS ---
-
-    private static <V> Registry<V> newRegistry(String name) {
-        return registerRoot(name, newRegistry());
-    }
-
-    private static <V> Registry<V> newFreezable(String name) {
-        return registerRoot(name, newFreezable());
-    }
-
-    private static <V> Registry<V> registerRoot(String name, Registry<V> reg) {
-        return ROOT.register(name, reg).getValue();
-    }
 
     /**
      * Creates a registry which CANNOT be frozen.

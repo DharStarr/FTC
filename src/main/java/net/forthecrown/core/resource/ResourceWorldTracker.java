@@ -1,7 +1,6 @@
 package net.forthecrown.core.resource;
 
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -14,6 +13,7 @@ import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
+import net.forthecrown.utils.math.Vectors;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.scheduler.BukkitTask;
 import org.spongepowered.math.vector.Vector3i;
@@ -22,7 +22,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ResourceWorldTracker implements SerializableObject {
@@ -51,7 +50,7 @@ public class ResourceWorldTracker implements SerializableObject {
         AutoSave.get().addCallback(inst::save);
     }
 
-    // --- SAVE / RELOAD FOR ALL SECTIONS ---
+    /* ----------------------------- SAVE / RELOAD FOR ALL SECTIONS ------------------------------ */
 
     @Override
     public void save() {
@@ -59,7 +58,7 @@ public class ResourceWorldTracker implements SerializableObject {
             try {
                 saveSection(e.getKey(), e.getValue());
             } catch (IOException exc) {
-                LOGGER.error("Failed to serialize section: '" + e.getKey() + "'", exc);
+                LOGGER.error("Failed to serialize section: '{}'", e.getKey(), exc);
             }
         }
     }
@@ -72,9 +71,9 @@ public class ResourceWorldTracker implements SerializableObject {
         clear();
     }
 
-    // --- QUERYING AND MODIFICATION ---
+    /* ----------------------------- QUERYING AND MODIFICATION ------------------------------ */
 
-    public void onBlockBreak(Vector3i pos) {
+    public void setNonNatural(Vector3i pos) {
         McRegionPos regionPos = McRegionPos.of(pos.x(), pos.z());
         WorldRegion region = getOrCreate(regionPos);
 
@@ -99,9 +98,7 @@ public class ResourceWorldTracker implements SerializableObject {
         // Right being present means either error or no region
         // If region failed to load, this will return false
         // otherwise true, as that means no region file exists,
-        // meaning no blocks have been broken, honestly, I
-        // just didn't want to make another class, so I quickly
-        // used this instead
+        // meaning no blocks have been broken
         if (regionQuery.right().isPresent()) {
             return regionQuery.right().get();
         }
@@ -118,13 +115,7 @@ public class ResourceWorldTracker implements SerializableObject {
     }
 
     private long toLong(Vector3i pos) {
-        // Copied from net.minecraft.core.BlockPos.asLong(int, int, int)
-        // ^ Short way of saying I do not understand this at all lol
-        // All I know is it packs coordinates, so it uses less space
-        // and works for what I need
-        return (((long) pos.x() & 67108863L) << 38)
-                | (((long) pos.y() & 4095L))
-                | (((long) pos.z() & 67108863L) << 12);
+        return Vectors.toLong(pos);
     }
 
     public void clear() {
@@ -138,13 +129,12 @@ public class ResourceWorldTracker implements SerializableObject {
     public void reset() {
         clear();
 
-        DataResult<Integer> purgeResult = PathUtil.safeDelete(getDirectory(), true, true);
-        Optional<Integer> removed = purgeResult.resultOrPartial(LOGGER::error);
-
-        removed.ifPresent(integer -> LOGGER.info("Purged {} section files", integer));
+        PathUtil.safeDelete(getDirectory(), true, true)
+                .resultOrPartial(LOGGER::error)
+                .ifPresent(integer -> LOGGER.info("Purged {} section files", integer));
     }
 
-    // --- SECTION MANAGEMENT ---
+    /* ----------------------------- SECTION MANAGEMENT ------------------------------ */
 
     private Either<WorldRegion, Boolean> get(McRegionPos pos) {
         var loaded = nonNaturalBySection.get(pos);
@@ -210,24 +200,20 @@ public class ResourceWorldTracker implements SerializableObject {
             return;
         }
 
-        Tasks.cancel(section.unloadTask);
-
         try {
             saveSection(pos, section);
+            LOGGER.info("Unloaded RW section {}", pos);
         } catch (IOException e) {
-            LOGGER.error("Couldn't save section: '" + pos + "'", e);
+            LOGGER.error("Couldn't save section: '{}'", pos, e);
         }
+
+        Tasks.cancel(section.unloadTask);
     }
 
-    // --- SERIALIZATION ---
+    /* ----------------------------- SERIALIZATION ------------------------------ */
 
     private void saveSection(McRegionPos pos, WorldRegion region) throws IOException {
         Path sectionFile = getFile(pos);
-
-        // Ensure directory exists
-        if (!Files.exists(directory)) {
-            Files.createDirectories(directory);
-        }
 
         // Don't serialize empty regions and regions
         // that don't need to be serialized
@@ -245,6 +231,8 @@ public class ResourceWorldTracker implements SerializableObject {
 
         stream.close();
         output.close();
+
+        region.dirty = false;
 
         if (FTC.inDebugMode()) {
             LOGGER.info("Saved section {}", pos);
@@ -337,8 +325,12 @@ public class ResourceWorldTracker implements SerializableObject {
      * saving of regions
      */
     static class WorldRegion {
+        /** True, if region has unsaved changes, false otherwise */
         boolean dirty = false;
+
+        /** Set of non-natural block positions */
         LongSet nonNatural;
+
         BukkitTask unloadTask;
     }
 }

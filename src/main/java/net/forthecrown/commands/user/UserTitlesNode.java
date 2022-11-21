@@ -157,24 +157,27 @@ class UserTitlesNode extends UserCommandNode {
                         })
 
                         .then(literal("add")
-                                .then(argument("to_add", TITLE_ARRAY_ARG)
+                                .then(argument("titles", TITLE_ARRAY_ARG)
                                         .executes(c -> addRemoveArgument(c, provider, false))
                                 )
                         )
 
                         .then(literal("remove")
-                                .then(argument("to_remove", TITLE_ARRAY_ARG)
+                                .then(argument("titles", TITLE_ARRAY_ARG)
                                         .executes(c -> addRemoveArgument(c, provider, true))
                                 )
                         )
                 );
     }
 
-    private int addRemoveArgument(CommandContext<CommandSource> c, UserProvider provider, boolean remove) throws CommandSyntaxException {
+    private int addRemoveArgument(CommandContext<CommandSource> c,
+                                  UserProvider provider,
+                                  boolean remove
+    ) throws CommandSyntaxException {
         var user = provider.get(c);
         UserTitles userTitles = user.getTitles();
 
-        Collection<RankTitle> titles = c.getArgument("to_add", Collection.class);
+        Collection<RankTitle> titles = c.getArgument("titles", Collection.class);
 
         for (var t: titles) {
             if (t.isDefaultTitle()) {
@@ -183,7 +186,11 @@ class UserTitlesNode extends UserCommandNode {
         }
 
         for (var t: titles) {
-            userTitles.addTitle(t);
+            if (remove) {
+                userTitles.removeTitle(t);
+            } else {
+                userTitles.addTitle(t);
+            }
         }
 
         String format;

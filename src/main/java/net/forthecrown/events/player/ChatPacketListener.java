@@ -4,7 +4,6 @@ import io.papermc.paper.adventure.PaperAdventure;
 import net.forthecrown.user.packet.PacketCall;
 import net.forthecrown.user.packet.PacketHandler;
 import net.forthecrown.user.packet.PacketListener;
-import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.network.chat.ChatMessageContent;
@@ -13,7 +12,6 @@ import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerKickEvent;
 
 public class ChatPacketListener implements PacketListener {
@@ -21,7 +19,15 @@ public class ChatPacketListener implements PacketListener {
     public void onChat(ServerboundChatPacket packet, PacketCall call) {
         call.setCancelled(true);
 
-        if (handleIllegalChars(call.getPlayer(), packet.message())) {
+        if (containsIllegalCharacters(packet.message(), call)) {
+            return;
+        }
+
+        // Handle player conversing
+        if (call.getPlayer().isConversing()) {
+            call.getExecutor().execute(() -> {
+                call.getPlayer().acceptConversationInput(packet.message());
+            });
             return;
         }
 
@@ -44,14 +50,12 @@ public class ChatPacketListener implements PacketListener {
     public void onChatCommand(ServerboundChatCommandPacket packet, PacketCall call) {
         call.setCancelled(true);
 
-        if (handleIllegalChars(call.getPlayer(), packet.command())) {
+        if (containsIllegalCharacters(packet.command(), call)) {
             return;
         }
 
-        // Switch to main thread to execute command logic, ironically, this
-        // shouldn't be done from a plugin-based executor but from the server's
-        // executor
-        Tasks.runSync(() -> {
+        // Switch to main thread to execute command logic
+        call.getExecutor().execute(() -> {
             // Prepend this onto it, or it won't find the command lol
             String command = "/" + packet.command();
 
@@ -61,9 +65,11 @@ public class ChatPacketListener implements PacketListener {
     }
 
     /** Copies vanilla behaviour in regard to illegal character handling */
-    private boolean handleIllegalChars(Player player, String s) {
+    private static boolean containsIllegalCharacters(String s, PacketCall call) {
+        var player = call.getPlayer();
+
         if (ServerGamePacketListenerImpl.isChatMessageIllegal(s)) {
-            Tasks.runSync(() -> {
+            call.getExecutor().execute(() -> {
                 player.kick(
                         Component.translatable("multiplayer.disconnect.illegal_characters"),
                         PlayerKickEvent.Cause.ILLEGAL_CHARACTERS

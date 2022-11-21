@@ -3,13 +3,12 @@ package net.forthecrown.cosmetics.emotes;
 import lombok.Getter;
 import net.forthecrown.commands.emotes.CommandEmote;
 import net.forthecrown.cosmetics.Cosmetic;
-import net.forthecrown.cosmetics.CosmeticMeta;
 import net.forthecrown.cosmetics.Cosmetics;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.Slot;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -26,24 +25,7 @@ public class CosmeticEmote extends Cosmetic {
     private final Permission permission;
 
     CosmeticEmote(int slot, CommandEmote command, String name, @Nullable Permission permission, Component... description) {
-        super(name, Cosmetics.EMOTE, Slot.of(slot),
-                CosmeticMeta.builder()
-                        .setOption(MenuNode.builder()
-                                .setItem(user -> {
-                                    var builder = ItemStacks.builder(getMaterial(command, user))
-                                            .setName("&e/" + command.getName());
-
-                                    for (Component c: description) {
-                                        builder.addLore(c.style(nonItalic(NamedTextColor.GRAY)));
-                                    }
-
-                                    return builder.build();
-                                })
-                                .build()
-                        )
-                        .addDescription(description)
-        );
-
+        super(name, Cosmetics.EMOTE, Slot.of(slot), description);
         this.command = command;
         this.permission = permission;
     }
@@ -62,6 +44,22 @@ public class CosmeticEmote extends Cosmetic {
 
     public Component commandText() {
         return Component.text(getCommandText());
+    }
+
+    @Override
+    public MenuNode createNode() {
+        return MenuNode.builder()
+                .setItem(user -> {
+                    var builder = ItemStacks.builder(getMaterial(command, user))
+                            .setName("&e/" + command.getName());
+
+                    for (Component c: displayData.getDescription()) {
+                        builder.addLoreRaw(c.style(nonItalic(NamedTextColor.GRAY)));
+                    }
+
+                    return builder.build();
+                })
+                .build();
     }
 
     public boolean test(User permissible) {

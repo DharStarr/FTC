@@ -36,7 +36,7 @@ class TimeSelectionPage extends AdminUiPage {
                                 int multiplier = context.get(TIME_MULTIPLIER);
 
                                 return ItemStacks.builder(o.material)
-                                        .setName(o.getDisplay(multiplier).style(Text.NON_ITALIC))
+                                        .setNameRaw(o.getDisplay(multiplier).style(Text.NON_ITALIC))
                                         .setAmount(multiplier)
                                         .build();
                             })
@@ -67,7 +67,7 @@ class TimeSelectionPage extends AdminUiPage {
                             .setItem((user, context) -> {
                                 return ItemStacks.builder(Material.BLACK_STAINED_GLASS_PANE)
                                         .setAmount(multiplier)
-                                        .setName(
+                                        .setNameRaw(
                                                 format("Time multiplier: {0}x",
                                                         Text.NON_ITALIC, multiplier
                                                 )

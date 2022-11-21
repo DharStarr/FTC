@@ -13,13 +13,6 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * The class used to create, build and register commands
- * <p>
- * stuff like usage and descriptions are basically worthless and exist
- * because I can't be arsed to remove them from commands that already have them
- * </p>
- */
 public abstract class FtcCommand extends AbstractCommand {
 
     @Getter @Setter

@@ -1,6 +1,5 @@
 package net.forthecrown.useables.actions;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
@@ -73,11 +72,6 @@ public class ActionHolidayItem extends UsageAction {
     @UsableConstructor(ConstructType.PARSE)
     public static ActionHolidayItem parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new ActionHolidayItem(Arguments.HOLIDAY.parse(reader).getName());
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionHolidayItem fromJson(JsonElement element) {
-        return new ActionHolidayItem(element.getAsString());
     }
 
     @UsableConstructor(ConstructType.TAG)

@@ -5,7 +5,8 @@ import com.google.common.base.Strings;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.book.builder.TextInfo;
+import net.forthecrown.guilds.Guild;
+import net.forthecrown.utils.book.TextInfo;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.config.GeneralConfig;
@@ -42,7 +43,7 @@ public class UserFormat {
             ADMIN_VIEWER = 0x1,
             SELF = 0x2,
             PUBLIC_PROFILE = 0x4,
-            NO_HOVER = 0x8,
+            NO_HOVER_EVENTS = 0x8,
             FOR_HOVER = 0x10;
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
@@ -89,7 +90,7 @@ public class UserFormat {
     }
 
     public UserFormat disableHover() {
-        return with(NO_HOVER);
+        return with(NO_HOVER_EVENTS);
     }
 
     /* ----------------------------- FORMATTING ------------------------------ */
@@ -137,28 +138,56 @@ public class UserFormat {
     private void writeContents(TextWriter writer) {
         UserInteractions inter = user.getInteractions();
         UserTitles titles = user.getTitles();
+        var time = user.getTimeTracker();
 
+        // Real name if nickname or TAB_NAME is set
         if (user.hasNickname()
                 || user.getProperties().contains(Properties.TAB_NAME)
         ) {
             writer.field("Name", user.getName());
         }
 
-        if (!user.isOnline()) {
+        // profile public state
+        if (!hasFlag(PUBLIC_PROFILE) || hasFlag(SELF)) {
+            writer.field("Profile public", !user.get(Properties.PROFILE_PRIVATE));
+        }
+
+        // Last login date, if offline
+        if (!user.isOnline() && time.isSet(TimeField.LAST_LOGIN)) {
             writer.field("Last online",
-                    PeriodFormat.timeStamp(user.getTime(TimeField.LAST_LOGIN))
+                    PeriodFormat.timeStamp(time.get(TimeField.LAST_LOGIN))
                             .retainBiggest()
+            );
+            writer.write(" ago", writer.getFieldValueStyle());
+        }
+
+        // First join date
+        if (time.isSet(TimeField.FIRST_JOIN)) {
+            writer.field("First joined",
+                    Text.formatDate(time.get(TimeField.FIRST_JOIN))
             );
         }
 
-        if (user.isAfk() && user.getAfkReason() != null) {
+        // AFK reason
+        if (user.isAfk()
+                && user.getAfkReason() != null
+        ) {
             writer.field("AFK", user.getAfkReason());
         }
 
+        // Guild info
+        Guild guild = user.getGuild();
+        if (guild != null) {
+            writer.field("Guild", guild.displayName());
+        }
+
+        // Spouse's displayName
         if (inter.isMarried()) {
             Component spouseDisplayName;
 
-            if (hasFlag(NO_HOVER)) {
+            // tabName just returns the name to display, while
+            // display name returns a fully formatted display name.
+            if (hasFlag(NO_HOVER_EVENTS)) {
                 spouseDisplayName = inter.spouseUser().getTabName();
             } else {
                 spouseDisplayName = inter.spouseUser().displayName();
@@ -221,6 +250,7 @@ public class UserFormat {
         } else {
             writer.field("Last joined", joinFormat);
         }
+        writer.write(" ago", writer.getFieldValueStyle());
 
         if (!Strings.isNullOrEmpty(user.getIp())) {
             writer.field("IP", user.getIp());

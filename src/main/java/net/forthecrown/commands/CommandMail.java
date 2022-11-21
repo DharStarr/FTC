@@ -1,16 +1,19 @@
 package net.forthecrown.commands;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.commands.manager.CmdValidate;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.Mute;
@@ -18,13 +21,11 @@ import net.forthecrown.core.admin.Punishments;
 import net.forthecrown.events.Events;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.grenadier.types.args.ArgsArgument;
+import net.forthecrown.grenadier.types.args.Argument;
+import net.forthecrown.grenadier.types.args.ParsedArgs;
 import net.forthecrown.inventory.FtcInventory;
-import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.format.page.Footer;
-import net.forthecrown.utils.text.format.page.PageEntry;
-import net.forthecrown.utils.text.format.page.PageEntryIterator;
-import net.forthecrown.utils.text.format.page.PageFormat;
-import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.useables.util.UsageUtil;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.UserOfflineException;
@@ -33,6 +34,11 @@ import net.forthecrown.user.data.MailAttachment;
 import net.forthecrown.user.data.MailMessage;
 import net.forthecrown.user.data.UserMail;
 import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.text.format.page.Footer;
+import net.forthecrown.utils.text.format.page.PageEntry;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
+import net.forthecrown.utils.text.format.page.PageFormat;
+import net.forthecrown.utils.text.writer.TextWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -72,6 +78,35 @@ public class CommandMail extends FtcCommand {
      *
      * Main Author: Julie
      */
+
+    private static final Argument<Component> MSG_ARG = Argument.builder("message", Arguments.CHAT)
+            .build();
+
+    private static final Argument<Integer> RHINE_ARG = Argument.builder("rhines", IntegerArgumentType.integer(0))
+            .setDefaultValue(0)
+            .build();
+
+    private static final Argument<Integer> GEM_ARG = Argument.builder("gems", IntegerArgumentType.integer(0))
+            .setDefaultValue(0)
+            .build();
+
+    private static final Argument<ItemStack> ITEM_ARG = Argument.builder("item", UsageUtil.ITEM_ARGUMENT)
+            .build();
+
+    private static final Argument<String> TAG_ARG = Argument.builder("tag", StringArgumentType.string())
+            .build();
+
+    private static final Argument<String> SCRIPT_ARG = Argument.builder("script", Arguments.SCRIPT)
+            .build();
+
+    private static final ArgsArgument ARGS = ArgsArgument.builder()
+            .addRequired(MSG_ARG)
+            .addOptional(ITEM_ARG)
+            .addOptional(GEM_ARG)
+            .addOptional(RHINE_ARG)
+            .addOptional(TAG_ARG)
+            .addOptional(SCRIPT_ARG)
+            .build();
 
     @Override
     protected void createCommand(BrigadierCommand command) {
@@ -168,7 +203,7 @@ public class CommandMail extends FtcCommand {
 
                                     int index = c.getArgument("index", Integer.class);
 
-                                    CmdValidate.index(index, list.size());
+                                    Commands.ensureIndexValid(index, list.size());
 
                                     MailMessage message = list.get(index - 1);
 
@@ -192,6 +227,9 @@ public class CommandMail extends FtcCommand {
                                 })
                         )
                 )
+
+                // /mail admin_send <user | -all> <arguments>
+                .then(adminSend())
 
                 // /mail mark_read <index>
                 // /mail mark_read <index> <user>
@@ -220,7 +258,7 @@ public class CommandMail extends FtcCommand {
                             var list = mail.getMail();
                             int index = c.getArgument("index", Integer.class);
 
-                            CmdValidate.index(index, list.size());
+                            Commands.ensureIndexValid(index, list.size());
 
                             MailMessage message = list.get(index - 1);
                             message.setRead(read);
@@ -241,7 +279,7 @@ public class CommandMail extends FtcCommand {
                                     var list = mail.getMail();
                                     int index = c.getArgument("index", Integer.class);
 
-                                    CmdValidate.index(index, list.size());
+                                    Commands.ensureIndexValid(index, list.size());
 
                                     MailMessage message = list.get(index - 1);
                                     message.setRead(read);
@@ -251,6 +289,68 @@ public class CommandMail extends FtcCommand {
                                 })
                         )
                 );
+    }
+
+    private LiteralArgumentBuilder<CommandSource> adminSend() {
+        return literal("admin_send")
+                .then(literal("-all")
+                        .then(adminSendArgs(true))
+                )
+
+                .then(argument("user", Arguments.USER)
+                        .then(adminSendArgs(false))
+                );
+    }
+
+    private RequiredArgumentBuilder<CommandSource, ?> adminSendArgs(boolean all) {
+        return argument("args", ARGS)
+                .executes(c -> {
+                    var args = c.getArgument("args", ParsedArgs.class);
+                    MailMessage message = MailMessage.of(args.get(MSG_ARG));
+                    MailAttachment attachment = new MailAttachment();
+
+                    if (args.has(TAG_ARG)) {
+                        attachment.setTag(args.get(TAG_ARG));
+                    }
+
+                    if (args.has(ITEM_ARG)) {
+                        attachment.setItem(args.get(ITEM_ARG));
+                    }
+
+                    if (args.has(SCRIPT_ARG)) {
+                        attachment.setScript(args.get(SCRIPT_ARG));
+                    }
+
+                    attachment.setRhines(args.get(RHINE_ARG));
+                    attachment.setGems(args.get(GEM_ARG));
+
+                    if (!attachment.isEmpty()) {
+                        message.setAttachment(attachment);
+                    }
+
+                    if (all) {
+                        UserManager.get()
+                                .getAllUsers()
+                                .whenComplete((users, throwable) -> {
+                                    if (throwable != null) {
+                                        FTC.getLogger().error("Couldn't load all users", throwable);
+                                        return;
+                                    }
+
+                                    users.forEach(user -> user.sendMail(message));
+                                    c.getSource().sendAdmin("Sent all users mail");
+                                });
+                    } else {
+                        var user = Arguments.getUser(c, "user");
+                        user.sendMail(message);
+
+                        c.getSource().sendAdmin(
+                                Messages.mailSent(user, message.getMessage())
+                        );
+                    }
+
+                    return 0;
+                });
     }
 
     private LiteralArgumentBuilder<CommandSource> sendArgs(boolean item) {
@@ -364,7 +464,7 @@ public class CommandMail extends FtcCommand {
             throw Exceptions.NOTHING_TO_LIST;
         }
 
-        CmdValidate.page(page, pageSize, messages.size());
+        Commands.ensurePageValid(page, pageSize, messages.size());
 
         final PageFormat<MailMessage> format = PageFormat.create();
 

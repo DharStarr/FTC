@@ -57,7 +57,7 @@ abstract class AdminUiPage implements MenuNode {
 
                             var item = ItemStacks.headBuilder()
                                     .setProfile(punished)
-                                    .setName(punished.displayName().style(Text.NON_ITALIC));
+                                    .setNameRaw(punished.displayName().style(Text.NON_ITALIC));
 
                             var writer = TextWriters.loreWriter();
                             UserFormat format = UserFormat.create(user)
@@ -68,7 +68,7 @@ abstract class AdminUiPage implements MenuNode {
                             format.format(writer);
 
                             writer.newLine();
-                            item.addLore(writer.getLore());
+                            item.addLoreRaw(writer.getLore());
 
                             return item.build();
                         })

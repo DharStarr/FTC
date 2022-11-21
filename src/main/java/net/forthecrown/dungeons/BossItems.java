@@ -20,8 +20,8 @@ public enum BossItems {
 
     BossItems(String name, String tagLine) {
         this.itemCreator = ItemStacks.builder(Material.GOLDEN_APPLE, 1)
-                .setName(Component.text(name).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE))
-                .addLore(Component.text(tagLine))
+                .setNameRaw(Component.text(name).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE))
+                .addLoreRaw(Component.text(tagLine))
                 .addData(Bosses.KEY, PersistentDataType.BYTE, (byte) 1)
                 .build();
     }

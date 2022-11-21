@@ -6,7 +6,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.commands.arguments.Readers;
+import net.forthecrown.commands.manager.Readers;
 import net.forthecrown.commands.arguments.SuggestionFunction;
 import net.forthecrown.commands.manager.FtcSuggestions;
 import net.forthecrown.core.FTC;

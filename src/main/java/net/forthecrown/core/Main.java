@@ -5,13 +5,13 @@ import net.forthecrown.events.MobHealthBar;
 import net.forthecrown.user.packet.PacketListeners;
 import net.forthecrown.utils.world.WorldLoader;
 import net.kyori.adventure.key.Namespaced;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.dynmap.DynmapCommonAPIListener;
 
-import static net.forthecrown.core.FtcDiscord.C_SERVER;
 import static net.forthecrown.utils.Util.runSafe;
 
 /**
@@ -24,19 +24,17 @@ public final class Main extends JavaPlugin implements Namespaced {
             OLD_NAMESPACE   = "ftccore";
 
     boolean debugMode;
+    FtcLogger logger;
 
     @Override
     public void onEnable() {
         // Register dynmap hook connection thing
-        DynmapCommonAPIListener.register(new FtcDynmap());
+        DynmapUtil.registerListener();
 
         setDebugMode();
-        BootStrap.init();
+        ensureLoggerExists();
 
-        FtcDiscord.staffLog(C_SERVER, "FTC started, plugin version: {}, paper version: {}",
-                getDescription().getVersion(),
-                Bukkit.getVersion()
-        );
+        BootStrap.init();
 
         FTC.getLogger().info("FTC started");
     }
@@ -44,15 +42,9 @@ public final class Main extends JavaPlugin implements Namespaced {
     @Override
     public void onLoad() {
         setDebugMode();
+        ensureLoggerExists();
+
         FtcFlags.init();
-    }
-
-    void setDebugMode() {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(
-                getTextResource("plugin.yml")
-        );
-
-        debugMode = config.getBoolean("debug_build");
     }
 
     @Override
@@ -64,8 +56,24 @@ public final class Main extends JavaPlugin implements Namespaced {
         runSafe(Bosses::shutdown);
         runSafe(WorldLoader::shutdown);
         runSafe(PacketListeners::removeAll);
+    }
 
-        FtcDiscord.staffLog(C_SERVER, "FTC shutting down");
+    private void ensureLoggerExists() {
+        if (logger != null) {
+            return;
+        }
+
+        logger = new FtcLogger(
+                (ExtendedLogger) LogManager.getLogger(getLogger().getName())
+        );
+    }
+
+    private void setDebugMode() {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(
+                getTextResource("plugin.yml")
+        );
+
+        debugMode = config.getBoolean("debug_build");
     }
 
     @Override

@@ -62,7 +62,8 @@ public interface FtcSuggestions {
                 && token.length() >= 3
                 && GeneralConfig.userCacheSuggestions
         ) {
-            return UserManager.get().getUserLookup().suggestNames(builder);
+            return UserManager.get().getUserLookup()
+                    .suggestNames(builder);
         }
 
         boolean seeVanished = c == null || c.hasPermission(Permissions.VANISH_SEE);
@@ -76,9 +77,12 @@ public interface FtcSuggestions {
             // suggest the one that matches what they're typing.
             // Check if we should suggest nicks before, as their
             // nick may just be a shortening of their name
-            if (user.hasNickname() && startsWith(token, user.getNickname())) {
+            if (user.hasNickname()
+                    && startsWith(token, user.getNickname())
+            ) {
                 builder.suggest(user.getNickname(), uuidTooltip(user.getUniqueId()));
-            } else if (startsWith(token, user.getName())) {
+            }
+            else if (startsWith(token, user.getName())) {
                 builder.suggest(user.getName(), uuidTooltip(user.getUniqueId()));
             }
         }

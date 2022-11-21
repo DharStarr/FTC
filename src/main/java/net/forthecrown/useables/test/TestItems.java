@@ -1,16 +1,14 @@
 package net.forthecrown.useables.test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.TextJoiner;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.useables.util.UsageUtil;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.Tag;
@@ -90,11 +88,6 @@ public class TestItems extends UsageTest {
             throws CommandSyntaxException
     {
         return new TestItems(type, UsageUtil.parseItems(reader, source));
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestItems fromJson(UsageType<TestItems> type, JsonElement element) {
-        return new TestItems(type, ImmutableList.of(JsonUtils.readItem(element)));
     }
 
     @UsableConstructor(ConstructType.TAG)

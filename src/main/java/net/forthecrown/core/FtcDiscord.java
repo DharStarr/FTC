@@ -16,9 +16,6 @@ public final class FtcDiscord {
 
     public static final String
             // Channel names
-            UPDATE_CHANNEL  = "updates",
-            GENERAL_CHANNEL = "chat",
-            STAFF_CHAT      = "cool-club",
             STAFF_LOG       = "staff-log",
 
             // Staff Log categories
@@ -29,30 +26,13 @@ public final class FtcDiscord {
             C_SERVER        = "Server",
             C_MARKETS       = "Markets";
 
-    public static DiscordSRV getHandle() {
-        return DiscordSRV.getPlugin();
-    }
-
     public static boolean isActive() {
         if (!Util.isPluginEnabled("DiscordSRV")) {
             return false;
         }
 
-        return getHandle().isEnabled()
-                && getHandle().getJda() != null;
-    }
-
-    public static TextChannel getTextChannel(String name) {
-        // Bro this fucking method name lmao
-        return getHandle().getDestinationTextChannelForGameChannelName(name);
-    }
-
-    public static TextChannel updateChannel() {
-        return getTextChannel(UPDATE_CHANNEL);
-    }
-
-    public static TextChannel staffChat() {
-        return getTextChannel(STAFF_CHAT);
+        return DiscordSRV.getPlugin()
+                .getJda() != null;
     }
 
     /**
@@ -66,7 +46,10 @@ public final class FtcDiscord {
             return;
         }
 
-        TextChannel channel = getTextChannel(STAFF_LOG);
+        // Bro this fucking method name lmao
+        TextChannel channel = DiscordSRV.getPlugin()
+                .getDestinationTextChannelForGameChannelName(STAFF_LOG);
+
         DiscordUtil.queueMessage(channel,
                 String.format("**[%s]** %s",
                         cat,

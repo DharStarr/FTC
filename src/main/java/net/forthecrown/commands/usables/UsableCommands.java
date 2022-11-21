@@ -18,6 +18,15 @@ public class UsableCommands extends CmdUtil {
         ) {
             command
                     .then(literal("silent")
+                            .executes(c -> {
+                                var holder = provider.get(c);
+
+                                c.getSource().sendMessage(
+                                        Text.format("Silent: {0}", holder.isSilent())
+                                );
+                                return 0;
+                            })
+
                             .then(argument("silent_state", BoolArgumentType.bool())
                                     .executes(c -> {
                                         var holder = provider.get(c);

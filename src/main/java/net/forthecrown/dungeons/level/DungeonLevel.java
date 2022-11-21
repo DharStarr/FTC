@@ -2,28 +2,26 @@ package net.forthecrown.dungeons.level;
 
 import com.google.common.collect.Iterators;
 import com.mojang.datafixers.util.Pair;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSets;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.dungeons.DungeonWorld;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
+import net.forthecrown.utils.ChunkedMap;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Bounds3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Chunk;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-import java.util.function.LongConsumer;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static net.forthecrown.dungeons.level.DungeonPiece.TAG_CHILDREN;
 import static net.forthecrown.dungeons.level.DungeonPiece.TAG_TYPE;
@@ -44,8 +42,8 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
     /** Piece ID to piece lookup map */
     private final Map<UUID, DungeonPiece> pieceLookup = new Object2ObjectOpenHashMap<>();
 
-    /** Chunk to piece list map used for faster spatial lookups */
-    private final Long2ObjectMap<List<DungeonPiece>> chunkLookup = new Long2ObjectOpenHashMap<>();
+    @Getter
+    private final ChunkedMap<DungeonPiece> chunkMap = new ChunkedMap<>();
 
     /** The root room from which all other rooms have sprung */
     @Getter
@@ -53,10 +51,6 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
 
     @Getter @Setter
     private DungeonRoom bossRoom;
-
-    /** Bounds of the entire level */
-    @Getter
-    private Bounds3i levelBounds;
 
     /* ----------------------------- METHODS ------------------------------ */
 
@@ -83,16 +77,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         pieceLookup.put(piece.getId(), piece);
 
         if (piece instanceof DungeonRoom) {
-            forEachChunk(piece.getBounds(), value -> {
-                var list = chunkLookup.computeIfAbsent(value, l -> new ObjectArrayList<>());
-                list.add(piece);
-            });
-        }
-
-        if (levelBounds == null) {
-            levelBounds = piece.getBounds();
-        } else {
-            levelBounds = levelBounds.combine(piece.getBounds());
+            chunkMap.add(piece);
         }
 
         for (var c: piece.getChildren().values()) {
@@ -106,41 +91,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
      * @return All pieces that intersect the input
      */
     public Set<DungeonPiece> getIntersecting(Bounds3i area) {
-        if (!levelBounds.overlaps(area)) {
-           return ObjectSets.emptySet();
-        }
-
-        Set<DungeonPiece> intersecting = new ObjectOpenHashSet<>();
-
-        forEachChunk(area, value -> {
-            var list = chunkLookup.get(value);
-
-            if (list == null || list.isEmpty()) {
-                return;
-            }
-
-            for (var e: list) {
-                if (e.getBounds().overlaps(area)) {
-                    intersecting.add(e);
-                }
-            }
-        });
-
-        return intersecting;
-    }
-
-    private void forEachChunk(Bounds3i bb, LongConsumer consumer) {
-        int minX = bb.minX() >> 4;
-        int minZ = bb.minZ() >> 4;
-        int maxX = bb.maxX() >> 4;
-        int maxZ = bb.maxZ() >> 4;
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                long packed = Chunk.getChunkKey(x, z);
-                consumer.accept(packed);
-            }
-        }
+        return chunkMap.getOverlapping(area);
     }
 
     /* ----------------------------- PLACEMENT ------------------------------ */
@@ -176,7 +127,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
     }
 
     public void load(CompoundTag tag) {
-        chunkLookup.clear();
+        chunkMap.clear();
         pieceLookup.clear();
         root = null;
 

@@ -122,17 +122,22 @@ public class ResourceWorld implements DayChangeListener {
     );
 
     // The height maps for NMS and Bukkit that are used for height calculation... shocking ik
-    public static final Heightmap.Types HEIGHT_MAP_TYPE = Heightmap.Types.OCEAN_FLOOR_WG;
-    public static final HeightMap BUKKIT_HEIGHT_MAP = CraftHeightMap.fromNMS(HEIGHT_MAP_TYPE);
+    public static final Heightmap.Types
+            HEIGHT_MAP_TYPE = Heightmap.Types.OCEAN_FLOOR_WG;
+    public static final HeightMap
+            BUKKIT_HEIGHT_MAP = CraftHeightMap.fromNMS(HEIGHT_MAP_TYPE);
 
     public static final String PORTAL_WARP = "portal";
 
     /**
      * An accessor that ChunkGenerator needs for a height check call
      */
-    public static final LevelHeightAccessor HEIGHT_ACCESSOR = LevelHeightAccessor.create(Util.MIN_Y, Util.Y_SIZE);
+    public static final LevelHeightAccessor
+            HEIGHT_ACCESSOR = LevelHeightAccessor.create(Util.MIN_Y, Util.Y_SIZE);
 
     /* ----------------------------- INSTANCING ------------------------------ */
+
+    private boolean seedSearchActive;
 
     private ResourceWorld() {
         DayChange.get().addListener(this);
@@ -146,7 +151,20 @@ public class ResourceWorld implements DayChangeListener {
 
     public void resetAndLoad() {
         if (!Structures.get().getRegistry().contains(spawnStructure)) {
-            LOGGER.error("Cannot start RW reset, no spawn structure with key '{}' found", spawnStructure);
+            LOGGER.error(
+                    "Cannot start RW reset, no spawn structure with key '{}' found",
+                    spawnStructure
+            );
+            return;
+        }
+
+        if (WorldLoader.isLoading(Worlds.resource())) {
+            LOGGER.warn("Resource world is already loading????");
+            return;
+        }
+
+        if (seedSearchActive) {
+            LOGGER.warn("resetAndLoad called while RW is already looking for a seed");
             return;
         }
 
@@ -171,6 +189,11 @@ public class ResourceWorld implements DayChangeListener {
                 FtcDiscord.staffLog(C_RW, "Error while attempting to find RW seed");
                 LOGGER.error("Error while attempting to find seed, cannot open RW", throwable);
 
+                return;
+            }
+
+            if (WorldLoader.isLoading(Worlds.resource())) {
+                LOGGER.warn("Resource world is already loading????");
                 return;
             }
 
@@ -398,6 +421,7 @@ public class ResourceWorld implements DayChangeListener {
     @Override
     public void onDayChange(ZonedDateTime time) {
         if (!enabled) {
+            LOGGER.info("Resource world auto reset is disabled, not running");
             return;
         }
 
@@ -419,11 +443,14 @@ public class ResourceWorld implements DayChangeListener {
     // thread
     private CompletableFuture<Long> findSeed() {
         return CompletableFuture.supplyAsync(() -> {
+            seedSearchActive = true;
+
             // If we have any set seeds, aka 'legal seeds' then use those over
             // randomly generated seeds
             if (!legalSeeds.isEmpty()) {
                 // If we only have 1 seed, use that one lol
                 if (legalSeeds.size() == 1) {
+                    seedSearchActive = false;
                     return legalSeeds.getLong(0);
                 }
 
@@ -435,6 +462,7 @@ public class ResourceWorld implements DayChangeListener {
                     result = legalSeeds.getLong(Util.RANDOM.nextInt(legalSeeds.size()));
                 }
 
+                seedSearchActive = false;
                 return result;
             }
 
@@ -453,7 +481,9 @@ public class ResourceWorld implements DayChangeListener {
                 }
             }
 
-            LOGGER.info("Took {} loops to find seed", safeGuard);
+            LOGGER.info("Took {} attempts to find valid seed", safeGuard);
+
+            seedSearchActive = false;
             return seed;
         });
     }
@@ -464,11 +494,21 @@ public class ResourceWorld implements DayChangeListener {
         }
 
         // Create chunk generator for given seed
-        WorldGenSettings settings = WorldPresets.createNormalWorldFromPreset(DedicatedServer.getServer().registryHolder, seed);
-        NoiseBasedChunkGenerator gen = (NoiseBasedChunkGenerator) settings.overworld();
-        RandomState randomState = RandomState.create(gen.settings.value(), gen.noises, seed);
+        WorldGenSettings settings = WorldPresets.createNormalWorldFromPreset(
+                DedicatedServer.getServer().registryHolder,
+                seed
+        );
 
-        int baseY = gen.getBaseHeight(0, 0, HEIGHT_MAP_TYPE, HEIGHT_ACCESSOR, randomState);
+        NoiseBasedChunkGenerator gen = (NoiseBasedChunkGenerator) settings.overworld();
+        RandomState randomState = RandomState.create(
+                gen.settings.value(),
+                gen.noises,
+                seed
+        );
+
+        int baseY = gen.getBaseHeight(
+                0, 0, HEIGHT_MAP_TYPE, HEIGHT_ACCESSOR, randomState
+        );
 
         // Ensure the seed has all required biomes
         // As far as I can see, this is also the most intense part
@@ -526,8 +566,7 @@ public class ResourceWorld implements DayChangeListener {
         int max = QuartPos.fromBlock(halfSize);
         int min = QuartPos.fromBlock(-halfSize);
 
-        Set<TagKey<Biome>> requiredTags = new ObjectOpenHashSet<>();
-        requiredTags.addAll(REQUIRED_TAGS);
+        Set<TagKey<Biome>> requiredTags = new ObjectOpenHashSet<>(REQUIRED_TAGS);
 
         // Go through the world area and find the biome at every
         // cord. For the sake of speed, it only gets every 8th biome.
@@ -543,7 +582,7 @@ public class ResourceWorld implements DayChangeListener {
                 holder.tags().forEach(requiredTags::remove);
 
                 // set is empty, means we've found biomes with
-                // all of the required tags
+                // all the required tags
                 if (requiredTags.isEmpty()) {
                     return true;
                 }

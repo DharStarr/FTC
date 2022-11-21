@@ -1,12 +1,10 @@
 package net.forthecrown.useables;
 
-import com.google.gson.JsonElement;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
+import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Main;
-import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.useables.actions.UsageActions;
 import net.forthecrown.useables.command.CmdUsables;
@@ -17,7 +15,6 @@ import net.forthecrown.utils.EntityIdentifier;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
 import net.forthecrown.utils.math.WorldVec3i;
-import net.minecraft.nbt.CompoundTag;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
@@ -67,7 +64,7 @@ public class Usables implements SerializableObject {
         UsageActions.init();
         UsageTests.init();
 
-        Path path = PathUtil.pluginPath("usables");
+        Path path = PathUtil.getPluginDirectory("usables");
 
         triggers = new GlobalTriggerManager(path.resolve("triggers.dat"));
         triggers.registerListener();
@@ -84,37 +81,8 @@ public class Usables implements SerializableObject {
         var kitFile = path.resolve("kits.dat");
         var warpFile = path.resolve("warps.dat");
 
-        // These could've both been functional interface method references
-        // but no, dumb ol' me had to make these things be JSON serialized
-        // first >:[
-        kits = new CmdUsables<>(
-                kitFile,
-                new CmdUsables.EntryFactory<>() {
-                    @Override
-                    public Kit create(String name, CompoundTag tag) throws CommandSyntaxException {
-                        return new Kit(name, tag);
-                    }
-
-                    @Override
-                    public Kit create(String name, JsonElement element) throws CommandSyntaxException {
-                        return new Kit(name, element.getAsJsonObject());
-                    }
-                }
-        );
-        warps = new CmdUsables<>(
-                warpFile,
-                new CmdUsables.EntryFactory<>() {
-                    @Override
-                    public Warp create(String name, CompoundTag tag) throws CommandSyntaxException {
-                        return new Warp(name, tag);
-                    }
-
-                    @Override
-                    public Warp create(String name, JsonElement element) throws CommandSyntaxException {
-                        return new Warp(name, element.getAsJsonObject());
-                    }
-                }
-        );
+        kits = new CmdUsables<>(kitFile, Kit::new);
+        warps = new CmdUsables<>(warpFile, Warp::new);
 
         AutoSave.get()
                 .addCallback(this::save);

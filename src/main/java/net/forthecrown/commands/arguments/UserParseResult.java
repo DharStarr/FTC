@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class UserParseResult {
+public class UserParseResult implements ParseResult<User> {
     private final User user;
     private final EntitySelector selector;
 
@@ -35,10 +35,12 @@ public class UserParseResult {
         this.offlineAllowed = offlineAllowed;
     }
 
-    public User getUser(CommandSource source, boolean checkVanished) throws CommandSyntaxException {
+    public User get(CommandSource source, boolean validate)
+            throws CommandSyntaxException
+    {
         User result = isSelectorUsed() ? Users.get(selector.getPlayer(source)) : user;
 
-        if (checkVanished
+        if (validate
                 && result.get(Properties.VANISHED)
                 && !isOfflineAllowed()
                 && !source.hasPermission(Permissions.VANISH_SEE)
@@ -49,19 +51,32 @@ public class UserParseResult {
         return result;
     }
 
-    public List<User> getUsers(CommandSource source, boolean checkVanished) throws CommandSyntaxException {
+    public List<User> getUsers(CommandSource source, boolean checkVanished)
+            throws CommandSyntaxException
+    {
         if (selector == null) {
+            if (!offlineAllowed
+                    && checkVanished
+                    && !source.hasPermission(Permissions.VANISH_SEE)
+                    && user.get(Properties.VANISHED)
+            ) {
+                throw EntityArgumentImpl.NO_ENTITIES_FOUND.create();
+            }
+
             return new ArrayList<>(Collections.singletonList(user));
         }
 
         List<User> users = selector.getPlayers(source)
                 .stream()
                 .map(Users::get)
-                .collect(Collectors.toList());
 
-        if (checkVanished && !source.hasPermission(Permissions.VANISH_SEE)) {
-            users.removeIf(user1 -> user1.get(Properties.VANISHED));
-        }
+                // Optionally filter out vanished users
+                .filter(u -> {
+                    return offlineAllowed
+                            || !checkVanished
+                            || source.hasPermission(Permissions.VANISH_SEE);
+                })
+                .collect(Collectors.toList());
 
         if (users.isEmpty()) {
             throw EntityArgumentImpl.NO_ENTITIES_FOUND.create();

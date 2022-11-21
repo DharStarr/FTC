@@ -1,11 +1,6 @@
 package net.forthecrown.useables.test;
 
-import com.google.gson.JsonElement;
-import net.forthecrown.useables.CheckHolder;
-import net.forthecrown.useables.ConstructType;
-import net.forthecrown.useables.UsableConstructor;
-import net.forthecrown.useables.UsageTest;
-import net.forthecrown.useables.UsageType;
+import net.forthecrown.useables.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.ByteTag;
@@ -53,11 +48,6 @@ public class TestNeverUsed extends UsageTest {
     @UsableConstructor(ConstructType.EMPTY)
     public static TestNeverUsed create() {
         return new TestNeverUsed(false);
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestNeverUsed fromJson(JsonElement element) {
-        return new TestNeverUsed(element.getAsBoolean());
     }
 
     @UsableConstructor(ConstructType.TAG)

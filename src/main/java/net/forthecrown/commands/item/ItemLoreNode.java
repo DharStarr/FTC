@@ -8,10 +8,10 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.core.Messages;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.commands.manager.CmdValidate;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
@@ -138,8 +138,8 @@ public class ItemLoreNode extends ItemModifierNode {
 
         var size = lore.size();
 
-        CmdValidate.index(removeRange.getMinimum(), size);
-        CmdValidate.index(removeRange.getMaximum(), size);
+        Commands.ensureIndexValid(removeRange.getMinimum(), size);
+        Commands.ensureIndexValid(removeRange.getMaximum(), size);
 
         lore.subList(removeRange.getMinimum() - 1, removeRange.getMaximum())
                 .clear();

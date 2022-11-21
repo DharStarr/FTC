@@ -56,23 +56,23 @@ public final class UserManager implements SerializableObject {
     private final AltUsers alts;
 
     /** User balances map */
-    private final UserScoreMap balances;
+    private final UserDataMap balances;
 
     /** User playtime map, measured in seconds */
-    private final UserScoreMap playTime;
+    private final UserDataMap playTime;
 
     /** User vote map */
-    private final UserScoreMap votes;
+    private final UserDataMap votes;
 
     /** User gem map */
-    private final UserScoreMap gems;
+    private final UserDataMap gems;
 
     /**
      * The directory of that user files are in, not
      * to be confused with the user data file directory
      * where individual user files are kept.
      * <p>
-     * This is the directory where the {@link UserScoreMap}s are
+     * This is the directory where the {@link UserDataMap}s are
      * stored and where {@link AltUsers} is stored.
      */
     private final Path directory;
@@ -86,10 +86,10 @@ public final class UserManager implements SerializableObject {
         userLookup = new UserLookup(directory.resolve("profiles.json"));
 
         // Create user data maps
-        balances = new UserScoreMap(directory.resolve("balances.json"), () -> GeneralConfig.startRhines);
-        playTime = new UserScoreMap(directory.resolve("playtime.json"));
-        votes    = new UserScoreMap(directory.resolve("votes.json"));
-        gems     = new UserScoreMap(directory.resolve("gems.json"));
+        balances = new UserDataMap(directory.resolve("balances.json"), () -> GeneralConfig.startRhines);
+        playTime = new UserDataMap(directory.resolve("playtime.json"));
+        votes    = new UserDataMap(directory.resolve("votes.json"));
+        gems     = new UserDataMap(directory.resolve("gems.json"));
     }
 
     public static UserManager get() {

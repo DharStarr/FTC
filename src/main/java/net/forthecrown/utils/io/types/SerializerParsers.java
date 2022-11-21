@@ -7,12 +7,15 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.grenadier.types.ByteArgument;
+import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.grenadier.types.ShortArgument;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Class which stores {@link SerializerParser} constants for easy access.
@@ -26,7 +29,7 @@ public interface SerializerParsers {
     SerializerParser<Byte> BYTE = register("byte_type",
             new PrimitiveSerializerParser<>(ByteArgument.byteArg()) {
                 @Override
-                public <V> DataResult<Byte> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Byte> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getNumberValue(element).map(Number::byteValue);
                 }
             },
@@ -37,7 +40,7 @@ public interface SerializerParsers {
     SerializerParser<Boolean> BOOL = register("boolean_type",
             new PrimitiveSerializerParser<>(BoolArgumentType.bool()) {
                 @Override
-                public <V> DataResult<Boolean> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Boolean> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getBooleanValue(element);
                 }
             },
@@ -48,7 +51,7 @@ public interface SerializerParsers {
     SerializerParser<Short> SHORT = register("short_type",
             new PrimitiveSerializerParser<>(ShortArgument.shortArg()) {
                 @Override
-                public <V> DataResult<Short> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Short> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getNumberValue(element).map(Number::shortValue);
                 }
             },
@@ -59,7 +62,7 @@ public interface SerializerParsers {
     SerializerParser<Integer> INT = register("integer_type",
             new PrimitiveSerializerParser<>(IntegerArgumentType.integer()) {
                 @Override
-                public <V> DataResult<Integer> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Integer> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getNumberValue(element).map(Number::intValue);
                 }
             },
@@ -70,7 +73,7 @@ public interface SerializerParsers {
     SerializerParser<Float> FLOAT = register("float_type",
             new PrimitiveSerializerParser<>(FloatArgumentType.floatArg()) {
                 @Override
-                public <V> DataResult<Float> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Float> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getNumberValue(element).map(Number::floatValue);
                 }
             },
@@ -80,7 +83,7 @@ public interface SerializerParsers {
     SerializerParser<Double> DOUBLE = register("double_type",
             new PrimitiveSerializerParser<>(DoubleArgumentType.doubleArg()) {
                 @Override
-                public <V> DataResult<Double> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Double> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getNumberValue(element).map(Number::doubleValue);
                 }
             },
@@ -90,7 +93,7 @@ public interface SerializerParsers {
     SerializerParser<Long> LONG = register("long_type",
             new PrimitiveSerializerParser<>(LongArgumentType.longArg()) {
                 @Override
-                public <V> DataResult<Long> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<Long> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getNumberValue(element).map(Number::longValue);
                 }
             },
@@ -100,7 +103,7 @@ public interface SerializerParsers {
     SerializerParser<String> STRING = register("string_type",
             new PrimitiveSerializerParser<>(StringArgumentType.greedyString()) {
                 @Override
-                public <V> DataResult<String> deserialize(DynamicOps<V> ops, V element) {
+                public <V> @NotNull DataResult<String> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
                     return ops.getStringValue(element);
                 }
             },
@@ -124,6 +127,11 @@ public interface SerializerParsers {
             Void.class
     );
 
+    SerializerParser<UUID> UUID = register("uuid_type",
+            new UUIDSerializerParser(),
+            java.util.UUID.class
+    );
+
     static void init() {
         TYPE_REGISTRY.freeze();
     }
@@ -134,5 +142,30 @@ public interface SerializerParsers {
         }
 
         return TYPE_REGISTRY.register(key, type).getValue();
+    }
+
+    static <E extends Enum<E>> SerializerParser<E> ofEnum(Class<E> enumClass) {
+        return new SerializerParser<>() {
+            @Override
+            public @NotNull String asString(@NotNull E value) {
+                return value.name().toLowerCase();
+            }
+
+            @Override
+            public @NotNull ArgumentType<E> getArgumentType() {
+                return EnumArgument.of(enumClass);
+            }
+
+            @Override
+            public <V> @NotNull V serialize(@NotNull DynamicOps<V> ops, @NotNull E value) {
+                return ops.createString(value.name().toLowerCase());
+            }
+
+            @Override
+            public <V> @NotNull DataResult<E> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
+                return ops.getStringValue(element)
+                        .map(s -> Enum.valueOf(enumClass, s.toUpperCase()));
+            }
+        };
     }
 }

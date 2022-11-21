@@ -145,7 +145,7 @@ public class EndOpener implements DayChangeListener {
         }
 
         EndConfig.open = open;
-        JoinInfo.endVisible = open;
+        JoinInfo.endInfo.visible = open;
 
         PortalRoad.set(leverPos.getWorld(), open);
         Announcer.get().announce(open ? openMessage : closeMessage);

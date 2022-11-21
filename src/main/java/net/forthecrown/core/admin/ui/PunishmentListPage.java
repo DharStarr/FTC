@@ -68,7 +68,7 @@ class PunishmentListPage extends ListUiPage<Punishment> {
     static ItemStack createItem(Punishment punish, boolean current) {
         var builder = ItemStacks.builder(typeToMaterial(punish.getType()));
 
-        builder.setName(
+        builder.setNameRaw(
                 Text.format("{0} {1}",
                         nonItalic(NamedTextColor.WHITE),
                         current ? "Active" : "Past",
@@ -79,7 +79,7 @@ class PunishmentListPage extends ListUiPage<Punishment> {
         var writer = TextWriters.loreWriter();
         punish.writeDisplay(writer);
 
-        builder.addLore(writer.getLore());
+        builder.addLoreRaw(writer.getLore());
 
         return builder.build();
     }

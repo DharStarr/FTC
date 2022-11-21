@@ -33,16 +33,16 @@ public final class FtcItems {
      */
     public static ItemStack makeCoins(int amount, int itemAmount) {
         return ItemStacks.builder(COIN_MATERIAL, itemAmount)
-                .setName(
+                .setNameRaw(
                         text(UnitFormat.UNIT_RHINE + "s", nonItalic(NamedTextColor.GOLD))
                 )
 
-                .addLore(
+                .addLoreRaw(
                         text("Worth ", nonItalic(NamedTextColor.GOLD))
                                 .append(UnitFormat.rhines(amount))
                 )
 
-                .addLore(
+                .addLoreRaw(
                         text("Minted in the year " + getOverworldYear() + ".")
                                 .style(NON_ITALIC_DARK_GRAY)
                 )

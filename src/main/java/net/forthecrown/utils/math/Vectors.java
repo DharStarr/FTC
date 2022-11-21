@@ -72,6 +72,15 @@ public class Vectors {
 
     public final int NAMEABLE_AXES_LENGTH = AXES.length;
 
+    /**
+     * The amount of bits to shift a coordinate by to
+     * convert to or from a chunk coordinate
+     */
+    public final int CHUNK_BITS = 4;
+
+    /** The size of a chunk in blocks */
+    public final int CHUNK_SIZE = 1 << CHUNK_BITS;
+
     /* ----------------------------- WORLD EDIT CONVERSIONS ------------------------------ */
 
     public Vector3i from(BlockVector3 v) {
@@ -159,18 +168,32 @@ public class Vectors {
 
     public ChunkPos getChunk(Vector3i v) {
         return new ChunkPos(
-                v.x() >> 5,
-                v.z() >> 5
+                v.x() >> CHUNK_BITS,
+                v.z() >> CHUNK_BITS
         );
     }
 
     public long toLong(Vector3i v) {
-        return BlockPos.asLong(v.x(), v.y(), v.z());
+        // Copied from net.minecraft.core.BlockPos.asLong(int, int, int)
+        // ^ Short way of saying I do not understand this at all lol
+        // All I know is it packs coordinates, so it uses less space
+        // and works for what I need
+        return (((long) v.x() & 67108863L) << 38)
+                | (((long) v.y() & 4095L))
+                | (((long) v.z() & 67108863L) << 12);
     }
 
     public Vector3i fromLong(long l) {
         var bPos = BlockPos.of(l);
         return Vector3i.from(bPos.getX(), bPos.getY(), bPos.getZ());
+    }
+
+    public int toChunk(int block) {
+        return block >> CHUNK_BITS;
+    }
+
+    public int toBlock(int chunk) {
+        return chunk << CHUNK_BITS;
     }
 
     /* ----------------------------- INT VECTORS ------------------------------ */

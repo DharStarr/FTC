@@ -3,31 +3,27 @@ package net.forthecrown.commands;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
-import net.forthecrown.commands.manager.CmdValidate;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.user.UserManager;
+import net.forthecrown.user.UserDataMap;
+import net.forthecrown.user.Users;
 import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.utils.text.format.page.Header;
 import net.forthecrown.utils.text.format.page.PageFormat;
-import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserScoreMap;
-import net.forthecrown.user.Users;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.logging.log4j.Logger;
 
 public class UserMapTopCommand extends FtcCommand {
-    private static final Logger LOGGER = FTC.getLogger();
-
     public static final int DEF_PAGE_SIZE = 10;
 
-    private final UserScoreMap map;
-    private final PageFormat<UserScoreMap.Entry> format;
+    private final UserDataMap map;
+    private final PageFormat<UserDataMap.Entry> format;
 
-    public UserMapTopCommand(String name, UserScoreMap map, Long2ObjectFunction<Component> unitMaker,
+    public UserMapTopCommand(String name, UserDataMap map, Long2ObjectFunction<Component> unitMaker,
                              Component title,
                              String... aliases
     ) {
@@ -38,9 +34,9 @@ public class UserMapTopCommand extends FtcCommand {
         // Create format
         this.format = PageFormat.create();
         format
-                .setHeader(Header.<UserScoreMap.Entry>create()
+                .setHeader(Header.<UserDataMap.Entry>create()
                         // Set title
-                        .title(title)
+                        .title(title.color(NamedTextColor.GOLD))
 
                         // Write the server total if not
                         // on first page
@@ -104,7 +100,7 @@ public class UserMapTopCommand extends FtcCommand {
             throw Exceptions.NOTHING_TO_LIST;
         }
 
-        CmdValidate.page(page, pageSize, map.size());
+        Commands.ensurePageValid(page, pageSize, map.size());
 
         source.sendMessage(format.format(map.pageIterator(page, pageSize)));
         return 0;

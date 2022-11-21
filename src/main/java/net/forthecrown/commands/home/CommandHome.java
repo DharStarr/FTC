@@ -1,25 +1,24 @@
 package net.forthecrown.commands.home;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.HomeParseResult;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.commands.tpa.CommandTpask;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
-import net.forthecrown.regions.PopulationRegion;
-import net.forthecrown.regions.RegionAccess;
-import net.forthecrown.regions.RegionManager;
-import net.forthecrown.regions.Regions;
-import net.forthecrown.regions.visit.RegionVisit;
-import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserTeleport;
 import net.forthecrown.user.data.UserHomes;
-import org.apache.commons.lang3.tuple.Pair;
+import net.forthecrown.waypoint.Waypoint;
+import net.forthecrown.waypoint.Waypoints;
+import net.forthecrown.waypoint.visit.WaypointVisit;
 import org.bukkit.Location;
+import org.bukkit.util.BoundingBox;
 
 public class CommandHome extends FtcCommand {
 
@@ -40,18 +39,17 @@ public class CommandHome extends FtcCommand {
                 .executes(c -> {
                     User user = getUserSender(c);
                     UserHomes homes = user.getHomes();
-                    var regions = RegionManager.get();
 
-                    //Check if they have home pole, and if they're in the correct world
-                    if (homes.getHomeRegion() != null
-                            && user.getWorld().equals(Regions.getWorld())
+                    BoundingBox playerBounds = user.getPlayer().getBoundingBox();
+                    Waypoint waypoint = Waypoints.getColliding(user.getPlayer());
+
+                    if (waypoint != null
+                            && waypoint.getBounds().overlaps(playerBounds)
                     ) {
-                        RegionAccess local = regions.getAccess(user.getRegionPos());
-                        PopulationRegion region = regions.get(homes.getHomeRegion());
+                        var home = homes.getHomeTeleport();
 
-                        //If they're close to pole, tp them to home pole
-                        if (Regions.isCloseToPole(local.getPolePosition(), user)) {
-                            RegionVisit.visitRegion(user, region);
+                        if (home != null) {
+                            WaypointVisit.visit(user, home);
                             return 0;
                         }
                     }
@@ -76,13 +74,13 @@ public class CommandHome extends FtcCommand {
     }
 
     private int goHome(CommandSource source, User user, HomeParseResult result) throws CommandSyntaxException {
-        Pair<String, Location> home = result.getHome(source, false);
-        var l = home.getValue();
+        Pair<String, Location> home = result.get(source, true);
+        var l = home.getSecond();
 
         CommandTpask.testWorld(
                 l.getWorld(),
                 user.getPlayer(),
-                Exceptions.badWorldHome(result.getName())
+                Exceptions.badWorldHome(home.getFirst())
         );
 
         var teleport = user.createTeleport(() -> l, UserTeleport.Type.HOME);

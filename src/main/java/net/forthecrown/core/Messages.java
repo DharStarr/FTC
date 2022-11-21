@@ -2,7 +2,10 @@ package net.forthecrown.core;
 
 import net.forthecrown.commands.ToggleCommand;
 import net.forthecrown.core.admin.Mute;
+import net.forthecrown.core.challenge.Challenge;
+import net.forthecrown.core.challenge.ResetInterval;
 import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.cosmetics.Cosmetic;
 import net.forthecrown.economy.market.MarketConfig;
 import net.forthecrown.economy.market.MarketEviction;
 import net.forthecrown.economy.sell.SellResult;
@@ -11,11 +14,8 @@ import net.forthecrown.economy.shops.ShopType;
 import net.forthecrown.economy.shops.SignShop;
 import net.forthecrown.economy.shops.SignShopSession;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.regions.PopulationRegion;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.TextJoiner;
-import net.forthecrown.utils.text.format.ComponentFormat;
-import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.guilds.Guild;
+import net.forthecrown.guilds.GuildRank;
 import net.forthecrown.user.*;
 import net.forthecrown.user.data.MailMessage;
 import net.forthecrown.user.data.RankTier;
@@ -25,6 +25,12 @@ import net.forthecrown.user.property.Properties;
 import net.forthecrown.user.property.UserProperty;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.math.WorldVec3i;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
+import net.forthecrown.utils.text.format.ComponentFormat;
+import net.forthecrown.utils.text.format.UnitFormat;
+import net.forthecrown.waypoint.type.WaypointType;
+import net.forthecrown.waypoint.type.WaypointTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -48,6 +54,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.math.vector.Vector2i;
+import org.spongepowered.math.vector.Vector3i;
 
 import java.util.Collection;
 import java.util.List;
@@ -225,6 +233,8 @@ public interface Messages {
     /** Unknown command message that's used as a permission denied message */
     TextComponent UNKNOWN_COMMAND = text("Unknown command. Type\"/help\" for help", NamedTextColor.WHITE);
 
+    TextColor CHAT_NAME_COLOR = TextColor.fromHexString("#e6e6e6");
+
     static Component createButton(Component text, String cmd, Object... args) {
         return text.clickEvent(runCommand(String.format(cmd, args)));
     }
@@ -352,9 +362,14 @@ public interface Messages {
      *                according to the user's permissions
      * @return The formatted message
      */
-    static Component chatMessage(User sender, Component message) {
-        return format("&#e6e6e6{0, user} &7&l> &r{1}",
-                sender, message
+    static Component chatMessage(User sender, Component message, boolean prependRank) {
+        return chatMessage(sender.listDisplayName(prependRank), message);
+    }
+
+    static Component chatMessage(Component displayName, Component message) {
+        return format("{0} &7&l> &r{1}",
+                displayName.color(CHAT_NAME_COLOR),
+                message
         );
     }
 
@@ -404,8 +419,22 @@ public interface Messages {
      * @return The formatted message
      */
     static Component requestCancelled(User sender) {
-        return format("&6{0, user}&r cancelled their request",
-                NamedTextColor.GRAY, sender
+        return requestCancelled(sender.displayName());
+    }
+
+    static Component requestCancelled(Component name) {
+        return format("&6{0}&r cancelled their request",
+                NamedTextColor.GRAY, name
+        );
+    }
+
+    static Component setCosmetic(Cosmetic cosmetic) {
+        return format(
+                "Set &e{0}&r to be your &6{1}&r effect.",
+                NamedTextColor.GRAY,
+
+                cosmetic.getDisplayData().getItemDisplayName(),
+                cosmetic.getType().getDisplayName()
         );
     }
 
@@ -424,39 +453,38 @@ public interface Messages {
 
     /**
      * Formats a normal join message
-     * @param user The joining user
+     * @param displayName The display name of the joining user
      * @return The join message
      */
-    static TranslatableComponent joinMessage(User user){
+    static TranslatableComponent joinMessage(Component displayName) {
         return Component.translatable("multiplayer.player.joined",
                 NamedTextColor.YELLOW,
-                user.displayName().color(getJoinColor(user))
+                displayName
         );
     }
 
     /**
      * Formats a join message with a new name
-     * @param user1 The joining user
+     * @param displayName The display name of the joining user
      * @return The formatted message
      */
-    static TranslatableComponent newNameJoinMessage(User user1){
+    static TranslatableComponent newNameJoinMessage(Component displayName, String oldName) {
         return Component.translatable("multiplayer.player.joined.renamed",
                 NamedTextColor.YELLOW,
-
-                user1.displayName().color(getJoinColor(user1)),
-                text(user1.getPreviousNames().get(user1.getPreviousNames().size()-1))
+                displayName,
+                text(oldName)
         );
     }
 
     /**
      * Formats a simple leave message
-     * @param user The leaving user
+     * @param displayName The leaving display name of the leaving user
      * @return the formatted message
      */
-    static TranslatableComponent leaveMessage(User user){
+    static TranslatableComponent leaveMessage(Component displayName) {
         return Component.translatable("multiplayer.player.left",
                 NamedTextColor.YELLOW,
-                user.displayName(false).color(getJoinColor(user))
+                displayName
         );
     }
 
@@ -538,6 +566,10 @@ public interface Messages {
      * the target has blocked the sender
      */
     String MAIL_BLOCKED_TARGET = "Cannot send mail, {0, user} has blocked you";
+
+    String VISIT_BLOCKED_SENDER = "Cannot visit! You have blocked {0, user}";
+
+    String VISIT_BLOCKED_TARGET = "Cannot visit! {0, user} has blocked you!";
 
     /**
      * Format used by {@link net.forthecrown.commands.economy.CommandPay} when
@@ -705,7 +737,7 @@ public interface Messages {
      * @return The formatted message
      */
     static Component autoAfkReason() {
-        return format("Automatic, been afk for longer than: {0, time}",
+        return format("Automatic, been afk for longer than {0, time}",
                 NamedTextColor.GRAY,
                 GeneralConfig.autoAfkDelay
         );
@@ -735,7 +767,7 @@ public interface Messages {
             return AFK_SELF;
         }
 
-        return format("You are now AFK: '{0}'", NamedTextColor.GRAY, reason);
+        return format("You are now AFK: {0}", NamedTextColor.GRAY, reason);
     }
 
     /**
@@ -753,7 +785,7 @@ public interface Messages {
             return format("{0, user} is now AFK.", NamedTextColor.GRAY, user);
         }
 
-        return format("{0, user} is now AFK: '{1}'", NamedTextColor.GRAY, user, reason);
+        return format("{0, user} is now AFK: {1}", NamedTextColor.GRAY, user, reason);
     }
 
     // -----------------------------------------
@@ -899,7 +931,7 @@ public interface Messages {
      * Home list header for when you're viewing your own homes.
      * Used by {@link net.forthecrown.commands.home.CommandHomeList}
      */
-    TextComponent HOMES_LIST_HEADER_SELF = text("Your homes: ", NamedTextColor.GOLD);
+    TextComponent HOMES_LIST_HEADER_SELF = text("Your homes", NamedTextColor.GOLD);
 
     /**
      * Creates a message stating that a home by the given
@@ -953,7 +985,7 @@ public interface Messages {
      * @return The formatted message
      */
     static Component homeListHeader(User user) {
-        return format("{0, user}'s homes: ", NamedTextColor.GOLD, user);
+        return format("{0, user}'s homes", NamedTextColor.GOLD, user);
     }
 
     /**
@@ -1329,6 +1361,16 @@ public interface Messages {
         );
     }
 
+    static Component edGuildChat(User user, Guild guild, Mute mute, Component message) {
+        return format("{0} {1}{2, user} > &f{3}",
+                NamedTextColor.GRAY,
+                guild.displayName(),
+                mute.getPrefix(),
+                user,
+                message
+        );
+    }
+
     /**
      * Prepends the {@link #EAVESDROPPER_PREFIX} onto
      * the given message.
@@ -1411,14 +1453,6 @@ public interface Messages {
 
     /**
      * Message format for {@link net.forthecrown.commands.ToggleCommand}
-     * for toggling the player's ability to ride and be ridden by other
-     * players.
-     * @see Properties#PLAYER_RIDING
-     */
-    String TOGGLE_RIDING = "Player riding {0}";
-
-    /**
-     * Message format for {@link net.forthecrown.commands.ToggleCommand}
      * for toggling the player's ability to TPA.
      * to
      * @see Properties#TPA
@@ -1480,7 +1514,14 @@ public interface Messages {
      * sees durability warnings
      * @see Properties#DURABILITY_ALERTS
      */
-    String TOGGLE_DURABILITY_WARN = "N{1} showing item durability warnings";
+    String TOGGLE_DURABILITY_WARN = "N{1} showing item durability warnings.";
+
+    /**
+     * Message format for {@link ToggleCommand} for toggling if a
+     * users sees ranks in chat or not
+     * @see Properties#RANKED_NAME_TAGS
+     */
+    String TOGGLE_CHAT_RANKS = "N{1} showing ranks in chat.";
 
     /**
      * Message format for {@link ToggleCommand} for toggling if
@@ -1495,6 +1536,8 @@ public interface Messages {
      * @see Properties#EAVES_DROP_MCHAT
      */
     String TOGGLE_EAVESDROP_MCHAT = "N{1} spying on people's marriage DMs.";
+
+    String TOGGLE_EAVESDROP_GCHAT = "N{1} spying on guild chats.";
 
     /**
      * Message format for {@link ToggleCommand} for toggling if
@@ -2360,18 +2403,12 @@ public interface Messages {
     // --- SECTION: REGIONS ---
     // ------------------------
 
-    Component HOME_REGION_SET = text(
-            "Set home region." +
-            "\nUse /home or /homepost to come to this region." +
+    Component HOME_WAYPOINT_SET = text(
+            "Set home waypoint." +
+            "\nUse /home to come to this waypoint when near another waypoint." +
             "\nUse /invite <player> to invite others there",
             NamedTextColor.YELLOW
     );
-
-    static Component inviteCancelled(User target) {
-        return format("Cancelled invite sent to &e{0, user}&r.",
-                NamedTextColor.GRAY, target
-        );
-    }
 
     static Component senderInvited(User target) {
         return format("Invited &e{0, user}&r.",
@@ -2391,23 +2428,20 @@ public interface Messages {
         );
     }
 
-    static Component listRegions(Collection<PopulationRegion> namedRegions) {
-        return format("&eRegions: &r{0}.",
-                TextJoiner.onComma()
-                        .add(namedRegions.stream()
-                                .map(region -> {
-                                    return region.displayName()
-                                            .color(NamedTextColor.AQUA);
-                                })
-                        )
-        );
-    }
+    static Component createdWaypoint(Vector3i pos, WaypointType type) {
+        String typeStr = "Waypoint";
 
-    static Component whichRegionNamed(PopulationRegion region) {
-        return format("You're currently in the {0} region.",
-                NamedTextColor.GOLD,
-                region.displayName()
-                        .colorIfAbsent(NamedTextColor.YELLOW)
+        if (type == WaypointTypes.REGION_POLE) {
+            typeStr = "Region pole";
+        } else if (type == WaypointTypes.ADMIN) {
+            typeStr = "Admin waypoint";
+        }
+
+        return format("Created &e{0}&r at x&6{1}&r y&6{2}&r z&6{3}&r.",
+                NamedTextColor.GRAY,
+
+                typeStr,
+                pos.x(), pos.y(), pos.z()
         );
     }
 
@@ -2694,4 +2728,178 @@ public interface Messages {
     // ------------------------------------
 
     Component YOUR = Component.text("Your", NamedTextColor.YELLOW);
+
+    // -----------------------
+    // --- SECTION: GUILDS ---
+    // -----------------------
+
+    TextComponent GUILD_DELETED_EMPTY = text("Guild was deleted, because it was empty");
+
+    TextComponent CHUNK_UNCLAIMED = text("Chunk unclaimed!", NamedTextColor.GRAY);
+
+    TextComponent GUILD_WAYPOINT_LOST = text("Waypoint was lost due to chunk unclaiming!",
+            NamedTextColor.GRAY
+    );
+
+    TextComponent G_INVITE_CANCEL_TARGET = text("The guild cancelled their invite");
+
+    static Component leftGuild(Guild guild) {
+        return format("You've left the &f{0}&r guild.",
+                NamedTextColor.GRAY,
+                guild.getName()
+        );
+    }
+
+    static Component leftGuildAnnouncement(User user) {
+        return format("&e{0, user}&r has left the guild.",
+                NamedTextColor.GRAY,
+                user
+        );
+    }
+
+    static Component guildChunkClaimed(Guild guild) {
+        return format("&f{0}&r Claimed chunk",
+                NamedTextColor.GRAY,
+                guild.displayName()
+        );
+    }
+
+    static Component changedRank(boolean wasPromoted, User promoted, GuildRank rank, Guild guild) {
+        return format("&f{0}&r {3} &e{1, user}&r to &f{2}&r",
+                NamedTextColor.GRAY,
+
+                guild.displayName(),
+                promoted,
+                rank.getName(),
+                wasPromoted ? "Promoted" : "Demoted"
+        );
+    }
+
+    static Component rankChangeAnnouncement(boolean wasPromoted, User promoter, User promoted, GuildRank rank) {
+        return format("&e{0, user}&r {3} &6{1, user}&r to {2}",
+                NamedTextColor.GRAY,
+                promoter, promoted,
+                rank.getName(),
+                wasPromoted ? "promoted" : "demoted"
+        );
+    }
+
+    static Component guildDeletedAnnouncement(User deleter) {
+        return format("&e{0, user}&r has deleted the guild.",
+                NamedTextColor.GRAY,
+                deleter
+        );
+    }
+
+    static Component guildDeleted(Guild guild) {
+        return format("Deleted the &e{0}&r guild.",
+                NamedTextColor.GRAY,
+                guild.displayName()
+        );
+    }
+
+    static Component guildKickedTarget(Guild guild, User sender) {
+        return format("&e{0, user}&r kicked you from the &6{1}&r guild.",
+                NamedTextColor.GRAY,
+                sender, guild.displayName()
+        );
+    }
+
+    static Component guildKickedSender(Guild guild, User target) {
+        return format("Kicked &e{0, user}&r from the &6{1}&r guild.",
+                NamedTextColor.GRAY,
+                target, guild.displayName()
+        );
+    }
+
+    static Component guildKickAnnouncement(User sender, User target) {
+        return format("&e{0, user}&r kicked &6{1, user}&r from the guild.",
+                NamedTextColor.GRAY,
+                sender, target
+        );
+    }
+
+    static Component guildSetCenter(Vector3i pos, User user) {
+        return format("&e{0, user}&r set the guild's waypoint to &6{1, vector}&r.",
+                NamedTextColor.GRAY,
+                user, pos
+        );
+    }
+
+    static Component guildUnclaimAllAnnouncement(User user) {
+        return format("&e{0, user}&r unclaimed &lall&r of the guild's chunks!",
+                NamedTextColor.GRAY,
+                user
+        );
+    }
+
+    static Component guildUnclaimAll(Guild guild) {
+        return format("Unclaimed &lall&r &f{0}&r's chunks",
+                NamedTextColor.GRAY,
+                guild.displayName()
+        );
+    }
+
+    static Component guildUnclaimAnnouncement(Vector2i chunkAbs, User unclaimer) {
+        return format("Chunk at &e{0, vector}&r was unclaimed by &6{1, user}&r.",
+                NamedTextColor.GRAY,
+                chunkAbs, unclaimer
+        );
+    }
+
+    static Component guildJoin(Guild guild) {
+        return format("You've joined the &6{0}&r guild!",
+                NamedTextColor.YELLOW,
+                guild.displayName()
+        );
+    }
+
+    static Component guildJoinAnnouncement(User user) {
+        return format("&6{0, user}&r has joined the guild!",
+                NamedTextColor.YELLOW,
+                user
+        );
+    }
+
+    static Component guildInviteTarget(Guild guild) {
+        return format("You've been invited to join the &f{0}&r guild! &a{1} &4{2}",
+                NamedTextColor.GRAY,
+
+                guild.displayName(),
+                tickButton("/g invite accept %s", guild.getName()),
+                crossButton("/g invite deny %s", guild.getName())
+        );
+    }
+
+    static Component guildChat(Guild guild,
+                               Component displayName,
+                               Component message
+    ) {
+        return text()
+                .append(
+                        guild.getPrefix(),
+                        chatMessage(displayName, message)
+                )
+                .build();
+    }
+
+    /* ---------------------------- CHALLENGES ----------------------------- */
+
+    static Component challengeCompleted(Challenge challenge) {
+        return format("Completed challenge &e{0}&r.",
+                NamedTextColor.GRAY,
+                challenge.displayName()
+        );
+    }
+
+    static Component challengesReset(ResetInterval interval) {
+        if (interval == ResetInterval.MANUAL) {
+            return null;
+        }
+
+        return format("&6{0}&r challenges have been reset!",
+                NamedTextColor.YELLOW,
+                interval.getDisplayName()
+        );
+    }
 }

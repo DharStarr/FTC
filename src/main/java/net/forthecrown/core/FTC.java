@@ -14,7 +14,7 @@ public @UtilityClass class FTC {
     }
 
     public Logger getLogger() {
-        return getPlugin().getLog4JLogger();
+        return getPlugin().logger;
     }
 
     public boolean inDebugMode() {

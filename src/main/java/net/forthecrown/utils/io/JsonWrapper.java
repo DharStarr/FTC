@@ -5,9 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.forthecrown.utils.math.Vectors;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.forthecrown.utils.JsonSerializable;
-import net.forthecrown.utils.Util;
+import net.forthecrown.utils.math.Vectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
@@ -137,7 +137,9 @@ public final class JsonWrapper {
             return def;
         }
 
-        return Util.fromIterable(getArray(name), func);
+        return JsonUtils.stream(getArray(name))
+                .map(func)
+                .collect(ObjectArrayList.toList());
     }
 
     public void addList(String name, Iterable<? extends JsonSerializable> list) {
@@ -386,7 +388,8 @@ public final class JsonWrapper {
             return get.getAsLong();
         }
 
-        return JsonUtils.readDate(get).getTime();
+        return JsonUtils.readDate(get)
+                .getTime();
     }
 
     public void addDate(String name, Date date) {

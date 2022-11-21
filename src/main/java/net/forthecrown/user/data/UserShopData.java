@@ -12,14 +12,13 @@ import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
 import net.forthecrown.utils.ArrayIterator;
+import net.forthecrown.utils.Time;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -156,27 +155,25 @@ public class UserShopData extends UserComponent implements Iterable<UserShopData
     }
 
     /**
-     * Removes {@link Vars#dailySellShopPriceLoss} from all earned
+     * Removes {@link GeneralConfig#dailySellShopPriceLoss} from all earned
      * materials for every calendar day since their last login
      * @param tracker The user's time tracker
      */
     public void onLogin(UserTimeTracker tracker) {
-        var lastLogin = tracker.get(TimeField.LAST_LOGIN);
+        long lastLogin = tracker.get(TimeField.LAST_LOGIN);
 
-        var now = ZonedDateTime.now();
-        var lastLoginDate = ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(lastLogin),
-                ZoneId.systemDefault()
-        );
-
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime lastLoginDate = Time.dateTime(lastLogin);
         int days = (int) ChronoUnit.DAYS.between(now, lastLoginDate);
 
         if (days < 1) {
             return;
         }
 
-        var amount = days * GeneralConfig.dailySellShopPriceLoss;
+        int amount = days * GeneralConfig.dailySellShopPriceLoss;
         var it = ArrayIterator.modifiable(earnings);
+
+        LOGGER.debug("Lowering {}'s earnings by {}", getUser(), amount);
 
         while (it.hasNext()) {
             var entry = it.next();
@@ -201,7 +198,7 @@ public class UserShopData extends UserComponent implements Iterable<UserShopData
 
         if (json.has(KEY_EARNED)) {
             for (var e: json.getObject(KEY_EARNED).entrySet()) {
-                var material = Material.getMaterial(e.getKey().toUpperCase());
+                var material = Material.matchMaterial(e.getKey());
 
                 if (material == null) {
                     LOGGER.warn("Found unknown material in earnings JSON of user {}: material: '{}'",
@@ -225,7 +222,6 @@ public class UserShopData extends UserComponent implements Iterable<UserShopData
     @Override
     public @Nullable JsonElement serialize() {
         var json = JsonWrapper.create();
-
         var it = iterator();
 
         // If the iterator returns false for this within

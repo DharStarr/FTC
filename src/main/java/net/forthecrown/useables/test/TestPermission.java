@@ -1,18 +1,13 @@
 package net.forthecrown.useables.test;
 
 import com.google.common.collect.Collections2;
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
-import net.forthecrown.useables.CheckHolder;
-import net.forthecrown.useables.ConstructType;
-import net.forthecrown.useables.UsableConstructor;
-import net.forthecrown.useables.UsageTest;
-import net.forthecrown.useables.UsageType;
+import net.forthecrown.useables.*;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -67,11 +62,6 @@ public class TestPermission extends UsageTest {
     @UsableConstructor
     public static TestPermission parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new TestPermission(reader.readString());
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestPermission loadJson(JsonElement element) {
-        return new TestPermission(element.getAsString());
     }
 
     @UsableConstructor(ConstructType.TAG)

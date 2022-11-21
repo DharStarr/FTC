@@ -42,7 +42,7 @@ public class HideySpideyBoss extends SimpleBoss {
 
                 ItemStacks.potionBuilder(Material.TIPPED_ARROW, 5)
                         .setBaseEffect(new PotionData(PotionType.POISON))
-                        .addLore(Messages.DUNGEON_LORE)
+                        .addLoreRaw(Messages.DUNGEON_LORE)
                         .build()
         );
     }

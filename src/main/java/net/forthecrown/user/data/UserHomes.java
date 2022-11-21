@@ -6,21 +6,23 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CmdUtil;
 import net.forthecrown.grenadier.CompletionProvider;
-import net.forthecrown.regions.*;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.waypoint.Waypoint;
+import net.forthecrown.waypoint.WaypointManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Location;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserHomes extends UserComponent {
@@ -35,7 +37,7 @@ public class UserHomes extends UserComponent {
      * The home region is serialized with this string
      * as the key next to all the user's other named homes.
      */
-    public static final String HOME_REGION_JSON_NAME = "user:home:region";
+    public static final String HOME_WAYPOINT_JSON_NAME = "user:home:waypoint";
 
     /**
      * Name of the default user home that, if given no home name, commands
@@ -51,11 +53,9 @@ public class UserHomes extends UserComponent {
     @Getter
     private final Map<String, Location> homes = new HashMap<>();
 
-    /**
-     * The position of the region the user set as their home
-     */
+    /** The ID of the user's home waypoint */
     @Getter
-    private RegionPos homeRegion;
+    private UUID homeWaypoint;
 
     /* ----------------------------- CONSTRUCTOR ------------------------------ */
 
@@ -65,53 +65,30 @@ public class UserHomes extends UserComponent {
 
     /* ----------------------------- STATIC UTILITY ------------------------------ */
 
-    static void reassignHome(UUID uuid, String name, @Nullable Location old, @Nullable Location newHome) {
-        if (old == null && newHome == null) {
+    static void reassignWaypointHome(UUID uuid,
+                                     @Nullable UUID old,
+                                     @Nullable Waypoint newWaypoint
+    ) {
+        if (newWaypoint != null) {
+            if (Objects.equals(old, newWaypoint.getId())) {
+                return;
+            }
+        } else if (old == null) {
             return;
         }
 
-        RegionManager manager = RegionManager.get();
-
-        if (old != null && old.getWorld().equals(Regions.getWorld())) {
-            RegionPos pos = RegionPos.of(old);
-            PopulationRegion region = manager.get(pos);
-
-            region.getResidency().removeHome(uuid, name);
-
-            if (!region.hasProperty(RegionProperty.HIDE_RESIDENTS)) {
-                Regions.placePole(region);
-            }
-        }
-
-        if (newHome != null && newHome.getWorld().equals(Regions.getWorld())) {
-            RegionPos pos = RegionPos.of(newHome);
-            PopulationRegion region = manager.get(pos);
-
-            region.getResidency().setHome(uuid, name);
-
-            if (!region.hasProperty(RegionProperty.HIDE_RESIDENTS)) {
-                Regions.placePole(region);
-            }
-
-            LOGGER.info("Set {}'s home '{}' to region: {}", uuid, name, pos);
-        }
-    }
-
-    static void reassignRegionHome(UUID uuid, @Nullable RegionPos old, @Nullable RegionPos newPos) {
-        RegionManager manager = RegionManager.get();
+        var manager = WaypointManager.getInstance();
 
         if (old != null) {
-            PopulationRegion region = manager.get(old);
+            var wayOld = manager.get(old);
 
-            region.getResidency().moveOut(uuid);
-            Regions.placePole(region);
+            if (wayOld != null) {
+                wayOld.removeResident(uuid);
+            }
         }
 
-        if (newPos != null) {
-            PopulationRegion region = manager.get(newPos);
-
-            region.getResidency().moveIn(uuid);
-            Regions.placePole(region);
+        if (newWaypoint != null) {
+            newWaypoint.addResident(uuid);
         }
     }
 
@@ -166,9 +143,7 @@ public class UserHomes extends UserComponent {
          * @param location Location of the home
          */
     public void set(String name, Location location) {
-        Location old = homes.put(name, location);
-
-        reassignHome(getUser().getUniqueId(), name, location, old);
+        homes.put(name, location);
     }
 
     /**
@@ -176,9 +151,7 @@ public class UserHomes extends UserComponent {
          * @param name The name to remove
          */
     public void remove(String name) {
-        Location old = homes.remove(name);
-
-        reassignHome(getUser().getUniqueId(), name, old, null);
+        homes.remove(name);
     }
 
     /**
@@ -192,14 +165,29 @@ public class UserHomes extends UserComponent {
     }
 
     /**
-         * Sets the user's home region
-         * @param cords The region cords at which their home will be.
-         */
-    public void setHomeRegion(RegionPos cords) {
-        RegionPos old = this.homeRegion;
-        this.homeRegion = cords;
+     * Sets the user's home waypoint
+     * @param homeWaypoint The new home waypoint
+     */
+    public void setHomeWaypoint(@Nullable Waypoint homeWaypoint) {
+        UUID old = this.homeWaypoint;
 
-        reassignRegionHome(getUser().getUniqueId(), old, cords);
+        if (homeWaypoint == null) {
+            this.homeWaypoint = null;
+        } else {
+            this.homeWaypoint = homeWaypoint.getId();
+        }
+
+        reassignWaypointHome(getUser().getUniqueId(), old, homeWaypoint);
+    }
+
+    public Waypoint getHomeTeleport() {
+        if (!hasHomeWaypoint()) {
+            return null;
+        }
+
+        return WaypointManager
+                .getInstance()
+                .get(getHomeWaypoint());
     }
 
     @Override
@@ -209,8 +197,8 @@ public class UserHomes extends UserComponent {
         }
 
         JsonWrapper json = JsonWrapper.create();
-        if (hasHomeRegion()) {
-            json.add(HOME_REGION_JSON_NAME, homeRegion.toString());
+        if (hasHomeWaypoint()) {
+            json.add(HOME_WAYPOINT_JSON_NAME, homeWaypoint.toString());
         }
 
         for (Map.Entry<String, Location> e : homes.entrySet()) {
@@ -223,17 +211,19 @@ public class UserHomes extends UserComponent {
     @Override
     public void deserialize(JsonElement element) {
         homes.clear();
-        homeRegion = null;
+        homeWaypoint = null;
 
         if (element == null) {
             return;
         }
 
         JsonWrapper json = JsonWrapper.wrap(element.getAsJsonObject());
+        // Remove legacy region home pos
+        json.remove("user:home:region");
 
-        if (json.has(HOME_REGION_JSON_NAME)) {
-            this.homeRegion = RegionPos.fromString(json.getString(HOME_REGION_JSON_NAME));
-            json.remove(HOME_REGION_JSON_NAME);
+        if (json.has(HOME_WAYPOINT_JSON_NAME)) {
+            this.homeWaypoint = json.getUUID(HOME_WAYPOINT_JSON_NAME);
+            json.remove(HOME_WAYPOINT_JSON_NAME);
         }
 
         for (Map.Entry<String, JsonElement> e : json.entrySet()) {
@@ -272,7 +262,7 @@ public class UserHomes extends UserComponent {
      * Gets whether the user has a set home region
      * @return Whether the user has a home region.
      */
-    public boolean hasHomeRegion() {
-        return getHomeRegion() != null;
+    public boolean hasHomeWaypoint() {
+        return getHomeWaypoint() != null;
     }
 }

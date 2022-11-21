@@ -1,11 +1,13 @@
 package net.forthecrown.commands.manager;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.*;
 import net.forthecrown.commands.admin.*;
 import net.forthecrown.commands.click.CommandClickableText;
 import net.forthecrown.commands.economy.*;
 import net.forthecrown.commands.emotes.EmotePog;
+import net.forthecrown.commands.guild.GuildCommands;
 import net.forthecrown.commands.help.HelpCommand;
 import net.forthecrown.commands.home.CommandDeleteHome;
 import net.forthecrown.commands.home.CommandHome;
@@ -15,15 +17,19 @@ import net.forthecrown.commands.item.ItemModCommands;
 import net.forthecrown.commands.markets.*;
 import net.forthecrown.commands.marriage.*;
 import net.forthecrown.commands.punish.*;
-import net.forthecrown.commands.regions.*;
 import net.forthecrown.commands.test.TestCommands;
 import net.forthecrown.commands.tpa.*;
 import net.forthecrown.commands.usables.InteractableCommands;
 import net.forthecrown.commands.usables.UseCmdCommand;
 import net.forthecrown.commands.user.UserCommands;
+import net.forthecrown.commands.waypoint.*;
 import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.user.data.RankTitle;
+import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.text.format.page.PageEntryIterator;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +43,7 @@ public final class Commands {
     private Commands(){}
 
     //Command loading
-    public static void init() {
+    private static void init() {
         if (FTC.inDebugMode()) {
             TestCommands.createCommands();
         }
@@ -117,6 +123,9 @@ public final class Commands {
         new CommandCosmetics();
         new CommandClickableText();
         new CommandSettings();
+        new CommandHat();
+        new CommandSay();
+        new CommandChallenges();
 
         CommandDumbThing.createCommands();
         ToolBlockCommands.createCommands();
@@ -126,6 +135,9 @@ public final class Commands {
         UserMapCommand.createCommands();
         UserMapTopCommand.createCommands();
         UseCmdCommand.createCommands();
+
+        // Guilds
+        GuildCommands.createCommands();
 
         //economy commands
         new CommandPay();
@@ -164,28 +176,48 @@ public final class Commands {
         new CommandDeleteHome();
         new CommandHomeList();
 
-        //region commands
+        // Waypoint commands
         new CommandVisit();
-        new CommandMovePole();
-        new CommandResetRegion();
-        new CommandRenameRegion();
-        new CommandMoveToRegion();
-        new CommandGotoRegion();
-        new CommandHomePole();
-        new CommandSetHomeRegion();
-        new CommandAddPole();
-        new CommandListRegions();
-        new CommandRandomRegion();
+        new CommandWaypoints();
+        new CommandMoveIn();
         new CommandInvite();
-        new CommandRegionData();
-        new CommandWhichRegion();
-        new CommandRegionProperties();
-        new CommandRegionResidents();
+        new CommandHomeWaypoint();
+        new CommandCreateWaypoint();
 
         //emote, other emotes are initialized by cosmetics in CosmeticEmotes.init()
         new EmotePog();
 
         //help commands
         HelpCommand.createCommands();
+    }
+
+    /* ----------------------------- UTILITY ------------------------------ */
+
+    public static void ensureIndexValid(int index, int size) throws CommandSyntaxException {
+        if (index > size) {
+            throw Exceptions.invalidIndex(index, size);
+        }
+    }
+
+    public static void ensurePageValid(int page, int pageSize, int size) throws CommandSyntaxException {
+        if (size == 0) {
+            throw Exceptions.NOTHING_TO_LIST;
+        }
+
+        var max = PageEntryIterator.getMaxPage(pageSize, size);
+
+        if (page >= max) {
+            throw Exceptions.invalidPage(page + 1, max);
+        }
+    }
+
+    public static ItemStack getHeldItem(Player player) throws CommandSyntaxException {
+        var item = player.getInventory().getItemInMainHand();
+
+        if (ItemStacks.isEmpty(item)) {
+            throw Exceptions.MUST_HOLD_ITEM;
+        }
+
+        return item;
     }
 }

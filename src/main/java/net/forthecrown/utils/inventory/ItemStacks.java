@@ -1,5 +1,6 @@
 package net.forthecrown.utils.inventory;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.utils.AbstractListIterator;
@@ -7,6 +8,7 @@ import net.forthecrown.utils.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.datafix.fixes.References;
 import org.bukkit.Material;
@@ -60,7 +62,14 @@ public final class ItemStacks {
 
     /* ----------------------------- CONSTANTS ------------------------------ */
 
+    /**
+     * The NBT tag of the item's data version,
+     * used for updating item data using Mojang's {@link DataFixers}
+     */
     public static final String TAG_DATA_VERSION = "dataVersion";
+
+    /** The name of the package-private item meta implementation class */
+    public static final String META_CLASS_NAME = CraftItemStack.class.getPackageName() + ".CraftMetaItem";
 
     /* ----------------------------- TAGS ------------------------------ */
 
@@ -162,7 +171,7 @@ public final class ItemStacks {
         try {
             return meta.getDeclaredField("unhandledTags");
         } catch (NoSuchFieldException e) {
-            throw new IllegalStateException("couldn't find internalTag field", e);
+            throw new IllegalStateException("couldn't find unhandledTags field", e);
         }
     }
 
@@ -172,19 +181,10 @@ public final class ItemStacks {
      */
     private static Class metaClass() {
         try {
-            return Class.forName(craftBukkitInventoryPackage() + ".CraftMetaItem");
+            return Class.forName(META_CLASS_NAME);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Couldn't find class for item meta??????", e);
         }
-    }
-
-    /**
-     * Gets the bukkit api implementation inventory
-     * package's name
-     * @return The craft bukkit inventory package name
-     */
-    private static String craftBukkitInventoryPackage() {
-        return CraftItemStack.class.getPackageName();
     }
 
     /**
@@ -207,18 +207,33 @@ public final class ItemStacks {
     public static ItemStack load(CompoundTag tag) {
         if (tag.contains(TAG_DATA_VERSION)) {
             int version = tag.getInt(TAG_DATA_VERSION);
+            int current = Util.getDataVersion();
 
-            tag = (CompoundTag) DataFixers.getDataFixer()
-                    .update(
-                            References.ITEM_STACK,
-                            new Dynamic<>(NbtOps.INSTANCE, tag),
-                            version,
-                            Util.getDataVersion()
-                    )
-                    .getValue();
+            if (current != version) {
+                tag = (CompoundTag) DataFixers.getDataFixer()
+                        .update(
+                                References.ITEM_STACK,
+                                new Dynamic<>(NbtOps.INSTANCE, tag),
+                                version,
+                                current
+                        )
+                        .getValue();
+            }
         }
 
         return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of(tag));
+    }
+
+    public static String toNbtString(ItemStack item) {
+        if (isEmpty(item)) {
+            return "";
+        }
+
+        return save(item).toString();
+    }
+
+    public static ItemStack ofNbtString(String nbt) throws CommandSyntaxException {
+        return load(TagParser.parseTag(nbt));
     }
 
     /* ----------------------------- UTILITY ------------------------------ */
@@ -238,6 +253,18 @@ public final class ItemStacks {
      */
     public static boolean isEmpty(@Nullable ItemStack stack) {
         return stack == null || stack.getType().isAir() || stack.getAmount() < 1;
+    }
+
+    /**
+     * Negates the value returned by {@link #isEmpty(ItemStack)},
+     * Exists to be used as a method reference for null testing
+     * item stacks.
+     *
+     * @param stack The item to test
+     * @return True, if the item is not empty, false otherwise
+     */
+    public static boolean notEmpty(@Nullable ItemStack stack) {
+        return !isEmpty(stack);
     }
 
     /* ----------------------------- INVENTORY ITERATION ------------------------------ */

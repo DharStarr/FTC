@@ -2,7 +2,7 @@ package net.forthecrown.commands.economy;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.commands.manager.CmdValidate;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
@@ -120,7 +120,7 @@ public class CommandShopHistory extends FtcCommand {
         int pageSize = args.get(PAGE_SIZE);
 
         // Ensure the page is valid
-        CmdValidate.page(page, pageSize, history.size());
+        Commands.ensurePageValid(page, pageSize, history.size());
 
         var joiner = Text.argJoiner(this)
                 .add(SHOP_NAME, shop.getName());

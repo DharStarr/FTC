@@ -33,7 +33,10 @@ public class SmokeBomb implements Listener {
             return;
         }
 
-        ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+        ItemStack item = event.getPlayer()
+                .getInventory()
+                .getItemInMainHand();
+
         var player = event.getPlayer();
 
         if (item.getType() != Material.FIREWORK_STAR

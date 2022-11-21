@@ -8,13 +8,15 @@ import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class Structures {
+    private static final Logger LOGGER = FTC.getLogger();
+
     private static final Structures inst = new Structures();
 
     @Getter
@@ -50,43 +52,24 @@ public final class Structures {
             return;
         }
 
-        try {
-            loadDirectory(directory, "");
-        } catch (IOException e) {
-            FTC.getLogger().error("Error loading structures", e);
-        }
-    }
+        PathUtil.findAllFiles(directory, false, false)
+                .resultOrPartial(FTC.getLogger()::error)
 
-    public void loadDirectory(Path path, String prefix) throws IOException {
-        loadDirectory(Files.newDirectoryStream(path), prefix);
-    }
+                .ifPresent(strings -> {
+                    strings.forEach(s -> {
+                        Path path = directory.resolve(s + ".dat");
+                        BlockStructure structure = new BlockStructure();
 
-    private void loadDirectory(DirectoryStream<Path> dir, String prefix) throws IOException {
-        for (var path: dir) {
-            if (Files.isDirectory(path)) {
-                loadDirectory(path, prefix + path.getFileName().toString() + "/");
-                continue;
-            }
+                        LOGGER.debug("loading structure '{}'", s);
 
-            // Skip non NBT files
-            if (!path.toString().endsWith(".dat")) {
-                continue;
-            }
+                        if (!SerializationHelper.readTagFile(path, structure::load)) {
+                            LOGGER.warn("Couldn't load '{}'", s);
+                            return;
+                        }
 
-            String key = prefix + path.getFileName().toString().replaceAll(".dat", "");
-
-            BlockStructure structure = new BlockStructure();
-
-            if (!SerializationHelper.readTagFile(path, structure::load)) {
-                FTC.getLogger().warn("Couldn't read structure file: '{}'", path);
-                continue;
-            }
-
-            //FTC.getLogger().info("Loaded structure: '{}'", key);
-            registry.register(key, structure);
-        }
-
-        dir.close();
+                        registry.register(s, structure);
+                    });
+                });
     }
 
     public void delete(Holder<BlockStructure> structure) {

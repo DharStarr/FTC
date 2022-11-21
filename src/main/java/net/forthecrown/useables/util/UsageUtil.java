@@ -2,6 +2,7 @@ package net.forthecrown.useables.util;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -25,7 +26,8 @@ public final class UsageUtil {
 
     /* ----------------------------- ITEM UTILITIES ------------------------------ */
 
-    public static final ArrayArgument<ItemStack> ITEM_ARRAY_PARSER = ArrayArgument.of(new ItemParser());
+    public static final ArgumentType<ItemStack> ITEM_ARGUMENT = new ItemParser();
+    public static final ArrayArgument<ItemStack> ITEM_ARRAY_PARSER = ArrayArgument.of(ITEM_ARGUMENT);
     public static final String HELD_ITEM_FLAG = "-held_item";
     public static final String INVENTORY_FLAG = "-inventory";
 

@@ -1,14 +1,15 @@
 package net.forthecrown.user;
 
+import com.google.common.base.Strings;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.forthecrown.core.FTC;
+import net.forthecrown.user.data.TimeField;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
-import net.forthecrown.utils.Util;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -19,6 +20,14 @@ import java.util.UUID;
 public class UserJsonSerializer implements UserSerializer {
     private static final Logger LOGGER = FTC.getLogger();
 
+    public static final String
+            KEY_LAST_NAME = "lastOnlineName",
+            KEY_PREVIOUS_NAMES = "previousNames",
+            KEY_IP = "ip",
+            KEY_LAST_LOC = "lastLocation",
+            KEY_LOCATION = "location",
+            KEY_GUILD = "guild";
+
     private final Path userDirectory;
 
     public UserJsonSerializer(Path userDir) {
@@ -28,6 +37,8 @@ public class UserJsonSerializer implements UserSerializer {
 
     @Override
     public void serialize(User user) {
+        user.setTimeToNow(TimeField.LAST_LOADED);
+
         try {
             SerializationHelper.writeJsonFile(getUserFile(user.getUniqueId()), json -> _serialize(user, json));
         } catch (Throwable t) {
@@ -37,6 +48,8 @@ public class UserJsonSerializer implements UserSerializer {
 
     @Override
     public void deserialize(User user) {
+        user.setTimeToNow(TimeField.LAST_LOADED);
+
         try {
             SerializationHelper.readJsonFile(getUserFile(user.getUniqueId()), json -> _deserialize(user, json));
         } catch (Throwable t) {
@@ -45,20 +58,31 @@ public class UserJsonSerializer implements UserSerializer {
     }
 
     private void _deserialize(User user, JsonWrapper json) {
-        user.setLastOnlineName(json.getString("lastOnlineName"));
+        user.setLastOnlineName(json.getString(KEY_LAST_NAME));
 
-        user.getPreviousNames().addAll(json.getList("previousNames", JsonElement::getAsString));
+        user.getPreviousNames().addAll(json.getList(KEY_PREVIOUS_NAMES, JsonElement::getAsString));
 
-        if (json.has("ip")) {
-            user.setIp(json.getString("ip"));
+        if (json.has(KEY_IP)) {
+            user.setIp(json.getString(KEY_IP));
         }
 
-        if (json.has("lastLocation")) {
-            user.setReturnLocation(json.getLocation("lastLocation"));
+        if (json.has(KEY_LAST_LOC)) {
+            user.setReturnLocation(json.getLocation(KEY_LAST_LOC));
         }
 
-        if (json.has("location")) {
-            user.setEntityLocation(json.getLocation("location"));
+        if (json.has(KEY_LOCATION)) {
+            user.setEntityLocation(json.getLocation(KEY_LOCATION));
+        }
+
+        if (json.has(KEY_GUILD)) {
+            user.setGuildId(json.getUUID(KEY_GUILD));
+
+            if (user.getGuild() == null) {
+                LOGGER.warn("Found unknown guild in {} (or {})'s file: {}",
+                        user.getUniqueId(), user.getName(),
+                        user.getGuildId()
+                );
+            }
         }
 
         loadComponents(json, user);
@@ -66,22 +90,26 @@ public class UserJsonSerializer implements UserSerializer {
 
     private void _serialize(User user, JsonWrapper json) {
         json.add("name", user.getName());
-        json.add("lastOnlineName", user.getLastOnlineName());
+        json.add(KEY_LAST_NAME, user.getLastOnlineName());
 
         if (!user.getPreviousNames().isEmpty()) {
-            json.addList("previousNames", user.getPreviousNames(), JsonPrimitive::new);
+            json.addList(KEY_PREVIOUS_NAMES, user.getPreviousNames(), JsonPrimitive::new);
         }
 
-        if (!Util.isNullOrBlank(user.getIp())) {
-            json.add("ip", user.getIp());
+        if (!Strings.isNullOrEmpty(user.getIp())) {
+            json.add(KEY_IP, user.getIp());
         }
 
         if (user.getReturnLocation() != null) {
-            json.addLocation("lastLocation", user.getReturnLocation());
+            json.addLocation(KEY_LAST_LOC, user.getReturnLocation());
         }
 
         if (user.getLocation() != null) {
-            json.addLocation("location", user.getLocation());
+            json.addLocation(KEY_LOCATION, user.getLocation());
+        }
+
+        if (user.getGuildId() != null) {
+            json.addUUID(KEY_GUILD, user.getGuildId());
         }
 
         saveComponents(json, user);
@@ -128,6 +156,8 @@ public class UserJsonSerializer implements UserSerializer {
     @Override
     public void delete(UUID id) {
         UserManager.get().remove(id);
+        UserManager.get().getOnline()
+                .remove(id);
 
         try {
             Files.delete(getUserFile(id));

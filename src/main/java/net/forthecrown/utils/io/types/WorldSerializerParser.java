@@ -15,12 +15,12 @@ public class WorldSerializerParser implements SerializerParser<World> {
     }
 
     @Override
-    public <V> V serialize(DynamicOps<V> ops, World value) {
+    public <V> @NotNull V serialize(@NotNull DynamicOps<V> ops, @NotNull World value) {
         return ops.createString(value.getName());
     }
 
     @Override
-    public <V> DataResult<World> deserialize(DynamicOps<V> ops, V element) {
+    public <V> @NotNull DataResult<World> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
         return ops.getStringValue(element)
                 .map(Bukkit::getWorld);
     }

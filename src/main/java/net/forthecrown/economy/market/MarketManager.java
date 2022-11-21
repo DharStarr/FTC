@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
@@ -51,14 +50,14 @@ public class MarketManager implements DayChangeListener {
 
     @Override
     public void onDayChange(ZonedDateTime time) {
-        if (time.getDayOfWeek() != DayOfWeek.MONDAY
-                || !MarketConfig.autoEvictionsEnabled
-        ) {
+        if (!MarketConfig.autoEvictionsEnabled) {
             return;
         }
 
+        LOGGER.debug("Running market ownership validation");
+
         for (var market: byOwner.values()) {
-            market.validateOwnership(this);
+            market.validateOwnership();
         }
     }
 
@@ -189,14 +188,6 @@ public class MarketManager implements DayChangeListener {
     }
 
     /**
-     * Gets all the UUIDs that currently own shops
-     * @return All shop owners' UUIDs
-     */
-    public Set<UUID> getOwners() {
-        return byOwner.keySet();
-    }
-
-    /**
      * Gets the names of all the shops
      * @return The shops' names
      */
@@ -225,6 +216,15 @@ public class MarketManager implements DayChangeListener {
                 .getPlatform()
                 .getRegionContainer()
                 .get(BukkitAdapter.adapt(Markets.getWorld()));
+
+        if (manager == null) {
+            LOGGER.warn(
+                    "World {} has no WG region manager! Cannot load markets",
+                    Markets.getWorld().getName()
+            );
+
+            return;
+        }
 
         Set<MarketShop> notLoaded = new ObjectOpenHashSet<>(byName.values());
 
@@ -259,6 +259,8 @@ public class MarketManager implements DayChangeListener {
                     shop.deserialize(element);
                     notLoaded.remove(shop);
                     add(shop);
+
+                    LOGGER.debug("Loaded market {}", shop.getName());
                 } catch (IOException e) {
                     LOGGER.error("Error reading market file: '{}'", p, e);
                 }

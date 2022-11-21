@@ -7,10 +7,13 @@ import net.forthecrown.utils.io.JsonUtils;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.Tag;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.math.vector.Vector3i;
 
 public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vector3i> {
+    public static final Bounds3i EMPTY = of(Vector3i.ZERO, Vector3i.ZERO);
 
     public Bounds3i(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         super(minX, minY, minZ, maxX, maxY, maxZ);
@@ -55,6 +58,54 @@ public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vec
         return of(
                 Vectors.from(region.getMinimumPoint()),
                 Vectors.from(region.getMaximumPoint())
+        );
+    }
+
+    public static Bounds3i of(AbstractBounds3i bounds3i) {
+        if (bounds3i instanceof Bounds3i b) {
+            return b;
+        }
+
+        return new Bounds3i(
+                bounds3i.minX(), bounds3i.minY(), bounds3i.minZ(),
+                bounds3i.maxX(), bounds3i.maxY(), bounds3i.maxZ()
+        );
+    }
+
+    public static Bounds3i of(Iterable<Block> blocks) {
+        var it = blocks.iterator();
+
+        if (!it.hasNext()) {
+            return EMPTY;
+        }
+
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+
+        while (it.hasNext()) {
+            var b = it.next();
+
+            minX = Math.min(minX, b.getX());
+            minY = Math.min(minY, b.getY());
+            minZ = Math.min(minZ, b.getZ());
+
+            maxX = Math.max(maxX, b.getX());
+            maxY = Math.max(maxY, b.getY());
+            maxZ = Math.max(maxZ, b.getZ());
+        }
+
+        return new Bounds3i(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    public static Bounds3i of(BoundingBox box) {
+        return of(
+                Vectors.fromI(box.getMin()),
+                Vectors.fromD(box.getMax()).ceil().toInt()
         );
     }
 

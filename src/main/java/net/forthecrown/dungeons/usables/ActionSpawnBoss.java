@@ -1,13 +1,12 @@
 package net.forthecrown.dungeons.usables;
 
-import net.forthecrown.commands.arguments.RegistryArguments;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.core.registry.Registries;
-import net.forthecrown.useables.*;
-import net.forthecrown.grenadier.CommandSource;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.google.gson.JsonElement;
+import net.forthecrown.commands.arguments.RegistryArguments;
+import net.forthecrown.core.registry.Registries;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.useables.*;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -48,11 +47,6 @@ public class ActionSpawnBoss extends UsageAction {
     @UsableConstructor(ConstructType.PARSE)
     public static ActionSpawnBoss parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new ActionSpawnBoss(RegistryArguments.DUNGEON_BOSS.parse(reader).getKey());
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionSpawnBoss fromJson(JsonElement element) {
-        return new ActionSpawnBoss(element.getAsString());
     }
 
     @UsableConstructor(ConstructType.TAG)

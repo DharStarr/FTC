@@ -10,7 +10,6 @@ public final class Rooms {
             FLAG_CONNECTOR  = 0x1,
             FLAG_BOSS_ROOM  = 0x2,
             FLAG_MOB_ROOM   = 0x8,
-            FLAG_DEAD_END   = 0x10,
             FLAG_ROOT       = 0x20;
 
     public static final Registry<RoomType> REGISTRY = PieceTypes.newRegistry("rooms");

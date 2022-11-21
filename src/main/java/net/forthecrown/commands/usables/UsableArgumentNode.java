@@ -10,7 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.commands.manager.CmdValidate;
+import net.forthecrown.commands.manager.Readers;
 import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.registry.Holder;
@@ -76,8 +76,8 @@ public class UsableArgumentNode<T extends UsageInstance, H extends UsageTypeHold
                                                         throw Exceptions.invalidBounds(start, end);
                                                     }
 
-                                                    CmdValidate.index(start, list.size());
-                                                    CmdValidate.index(end, list.size());
+                                                    Commands.ensureIndexValid(start, list.size());
+                                                    Commands.ensureIndexValid(end, list.size());
 
                                                     list.subList(start - 1, end).clear();
                                                 }))
@@ -155,11 +155,7 @@ public class UsableArgumentNode<T extends UsageInstance, H extends UsageTypeHold
         var parsed = getParsedType(c);
         var instance = parsed.parse(reader, c.getSource());
 
-        if (reader.canRead()) {
-            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS
-                    .dispatcherExpectedArgumentSeparator()
-                    .createWithContext(reader);
-        }
+        Readers.ensureCannotRead(reader);
 
         if (first) {
             list.add(0, instance);

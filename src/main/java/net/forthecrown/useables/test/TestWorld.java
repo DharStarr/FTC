@@ -1,19 +1,13 @@
 package net.forthecrown.useables.test;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.core.FTC;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.WorldArgument;
-import net.forthecrown.useables.CheckHolder;
-import net.forthecrown.useables.ConstructType;
-import net.forthecrown.useables.UsableConstructor;
-import net.forthecrown.useables.UsageTest;
-import net.forthecrown.useables.UsageType;
-import net.forthecrown.utils.io.JsonUtils;
+import net.forthecrown.useables.*;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.Tag;
@@ -78,11 +72,6 @@ public class TestWorld extends UsageTest {
         return new TestWorld(
                 WorldArgument.world().parse(reader)
         );
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static TestWorld fromJson(JsonElement element) {
-        return new TestWorld(Bukkit.getWorld(JsonUtils.readKey(element)));
     }
 
     @UsableConstructor(ConstructType.TAG)

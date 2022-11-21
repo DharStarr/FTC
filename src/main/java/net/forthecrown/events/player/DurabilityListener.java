@@ -1,18 +1,17 @@
 package net.forthecrown.events.player;
 
-import io.papermc.paper.event.entity.EntityDamageItemEvent;
 import net.forthecrown.core.config.GeneralConfig;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.Cooldown;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
@@ -24,12 +23,8 @@ public class DurabilityListener implements Listener {
     );
 
     @EventHandler(ignoreCancelled = true)
-    public void onEntityDamageItem(EntityDamageItemEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-
-        User user = Users.get(player);
+    public void onEntityDamageItem(PlayerItemDamageEvent event) {
+        User user = Users.get(event.getPlayer());
 
         if (!user.get(Properties.DURABILITY_ALERTS)) {
             return;
@@ -38,15 +33,15 @@ public class DurabilityListener implements Listener {
         ItemStack item = event.getItem();
         Damageable damageable = (Damageable) item.getItemMeta();
 
-        int damage = damageable.getDamage();
-        int maxDurability = item.getType().getMaxDurability();
-        int remaining = maxDurability - damage - 1;
+        float damage = damageable.getDamage();
+        float maxDurability = item.getType().getMaxDurability();
+        float remaining = maxDurability - damage - 1;
 
-        if (!(remaining < (maxDurability * GeneralConfig.durabilityWarnThreshold))) {
-            return;
-        }
-
-        if (Cooldown.containsOrAdd(user, Properties.DURABILITY_ALERTS.getKey(), 20 * 10)) {
+        // If durability is above threshold or player is on cooldown, do not show alert
+        if (remaining >= (maxDurability * GeneralConfig.durabilityWarnThreshold)
+                || remaining <= 0
+                || Cooldown.containsOrAdd(user, Properties.DURABILITY_ALERTS.getKey(), 20 * 10)
+        ) {
             return;
         }
 

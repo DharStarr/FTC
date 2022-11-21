@@ -1,9 +1,7 @@
 package net.forthecrown.events;
 
-import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import io.papermc.paper.event.entity.EntityMoveEvent;
-import net.forthecrown.datafix.UsablesJsonToTag;
 import net.forthecrown.useables.UsableBlock;
 import net.forthecrown.useables.UsableEntity;
 import net.forthecrown.useables.Usables;
@@ -42,18 +40,6 @@ public class UsablesListeners implements Listener {
 
         usable.setIdentifier(EntityIdentifier.of(entity));
         usable.save(entity.getPersistentDataContainer());
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onEntityAddToWorld(EntityAddToWorldEvent event) {
-        var entity = event.getEntity();
-        var container = entity.getPersistentDataContainer();
-
-        if (!container.has(Usables.USABLE_KEY) && !container.has(Usables.LEGACY_KEY)) {
-            return;
-        }
-
-        UsablesJsonToTag.convertLegacy(entity);
     }
 
     @EventHandler(ignoreCancelled = true)

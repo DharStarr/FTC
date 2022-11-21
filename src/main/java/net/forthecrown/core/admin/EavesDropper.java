@@ -2,6 +2,8 @@ package net.forthecrown.core.admin;
 
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
+import net.forthecrown.guilds.Guild;
+import net.forthecrown.user.User;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.DirectMessage;
 import net.forthecrown.user.MarriageMessage;
@@ -98,5 +100,13 @@ public class EavesDropper {
         }
 
         send(edOreMining(player, block, count), Properties.EAVES_DROP_MINING, true);
+    }
+
+    public static void reportGuildChat(User sender, Mute mute, Guild guild, Component message) {
+        send(
+                edGuildChat(sender, guild, mute, message),
+                Properties.EAVES_DROP_GUILD_CHAT,
+                false
+        );
     }
 }

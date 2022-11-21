@@ -1,6 +1,5 @@
 package net.forthecrown.useables.actions;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -8,8 +7,8 @@ import lombok.Getter;
 import net.forthecrown.commands.manager.FtcSuggestions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Suggester;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.*;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -85,11 +84,6 @@ public class ActionCommand extends UsageAction {
         reader.setCursor(reader.getTotalLength());
 
         return new ActionCommand(type, result);
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionCommand fromJson(UsageType<ActionCommand> type, JsonElement element) {
-        return new ActionCommand(type, element.getAsString());
     }
 
     @UsableConstructor(ConstructType.TAG)

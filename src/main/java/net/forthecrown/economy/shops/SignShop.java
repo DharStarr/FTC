@@ -2,6 +2,7 @@ package net.forthecrown.economy.shops;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.utils.LocationFileName;
@@ -28,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-import static net.forthecrown.economy.shops.SignShops.DEFAULT_INV_SIZE;
+import static net.forthecrown.economy.shops.SignShops.*;
 
 public class SignShop implements InventoryHolder {
     /* ----------------------------- CONSTANTS ------------------------------ */
@@ -193,22 +194,20 @@ public class SignShop implements InventoryHolder {
 
         // if inventory not empty -> drop contents
         if (!inventory.isEmpty()) {
-            for (ItemStack stack : inventory){
-                if (ItemStacks.isEmpty(stack)) {
-                    continue;
-                }
-
+            ItemStacks.forEachNonEmptyStack(inventory, stack -> {
                 position.getWorld().dropItemNaturally(position.toLocation(), stack);
-            }
+            });
         }
 
         // Some lil clouds :D
         position.getWorld().spawnParticle(Particle.CLOUD, position.toLocation().add(0.5, 0.5, 0.5), 5, 0.1D, 0.1D, 0.1D, 0.05D);
 
         // Break the block if we have to
-        if(removeBlock) {
+        if (removeBlock) {
             getBlock().breakNaturally();
         }
+
+        Tasks.cancel(unloadTask);
     }
 
     /**
@@ -327,7 +326,7 @@ public class SignShop implements InventoryHolder {
     public void setPrice(int price, boolean updateSign) {
         this.price = price;
 
-        if(updateSign) {
+        if (updateSign) {
             update();
         }
     }
@@ -337,7 +336,14 @@ public class SignShop implements InventoryHolder {
      * @return The shop's tile entity
      */
     public Sign getSign() {
-        return (Sign) getBlock().getState();
+        var state = getBlock().getState();
+
+        if (!(state instanceof Sign sign)) {
+            FTC.getLogger().warn("Shop at {} is not a sign block", getPosition());
+            return null;
+        }
+
+        return sign;
     }
 
     /**
@@ -349,7 +355,10 @@ public class SignShop implements InventoryHolder {
     public void delayUnload() {
         Tasks.cancel(unloadTask);
 
-        unloadTask = Tasks.runLater(this::onUnload, Time.millisToTicks(GeneralConfig.shopUnloadDelay));
+        unloadTask = Tasks.runLater(
+                this::onUnload,
+                Time.millisToTicks(GeneralConfig.shopUnloadDelay)
+        );
     }
 
     /**
@@ -375,10 +384,20 @@ public class SignShop implements InventoryHolder {
         // Get the sign
         Sign s = getSign();
 
+        if (s == null) {
+            return;
+        }
+
         // Set the first and last lines,
         // 1st: label, 4th: the shop price
-        s.line(0, inStock() ? getType().getStockedLabel() : getType().getUnStockedLabel());
-        s.line(3, SignShops.priceLine(price));
+        s.line(
+                LINE_TYPE,
+                inStock() ? getType().getStockedLabel() : getType().getUnStockedLabel()
+        );
+        s.line(
+                LINE_PRICE,
+                SignShops.priceLine(price)
+        );
 
         // Save the shop into the sign's persistent data
         // container

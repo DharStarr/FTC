@@ -1,43 +1,17 @@
 package net.forthecrown.core;
 
-import net.forthecrown.regions.PopulationRegion;
-import net.forthecrown.regions.RegionProperty;
-import net.forthecrown.regions.Regions;
 import org.dynmap.DynmapCommonAPI;
 import org.dynmap.DynmapCommonAPIListener;
-import org.dynmap.markers.Marker;
 import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerIcon;
-import org.dynmap.markers.MarkerSet;
-import org.spongepowered.math.vector.Vector2i;
 
 /**
  * A class for interacting with Dynmap easily
  */
-public class FtcDynmap extends DynmapCommonAPIListener {
+public class FtcDynmap {
     public static final String
             NORMAL_LABEL    = "region_pole_normal",
-            SPECIAL_LABEL   = "region_pole_special",
-            SET_NAME        = "region_poles",
-            SET_LABEL       = "Region Poles";
-
-    private static DynmapCommonAPI api;
-    private static boolean enabled;
-
-    @Override
-    public void apiEnabled(DynmapCommonAPI api) {
-        FtcDynmap.api = api;
-        enabled = true;
-
-        getRegionPoleSet().setHideByDefault(false);
-        getRegionPoleSet().setLabelShow(true);
-    }
-
-    @Override
-    public void apiDisabled(DynmapCommonAPI api) {
-        enabled = false;
-        FtcDynmap.api = null;
-    }
+            SPECIAL_LABEL   = "region_pole_special";
 
     /**
      * Gets or creates an icon with the given ID
@@ -46,7 +20,6 @@ public class FtcDynmap extends DynmapCommonAPIListener {
      */
     static MarkerIcon getOrCreate(String id) {
         MarkerIcon result = getMarkerAPI().getMarkerIcon(id);
-
         return result != null ? result : getMarkerAPI().createMarkerIcon(id, id, FTC.getPlugin().getResource(id + ".png"));
     }
 
@@ -55,7 +28,7 @@ public class FtcDynmap extends DynmapCommonAPIListener {
      * @return The Dynmap API
      */
     public static DynmapCommonAPI getDynmap() {
-        return api;
+        return FtcDynmapListener.dynmap;
     }
 
     /**
@@ -82,60 +55,21 @@ public class FtcDynmap extends DynmapCommonAPIListener {
         return getOrCreate(SPECIAL_LABEL);
     }
 
-    /**
-     * Checks if Dynmap is currently enabled
-     * @return True, if dynmap is enabled, false otherwise
-     */
-    public static boolean isEnabled() {
-        return enabled;
+    static void registerListener() {
+        DynmapCommonAPIListener.register(new FtcDynmapListener());
     }
 
-    /**
-     * Gets the region pole marker set
-     * @return The region pole marker set
-     */
-    public static MarkerSet getRegionPoleSet() {
-        MarkerSet set = _getRegionPoleSet();
+    private static class FtcDynmapListener extends DynmapCommonAPIListener {
+        private static DynmapCommonAPI dynmap;
 
-        set.setMarkerSetLabel(SET_LABEL);
+        @Override
+        public void apiEnabled(DynmapCommonAPI api) {
+            dynmap = api;
+        }
 
-        return set;
-    }
-
-    private static MarkerSet _getRegionPoleSet() {
-        MarkerSet set = getMarkerAPI().getMarkerSet(SET_NAME);
-        return set == null ? getMarkerAPI().createMarkerSet(SET_NAME, SET_LABEL, null, true) : set;
-    }
-
-    /**
-     * Gets the given region's Marker
-     * @param data The region to get the marker of
-     * @return The gotten marker, null, if the region has no marker
-     */
-    public static Marker getMarker(PopulationRegion data) {
-        return getRegionPoleSet().findMarker(data.getMarkerID());
-    }
-
-    /**
-     * Creates a marker for the given region
-     * @param data The region to create a marker for
-     * @return The created marker
-     */
-    public static Marker createMarker(PopulationRegion data) {
-        Vector2i vec2 = data.getPolePosition();
-
-        return getRegionPoleSet().createMarker(
-                data.getMarkerID(),
-                data.getName(),
-                Regions.getWorld()
-                        .getName(),
-
-                vec2.x() + 0.5D,
-                data.getPoleBounds().maxY(),
-                vec2.y() + 0.5D,
-
-                data.hasProperty(RegionProperty.PAID_REGION) ? getSpecialIcon() : getNormalIcon(),
-                true
-        );
+        @Override
+        public void apiDisabled(DynmapCommonAPI api) {
+            dynmap = null;
+        }
     }
 }

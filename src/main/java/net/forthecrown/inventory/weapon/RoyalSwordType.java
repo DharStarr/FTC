@@ -60,7 +60,7 @@ public class RoyalSwordType implements ExtendedItemType<RoyalSword> {
     @Override
     public @NotNull BaseItemBuilder createBaseItem() {
         return ItemStacks.builder(Material.WOODEN_SWORD)
-                .setName(RANK_1_NAME)
+                .setNameRaw(RANK_1_NAME)
                 .setUnbreakable(true)
                 .setFlags(ItemFlag.HIDE_ATTRIBUTES);
     }

@@ -5,13 +5,12 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
-import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.user.ComponentType;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserComponent;
 import net.forthecrown.utils.Time;
-import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;
 
 import javax.annotation.Nullable;
@@ -76,9 +75,9 @@ public class UserMail extends UserComponent {
      * Tests if the given message should be retained
      * <p>
      * If the message has an attachment that's not claimed
-     * then this returns false, otherwise, it tests,
-     * if the message has expired, in the sense that is
-     * was sent more than {@link Vars#dataRetentionTime}
+     * then this returns true, otherwise, it tests,
+     * if the message has expired, in the sense that it
+     * was sent more than {@link GeneralConfig#dataRetentionTime}
      * time ago.
      *
      * @param message The message to test
@@ -89,7 +88,7 @@ public class UserMail extends UserComponent {
         if (!MailAttachment.isEmpty(message.getAttachment())
                 && !message.getAttachment().isClaimed()
         ) {
-            return false;
+            return true;
         }
 
         return !Time.isPast(GeneralConfig.dataRetentionTime + message.getSent());
@@ -136,7 +135,7 @@ public class UserMail extends UserComponent {
 
     @Override
     public JsonElement serialize() {
-        if (Util.isNullOrEmpty(mail)) {
+        if (mail.isEmpty()) {
             return null;
         }
 
@@ -167,7 +166,7 @@ public class UserMail extends UserComponent {
             var msg = MailMessage.deserialize(e);
 
             if (shouldRetainMessage(msg)) {
-                add(msg);
+                mail.add(msg);
             }
         }
     }

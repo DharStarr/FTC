@@ -1,6 +1,5 @@
 package net.forthecrown.useables.actions;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.Pair;
@@ -8,7 +7,7 @@ import net.forthecrown.core.registry.Registries;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserScoreMap;
+import net.forthecrown.user.UserDataMap;
 import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.IntTag;
@@ -21,7 +20,7 @@ import java.util.UUID;
 
 public class ActionUserMap extends UsageAction {
     private final Action action;
-    private final UserScoreMap map;
+    private final UserDataMap map;
 
     private final int amount;
 
@@ -59,11 +58,6 @@ public class ActionUserMap extends UsageAction {
         return new ActionUserMap(type, reader.readInt());
     }
 
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionUserMap fromJson(UsageType<ActionUserMap> type, JsonElement element) {
-        return new ActionUserMap(type, element.getAsInt());
-    }
-
     @UsableConstructor(ConstructType.TAG)
     public static ActionUserMap load(UsageType<ActionUserMap> type, Tag tag) {
         return new ActionUserMap(type, ((IntTag) tag).getAsInt());
@@ -74,26 +68,26 @@ public class ActionUserMap extends UsageAction {
     enum Type {
         BAL {
             @Override
-            UserScoreMap getMap() {
+            UserDataMap getMap() {
                 return UserManager.get().getBalances();
             }
         },
 
         VOTES {
             @Override
-            UserScoreMap getMap() {
+            UserDataMap getMap() {
                 return UserManager.get().getVotes();
             }
         },
 
         GEMS {
             @Override
-            UserScoreMap getMap() {
+            UserDataMap getMap() {
                 return UserManager.get().getGems();
             }
         };
 
-        abstract UserScoreMap getMap();
+        abstract UserDataMap getMap();
 
         EnumMap<Action, UsageType<ActionUserMap>> typesByAction = Util.make(new EnumMap<>(Action.class), map -> {
             for (var t: Action.values()) {
@@ -131,25 +125,25 @@ public class ActionUserMap extends UsageAction {
     enum Action {
         ADD {
             @Override
-            void apply(UserScoreMap map, UUID uuid, int amount) {
+            void apply(UserDataMap map, UUID uuid, int amount) {
                 map.add(uuid, amount);
             }
         },
 
         SET {
             @Override
-            void apply(UserScoreMap map, UUID uuid, int amount) {
+            void apply(UserDataMap map, UUID uuid, int amount) {
                 map.set(uuid, amount);
             }
         },
 
         REMOVE {
             @Override
-            void apply(UserScoreMap map, UUID uuid, int amount) {
+            void apply(UserDataMap map, UUID uuid, int amount) {
                 map.remove(uuid, amount);
             }
         };
 
-        abstract void apply(UserScoreMap map, UUID uuid, int amount);
+        abstract void apply(UserDataMap map, UUID uuid, int amount);
     }
 }

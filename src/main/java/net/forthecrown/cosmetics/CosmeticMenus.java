@@ -1,12 +1,12 @@
 package net.forthecrown.cosmetics;
 
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.user.property.Properties;
+import dev.geco.gsit.api.GSitAPI;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.Menu;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.Menus;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -22,9 +22,9 @@ public final class CosmeticMenus {
             .setItem(user -> {
                 return ItemStacks.builder(Material.NETHER_STAR, 1)
                         .setName("&eMenu")
-                        .addLore(Component.empty())
+                        .addLoreRaw(Component.empty())
 
-                        .addLore(
+                        .addLoreRaw(
                                 Text.format("You have &6{0, gems}&r.",
                                         nonItalic(NamedTextColor.GRAY),
                                         user.getGems()
@@ -38,6 +38,15 @@ public final class CosmeticMenus {
     public static final Menu MAIN = baseInventory(54, Component.text("Cosmetics"), false)
             .add(49, ridingToggleOption())
             .add(4, HEADER)
+
+            .add(4, 2,
+                    pageButton(Cosmetics.LOGIN,
+                            Material.GLOWSTONE_DUST,
+                            "Login/Leave Decorations",
+                            "Spice up your join/leave messages with",
+                            "a little showing off"
+                    )
+            )
 
             .add(2, 2, pageButton(
                     Cosmetics.ARROWS,
@@ -97,13 +106,13 @@ public final class CosmeticMenus {
         return MenuNode.builder()
                 .setItem(user -> {
                     var builder = ItemStacks.builder(material)
-                            .setName(
+                            .setNameRaw(
                                     Component.text(name, nonItalic(NamedTextColor.GOLD))
                             )
-                            .addLore(Component.empty());
+                            .addLoreRaw(Component.empty());
 
                     for (var s: desc) {
-                        builder.addLore(
+                        builder.addLoreRaw(
                                 Component.text(s, nonItalic(NamedTextColor.GRAY))
                         );
                     }
@@ -142,13 +151,13 @@ public final class CosmeticMenus {
     public static MenuNode ridingToggleOption() {
         return MenuNode.builder()
                 .setItem((user, context) -> {
-                    boolean allows = user.get(Properties.PLAYER_RIDING);
+                    boolean allows = GSitAPI.canPlayerSit(user.getPlayer());
 
                     var builder = ItemStacks.builder(allows ? Material.SADDLE : Material.BARRIER)
-                            .addLore(Component.empty())
+                            .addLoreRaw(Component.empty())
                             .addLore("&7Right-click someone to jump on top of them.")
                             .addLore("&7Shift-right-click someone to kick them off.")
-                            .addLore(Component.empty());
+                            .addLoreRaw(Component.empty());
 
                     if (allows) {
                         builder
@@ -165,7 +174,8 @@ public final class CosmeticMenus {
 
                 .setRunnable((user, context) -> {
                     context.shouldReloadMenu(true);
-                    user.flip(Properties.PLAYER_RIDING);
+                    boolean allows = GSitAPI.canPlayerSit(user.getPlayer());
+                    GSitAPI.setCanPlayerSit(user.getPlayer(), !allows);
                 })
 
                 .build();

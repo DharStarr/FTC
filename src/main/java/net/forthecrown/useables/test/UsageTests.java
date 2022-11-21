@@ -26,7 +26,9 @@ public final class UsageTests {
             KEY_COOLDOWN = "cooldown",
             KEY_WORLD = "in_world",
 
-            KEY_RANK = "rank";
+            KEY_RANK = "rank",
+
+            KEY_SCRIPT = "test_script";
 
     public static void init() {
         register(KEY_PERMISSION, TestPermission.TYPE);
@@ -47,6 +49,8 @@ public final class UsageTests {
         register(KEY_HAS_BAL, TestUserMapValue.TYPE_BALANCE);
         register(KEY_HAS_GEMS, TestUserMapValue.TYPE_GEMS);
         register(KEY_HAS_VOTES, TestUserMapValue.TYPE_VOTES);
+
+        register(KEY_SCRIPT, TestScript.TYPE);
 
         Registries.USAGE_CHECKS.freeze();
     }

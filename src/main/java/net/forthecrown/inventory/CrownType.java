@@ -44,7 +44,7 @@ public class CrownType implements ExtendedItemType<RoyalCrown> {
     @Override
     public @NotNull BaseItemBuilder createBaseItem() {
         return ItemStacks.builder(Material.GOLDEN_HELMET)
-                .setName(CROWN_TITLE)
+                .setNameRaw(CROWN_TITLE)
                 .setModelData(MODEL_DATA)
                 .setUnbreakable(true);
     }

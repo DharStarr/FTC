@@ -9,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import org.bukkit.World;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -53,7 +52,6 @@ public class DungeonSpawner {
     public static class SpawnerImpl extends BaseSpawner {
         @Override
         public void broadcastEvent(Level world, BlockPos pos, int status) {
-            world.blockEvent(pos, Blocks.SPAWNER, status, 0);
         }
     }
 }

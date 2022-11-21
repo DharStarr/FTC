@@ -31,7 +31,7 @@ public interface Usable extends ActionHolder, CheckHolder {
         writer.field("Actions", "");
         getActions().write(writer);
 
-        writer.field("Checks", "");
+        writer.field("Tests", "");
         getChecks().write(writer);
     }
 

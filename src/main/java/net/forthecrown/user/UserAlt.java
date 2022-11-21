@@ -6,7 +6,7 @@ public class UserAlt extends User {
     private UUID mainID;
     private User main;
 
-    public UserAlt(UUID base, UUID main){
+    public UserAlt(UUID base, UUID main) {
         super(base);
         this.mainID = main;
         this.main = Users.get(main);

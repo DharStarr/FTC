@@ -1,17 +1,16 @@
 package net.forthecrown.utils.inventory;
 
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.sk89q.worldedit.bukkit.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import net.forthecrown.dungeons.enchantments.FtcEnchant;
 import net.forthecrown.dungeons.enchantments.FtcEnchants;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
@@ -30,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * The very base of an item builder implementing any and all methods
@@ -103,15 +104,19 @@ public abstract class BaseItemBuilder<T extends BaseItemBuilder<T>> implements C
     }
 
     public T addLore(String lore) {
-        return addLore(Text.stringToItemText(lore));
+        return addLoreRaw(Text.stringToItemText(lore));
     }
 
-    public T addLore(Component lore) {
+    public T addLoreRaw(Component lore) {
         lores.add(lore);
         return getThis();
     }
 
-    public T addLore(Iterable<Component> lore) {
+    public T addLore(Component lore) {
+        return addLoreRaw(Text.wrapForItems(lore));
+    }
+
+    public T addLoreRaw(Iterable<Component> lore) {
         for (Component c: lore) {
             lores.add(c);
         }
@@ -120,13 +125,20 @@ public abstract class BaseItemBuilder<T extends BaseItemBuilder<T>> implements C
     }
 
     public T setLore(Iterable<Component> lores) {
-        this.lores = Lists.newArrayList(lores);
+        this.lores = StreamSupport.stream(lores.spliterator(), false)
+                .map(component -> Text.wrapForItems(component))
+                .collect(Collectors.toList());
+
+        return getThis();
+    }
+
+    public T setNameRaw(Component name) {
+        this.name = name;
         return getThis();
     }
 
     public T setName(Component name) {
-        this.name = name;
-        return getThis();
+        return setNameRaw(Text.wrapForItems(name));
     }
 
     public T setName(String name) {

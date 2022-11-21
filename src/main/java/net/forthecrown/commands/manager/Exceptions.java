@@ -3,22 +3,27 @@ package net.forthecrown.commands.manager;
 import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.core.Permissions;
-import net.forthecrown.core.config.GeneralConfig;
-import net.forthecrown.regions.PopulationRegion;
 import net.forthecrown.core.Messages;
-import net.forthecrown.utils.text.Text;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.core.admin.PunishType;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.holidays.Holiday;
 import net.forthecrown.economy.market.MarketDisplay;
 import net.forthecrown.economy.market.MarketShop;
 import net.forthecrown.grenadier.exceptions.RoyalCommandException;
+import net.forthecrown.guilds.Guild;
 import net.forthecrown.royalgrenadier.GrenadierUtils;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.RankTitle;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.utils.Time;
+import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.waypoint.Waypoint;
+import net.forthecrown.waypoint.WaypointConfig;
+import net.forthecrown.waypoint.WaypointProperties;
+import net.forthecrown.waypoint.Waypoints;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -26,10 +31,10 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.UUID;
+import org.spongepowered.math.vector.Vector3i;
 
 import static net.forthecrown.commands.manager.OpenExceptionType.INSTANCE;
 
@@ -152,9 +157,13 @@ public interface Exceptions {
 
     CommandSyntaxException NO_PERMISSION = INSTANCE.create(Messages.NO_PERMISSION);
 
-    CommandSyntaxException DONT_HAVE_TITLE = create("You don't have this title.");
+    CommandSyntaxException DONT_HAVE_TITLE = create("You don't have this title.")
+            ;
+    CommandSyntaxException DONT_HAVE_TIER = create("You don't have the required tier.");
 
     CommandSyntaxException ALREADY_YOUR_TITLE = create("This is already your title");
+
+    CommandSyntaxException NOTHING_CHANGED = create("Nothing changed");
 
     /**
      * Creates an exception which says the given user is not online
@@ -498,6 +507,8 @@ public interface Exceptions {
 
     CommandSyntaxException CANNOT_RETURN = create("Cannot return to previous location");
 
+    CommandSyntaxException NOT_INVITED = create("You have not been invited");
+
     static CommandSyntaxException overHomeLimit(User user) {
         return format("Cannot create more homes (Over limit of {0, number}).",
                 Permissions.MAX_HOMES.getTier(user)
@@ -508,12 +519,12 @@ public interface Exceptions {
         return unknown("home", reader, name);
     }
 
-    static CommandSyntaxException notInvited(UUID user) {
+    static CommandSyntaxException notInvited(User user) {
         return format("{0, user} has not invited you.", user);
     }
 
-    static CommandSyntaxException noHomeRegion(User user) {
-        return format("{0, user} does not have a home region", user);
+    static CommandSyntaxException noHomeWaypoint(User user) {
+        return format("{0, user} does not have a home waypoint", user);
     }
 
     static CommandSyntaxException badWorldHome(String name){
@@ -524,23 +535,37 @@ public interface Exceptions {
     // --- SECTION: REGIONS ---
     // ------------------------
 
-    CommandSyntaxException REGIONS_WRONG_WORLD = create("Regions do not exist in this world.");
+    CommandSyntaxException NO_HOME_REGION = create(
+            "You do not have a home waypoint"
+    );
 
-    CommandSyntaxException NO_HOME_REGION = create("You do not have a home region");
+    CommandSyntaxException CANNOT_INVITE_SELF = create(
+            "Cannot invite yourself"
+    );
 
-    CommandSyntaxException CANNOT_INVITE_SELF = create("Cannot invite yourself");
+    CommandSyntaxException RESIDENTS_HIDDEN = create(
+            "This region's residents are hidden"
+    );
 
-    CommandSyntaxException BAD_POLE_POSITION = create("Invalid position for pole, too close to the edge");
+    CommandSyntaxException WAYPOINTS_WRONG_WORLD = create(
+            "Waypoints are disabled in this world!"
+    );
 
-    CommandSyntaxException REGION_NO_DATA = create("Region has no data");
+    CommandSyntaxException ONLY_IN_VEHICLE = create(
+            "Can only teleport in a vehicle"
+    );
 
-    CommandSyntaxException RESIDENTS_HIDDEN = create("This region's residents are hidden");
+    CommandSyntaxException FAR_FROM_WAYPOINT = create(
+            "Too far from any waypoint, or in a world without waypoints"
+    );
 
-    CommandSyntaxException IN_UNNAMED_REGION = create("You are not in a named region.");
+    CommandSyntaxException UNLOADED_WORLD = create(
+            "This waypoint is in an unloaded world!"
+    );
 
-    CommandSyntaxException CANNOT_BE_RIDDEN = create("Cannot have players riding you");
-
-    CommandSyntaxException ONLY_IN_VEHICLE = create("Can only teleport in a vehicle");
+    CommandSyntaxException FACE_WAYPOINT_TOP = create(
+            "You must be looking at the waypoint's top block"
+    );
 
     static CommandSyntaxException unknownRegion(StringReader reader, int cursor) {
         return format(
@@ -559,19 +584,60 @@ public interface Exceptions {
         return format("Unknown region: '{0}'", name);
     }
 
-    static CommandSyntaxException farFromPole(int x, int z) {
+    static CommandSyntaxException farFromWaypoint(int x, int z) {
         return format("Too far from a region post to teleport." +
                         "\nClosest pole is at x={0}, z={1}.",
                 x, z
         );
     }
 
-    static CommandSyntaxException inviteNotSent(User target) {
-        return format("You haven't invited {0, user} to your region.", target);
+    static CommandSyntaxException privateRegion(Waypoint region) {
+        return format("'{0}' is a private region", region.get(WaypointProperties.NAME));
     }
 
-    static CommandSyntaxException privateRegion(PopulationRegion region) {
-        return format("'{0}' is a private region", region.getName());
+    static CommandSyntaxException brokenWaypoint(Vector3i pos,
+                                                 Material found,
+                                                 Material expected
+    ) {
+        return format("Waypoint is broken at {0}! Expected {1}, found {2}",
+                pos,
+                expected, found
+        );
+    }
+
+    static CommandSyntaxException invalidWaypointTop(Material m) {
+        return format("{0} is an invalid waypoint top! Must be either " +
+                        "{1} (player waypoint) or {2} (guild waypoint)",
+                m,
+
+                Waypoints.PLAYER_COLUMN[2],
+                Waypoints.GUILD_COLUMN[2]
+        );
+    }
+
+    static CommandSyntaxException waypointBlockNotEmpty(Block pos) {
+        var areaSize = WaypointConfig.playerWaypointSize;
+
+        return format("Waypoint requires a clear {1}x{2}x{3} area around it!\n" +
+                        "Non-empty block found at {0, vector}",
+
+                Vectors.from(pos),
+                areaSize.x(), areaSize.y(), areaSize.z()
+        );
+    }
+
+    static CommandSyntaxException overlappingWaypoints(int overlapping) {
+        return format("This waypoint is overlapping {0, number} waypoint(s)",
+                overlapping
+        );
+    }
+
+    static CommandSyntaxException waypointPlatform() {
+        var size = WaypointConfig.playerWaypointSize;
+
+        return format("Waypoint requires a {0}x{1} platform under it!",
+                size.x(), size.z()
+        );
     }
 
     // -----------------------------------------
@@ -828,4 +894,103 @@ public interface Exceptions {
     CommandSyntaxException BOSS_NOT_ALIVE = create("Boss is not alive");
 
     CommandSyntaxException DIEGO_ERROR = INSTANCE.create(Messages.DIEGO_ERROR);
+
+    // -----------------------
+    // --- SECTION: GUILDS ---
+    // -----------------------
+
+    CommandSyntaxException NOT_A_BANNER = create("Not a banner!");
+
+    CommandSyntaxException ALREADY_IN_GUILD = create("You are already in a guild");
+
+    CommandSyntaxException GLEADER_CANNOT_LEAVE = create("Leader cannot leave their own guild\nUse '/g delete' to delete the guild");
+
+    CommandSyntaxException NOT_IN_GUILD = create("You are not in a guild");
+
+    CommandSyntaxException CANNOT_CLAIM_CHUNKS = create("You do not have permission to claim chunks");
+
+    CommandSyntaxException GUILDS_WRONG_WORLD = create("Guilds do not exist in this world");
+
+    CommandSyntaxException PROMOTE_SELF = create("Cannot promote self");
+
+    CommandSyntaxException PROMOTE_LEADER = create("Cannot promote guild leader");
+
+    CommandSyntaxException DEMOTE_LEADER = create("Cannot demote leader");
+
+    CommandSyntaxException DEMOTE_SELF = create("Cannot demote self");
+
+    CommandSyntaxException KICK_SELF = create("Cannot kick yourself lol");
+
+    CommandSyntaxException CANNOT_KICK_LEADER = create("Cannot kick guild leader");
+
+    CommandSyntaxException G_NO_PERM_WAYPOINT = create(
+            "Cannot change guild waypoint! You do not have permission"
+    );
+
+    CommandSyntaxException G_WAYPOINT_ALREADY_EXISTS = create(
+            "Guild already has a waypoint, remove old one to make a new one!"
+    );
+
+    CommandSyntaxException G_EXTERNAL_WAYPOINT = create(
+            "The chunk the waypoint is in is not claimed by your guild"
+    );
+
+    static CommandSyntaxException guildNameSmall(String name) {
+        return format("'{0}' is too small for a guild name. Minimum {1, number} characters",
+                name, Guild.MIN_NAME_SIZE
+        );
+    }
+
+    static CommandSyntaxException guildNameLarge(String name) {
+        return format("'{0}' is too large for a guild name. Maximum {1, number} characters",
+                name, Guild.MAX_NAME_SIZE
+        );
+    }
+
+    static CommandSyntaxException cannotClaimMoreChunks(Guild guild, int max) {
+        return format("{0} Cannot claim more than {1, number} chunks", guild, max);
+    }
+
+    static CommandSyntaxException chunkAlreadyClaimed(Guild owner) {
+        return format("{0} has already claimed this chunk", owner.displayName());
+    }
+
+    static CommandSyntaxException notARank(int rank) {
+        return format("{0, number} is not a valid rank", rank);
+    }
+
+    static CommandSyntaxException cannotUnclaimChunk(Guild guild) {
+        return format("Cannot unclaim! {0} does not own the chunk", guild.displayName());
+    }
+
+    static CommandSyntaxException cannotPromote(User user) {
+        return format("Cannot promote {0, user} further", user);
+    }
+
+    static CommandSyntaxException cannotDemote(User user) {
+        return format("Cannot demote {0, user} further", user);
+    }
+
+    static CommandSyntaxException notGuildMember(User user, Guild guild) {
+        return format("{0, user} is not a member of the {1} guild", user,
+                guild.displayName()
+        );
+    }
+
+    static CommandSyntaxException notGuildMember(Guild guild) {
+        return format("You are not a member of the {0} guild",
+                guild.displayName()
+        );
+    }
+
+    static CommandSyntaxException noWaypoint(Guild guild) {
+        return format("{0} has no set waypoint.", guild.displayName());
+    }
+
+    static CommandSyntaxException guildFull(Guild guild) {
+        return format(
+                "{0} is full and cannot accept more members",
+                guild.displayName()
+        );
+    }
 }

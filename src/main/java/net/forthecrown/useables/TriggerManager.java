@@ -1,27 +1,22 @@
 package net.forthecrown.useables;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import net.forthecrown.events.Events;
 import net.forthecrown.events.TriggerListener;
-import net.forthecrown.utils.Util;
+import net.forthecrown.utils.WorldChunkMap;
+import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.utils.math.WorldVec3i;
-import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.ChunkPos;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.spongepowered.math.vector.Vector3i;
+import org.bukkit.util.BoundingBox;
+import org.spongepowered.math.vector.Vector3d;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.LongConsumer;
 
 /**
  * A class which manages {@link UsableTrigger} instances.
@@ -32,8 +27,7 @@ import java.util.function.LongConsumer;
 public class TriggerManager {
     private final Map<String, UsableTrigger> triggers = new Object2ObjectOpenHashMap<>();
 
-    // Look below for an explanation for this map
-    private final Map<String, TriggerWorld> worlds = new Object2ObjectOpenHashMap<>();
+    private final WorldChunkMap<UsableTrigger> worldMap = new WorldChunkMap<>();
 
     @Getter
     private TriggerListener listener;
@@ -43,17 +37,25 @@ public class TriggerManager {
     }
 
     public void registerListener() {
-        if (isListenerRegistered()) return;
+        if (isListenerRegistered()) {
+            return;
+        }
 
         listener = new TriggerListener(this);
         Events.register(listener);
     }
 
     public void unregisterListener() {
-        if (!isListenerRegistered()) return;
+        if (!isListenerRegistered()) {
+            return;
+        }
 
         Events.unregister(listener);
         listener = null;
+    }
+
+    public Collection<UsableTrigger> getTriggers() {
+        return Collections.unmodifiableCollection(triggers.values());
     }
 
     /**
@@ -67,9 +69,7 @@ public class TriggerManager {
         }
 
         triggers.put(trigger.getName(), trigger);
-
-        TriggerWorld world = worlds.computeIfAbsent(trigger.getArea().getWorld().getName(), s -> new TriggerWorld());
-        world.add(trigger);
+        worldMap.add(trigger.getBounds().getWorld(), trigger);
 
         return true;
     }
@@ -93,22 +93,6 @@ public class TriggerManager {
     }
 
     /**
-     * Gets all triggers that overlap the given position
-     * @param pos The position
-     * @return All triggers at the given position, will just
-     *         be an empty list if no triggers overlap the area
-     */
-    public List<UsableTrigger> getTriggers(WorldVec3i pos) {
-        var world = getWorld(pos.getWorld());
-
-        if (world == null || world.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return world.get(pos.x(), pos.y(), pos.z());
-    }
-
-    /**
      * Removes the given trigger from this manager
      * @param trigger The trigger to remove
      * @return True, if this manager contained this trigger and it was removed
@@ -118,28 +102,45 @@ public class TriggerManager {
             return false;
         }
 
-        var world = getWorld(trigger.getArea().getWorld());
-        world.remove(trigger);
-
-        if (world.isEmpty()) {
-            worlds.remove(trigger.getArea().getWorld().getName());
-        }
-
+        worldMap.remove(trigger.getBounds().getWorld(), trigger);
         return true;
     }
 
-    /**
-     * Runs the triggers this player overlaps with
-     * @param player The player to run triggers for
-     */
     public void run(Player player, Location source, Location destination) {
-        var w = getWorld(player.getWorld());
+        Vector3d p1 = Vectors.fromD(source);
+        Vector3d p2 = Vectors.fromD(destination);
 
-        if (w == null || w.isEmpty()) {
+        double hWidth = player.getWidth() / 2;
+        double height = player.getHeight();
+
+        BoundingBox sourceBounds = makeBounds(p1, hWidth, height);
+        BoundingBox destBounds = makeBounds(p2, hWidth, height);
+
+        Bounds3i totalArea = Bounds3i.of(sourceBounds)
+                .combine(Bounds3i.of(destBounds));
+
+        var w = player.getWorld();
+
+        Set<UsableTrigger> triggers = this.worldMap.getOverlapping(
+                w, totalArea
+        );
+
+        if (triggers.isEmpty()) {
             return;
         }
 
-        w.run(player, source, destination);
+        for (var t: triggers) {
+            if (t.getType().shouldRun(t.getBounds(), sourceBounds, destBounds)) {
+                t.interact(player);
+            }
+        }
+    }
+
+    private BoundingBox makeBounds(Vector3d pos, double hWidth, double height) {
+        return new BoundingBox(
+                pos.x() - hWidth, pos.y(),          pos.z() - hWidth,
+                pos.x() + hWidth, pos.y() + height, pos.z() + hWidth
+        );
     }
 
     /**
@@ -147,7 +148,7 @@ public class TriggerManager {
      */
     public void clear() {
         triggers.clear();
-        worlds.clear();
+        worldMap.clear();
     }
 
     /**
@@ -200,128 +201,5 @@ public class TriggerManager {
      */
     public boolean isEmpty() {
         return triggers.isEmpty();
-    }
-
-    private TriggerWorld getWorld(World world) {
-        return worlds.get(world.getName());
-    }
-
-    /**
-     * The way I attempted to speed up spatial trigger
-     * lookups is with a system where triggers are placed
-     * into these TriggerWorlds where they are additionally
-     * placed into lists for each chunk they inhabit, this
-     * way we only have to loop through the triggers in a
-     * single chunk and not every trigger in the world or
-     * on the server when finding triggers to activate.
-     * <p>
-     * If I cared enough, I would've also divided these
-     * chunks along the Y axis for faster lookups, although
-     * I fear that would sacrifice memory
-     */
-    static class TriggerWorld {
-        /**
-         * The Long here is the chunk position packed into a
-         * long If you ever need to modify this, you can use
-         * ChunkPos#asLong to turn any x, z coordinate into
-         * a packed long, and you can use `new ChunkPos(long)`
-         * to get a chunk position from a packed long
-         */
-        private final Long2ObjectMap<List<UsableTrigger>> triggers = new Long2ObjectOpenHashMap<>();
-
-        void add(UsableTrigger trigger) {
-            runForChunks(trigger, pos -> {
-                var chunkTriggers = triggers.computeIfAbsent(pos, pos1 -> new ArrayList<>());
-                chunkTriggers.add(trigger);
-            });
-        }
-
-        void remove(UsableTrigger trigger) {
-            runForChunks(trigger, (pos) -> {
-                List<UsableTrigger> chunkTriggers = triggers.get(pos);
-
-                if (chunkTriggers == null || chunkTriggers.isEmpty()) {
-                    return;
-                }
-
-                chunkTriggers.remove(trigger);
-
-                if (chunkTriggers.isEmpty()) {
-                    triggers.remove(pos);
-                }
-            });
-        }
-
-        // Runs a for loop for each chunk position the trigger is in
-        void runForChunks(UsableTrigger trigger, LongConsumer consumer) {
-            var area = trigger.getArea();
-            var min = Vectors.getChunk(area.min());
-            var max = Vectors.getChunk(area.max());
-
-            for (int x = min.x; x <= max.x; x++) {
-                for (int z = min.z; z <= max.z; z++) {
-                    consumer.accept(ChunkPos.asLong(x, z));
-                }
-            }
-        }
-
-        List<UsableTrigger> get(int x, int y, int z) {
-            List<UsableTrigger> triggers = new ArrayList<>();
-
-            ChunkPos pos = new ChunkPos(
-                    SectionPos.blockToSectionCoord(x),
-                    SectionPos.blockToSectionCoord(z)
-            );
-
-            var chunkTriggers = this.triggers.get(pos.toLong());
-
-            if (Util.isNullOrEmpty(chunkTriggers)) {
-                return triggers;
-            }
-
-            for (var t: chunkTriggers) {
-                if (t.getArea().contains(x, y, z)) {
-                    triggers.add(t);
-                }
-            }
-
-            return triggers;
-        }
-
-        void run(Player player, Location source, Location destination) {
-            Vector3i pos = Vectors.fromI(source);
-            Vector3i destPos = Vectors.fromI(destination);
-            ChunkPos cPos = Vectors.getChunk(pos);
-            ChunkPos dPos = Vectors.getChunk(destPos);
-
-            // If the given chunk positions are different
-            // run checks for both, if they're the same
-            // only run checks on the destination chunk
-            if (!cPos.equals(dPos)) {
-                run(cPos, player, pos, destPos);
-            }
-
-            run(dPos, player, pos, destPos);
-        }
-
-        private void run(ChunkPos cPos, Player player, Vector3i pos, Vector3i dest) {
-            var chunkTriggers = this.triggers.get(cPos.toLong());
-
-            if (Util.isNullOrEmpty(chunkTriggers)) {
-                return;
-            }
-
-            for (var t: chunkTriggers) {
-                if (!t.getType().shouldRun(t.getArea(), pos, dest)) {
-                    continue;
-                }
-
-                t.interact(player);
-            }
-        }
-
-        boolean isEmpty() {
-            return triggers.isEmpty();
-        }
     }
 }

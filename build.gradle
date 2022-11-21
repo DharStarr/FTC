@@ -7,7 +7,8 @@ plugins {
 }
 
 String minecraftVersion = "1.19.2"
-boolean devBuild = false;
+boolean devBuild = true;
+String nashornDependency = 'org.openjdk.nashorn:nashorn-core:15.4'
 
 group = 'net.forthecrown'
 version = minecraftVersion + "-" + buildID()
@@ -21,6 +22,10 @@ repositories {
     maven { url = 'https://papermc.io/repo/repository/maven-public/' }
     maven { url = 'https://oss.sonatype.org/content/groups/public/' }
     maven { url = 'https://maven.enginehub.org/repo/' }
+    maven {
+        name = 'BenCodez Repo'
+        url = 'https://nexus.bencodez.com/repository/maven-public/'
+    }
     maven { url = 'https://jitpack.io' }
     maven { url = 'https://mvn.intellectualsites.com/content/repositories/releases/' }
     maven { url = 'https://libraries.minecraft.net' }
@@ -28,7 +33,6 @@ repositories {
     maven { url = 'https://nexus.scarsz.me/content/groups/public/' }
     maven { url = 'https://m2.dv8tion.net/releases' }
     maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
-    maven { url = 'https://nexus.bencodez.com/repository/maven-public/' }
 }
 
 dependencies {
@@ -37,16 +41,20 @@ dependencies {
     //Paper and NMS dependency
     paperweightDevelopmentBundle("io.papermc.paper:dev-bundle:" + minecraftVersion + "-R0.1-SNAPSHOT")
 
+    // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
+    // Paper APIs
     compileOnly 'io.papermc.paper:paper-api:' + minecraftVersion + '-R0.1-SNAPSHOT'
     compileOnly 'io.papermc.paper:paper-mojangapi:' + minecraftVersion + '-R0.1-SNAPSHOT'
+
     compileOnly 'org.apache.commons:commons-lang3:3.12.0'
 
+    // Mojang libraries
     compileOnly 'com.mojang:brigadier:1.0.18'
     compileOnly 'com.mojang:authlib:3.2.38'
-    compileOnly 'com.mojang:datafixerupper:4.0.26'
+    compileOnly 'com.mojang:datafixerupper:5.0.28'
 
     compileOnly 'org.mcteam.ancientgates:ancientgates:2.6'
 
@@ -58,18 +66,24 @@ dependencies {
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.5-SNAPSHOT'
 
     // DiscordSRV
-    compileOnly 'com.discordsrv:discordsrv:1.25.0'
+    compileOnly 'com.discordsrv:discordsrv:1.26.0'
 
     // Voting plugin for VoteEvent
-    compileOnly 'com.bencodez:votingplugin:6.9.5'
 
-    //Grenadier, Squire, FAWE
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:+'
+
+    //Grenadier, Dynmap and GSit
     libJar('Grenadier-1.5.3-dev')
-    libJar('FAWE')
     libJar('Dynmap')
+    libJar('GSit-1.2.8')
+    libJar('VotingPlugin')
+    libJar('EBS-1.1-SNAPSHOT')
 
     // SpongePowered math library
     implementation "org.spongepowered:math:2.1.0-SNAPSHOT"
+
+    // JavaScript engine
+    compileOnly nashornDependency
 }
 
 void libJar(String s) {
@@ -82,13 +96,16 @@ java {
 
 processResources {
     File pluginYml = new File('build/resources/main/plugin.yml')
-    if(pluginYml.exists()) pluginYml.delete()
+    if (pluginYml.exists()) {
+        pluginYml.delete()
+    }
 
     def props = [
             version: version,
             buildID : buildID() + "",
             buildDate : new Date().toString(),
-            debug_build : devBuild
+            debug_build : devBuild,
+            nashorn : nashornDependency
     ]
 
     inputs.properties props

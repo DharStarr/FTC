@@ -5,6 +5,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.inventory.FtcItems;
@@ -54,6 +56,14 @@ public class CommandWithdraw extends FtcCommand {
 
         user.removeBalance(totalAmount);
         user.sendMessage(Messages.withdrew(itemAmount, totalAmount));
+
+        Transactions.builder()
+                .type(TransactionType.WITHDRAW)
+                .sender(user.getUniqueId())
+                .extra("amount=%s itemAmount=%s", amount, itemAmount)
+                .amount(totalAmount)
+                .log();
+
         return 0;
     }
 }

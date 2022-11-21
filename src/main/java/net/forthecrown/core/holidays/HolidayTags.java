@@ -3,9 +3,9 @@ package net.forthecrown.core.holidays;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.user.User;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 

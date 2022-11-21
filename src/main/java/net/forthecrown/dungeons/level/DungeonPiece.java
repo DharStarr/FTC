@@ -12,6 +12,7 @@ import net.forthecrown.structure.BlockStructure;
 import net.forthecrown.structure.Rotation;
 import net.forthecrown.structure.StructurePlaceConfig;
 import net.forthecrown.user.User;
+import net.forthecrown.utils.BoundsHolder;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Transform;
@@ -23,7 +24,7 @@ import org.spongepowered.math.vector.Vector3i;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class DungeonPiece {
+public abstract class DungeonPiece implements BoundsHolder {
     /* ----------------------------- CONSTANTS ------------------------------ */
 
     public static final String

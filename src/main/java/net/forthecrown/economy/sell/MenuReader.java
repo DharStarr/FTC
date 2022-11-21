@@ -143,7 +143,7 @@ public class MenuReader {
         }
 
         var builder = ItemStacks.builder(material)
-                .setName(name)
+                .setNameRaw(name)
                 .setLore(lore);
 
         return MenuNodeItem.of(builder.build());

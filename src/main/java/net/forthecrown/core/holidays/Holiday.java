@@ -1,12 +1,13 @@
 package net.forthecrown.core.holidays;
 
-import com.sk89q.worldedit.bukkit.fastutil.objects.ObjectArrayList;
+import com.google.common.base.Strings;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.inventory.FtcInventory;
 import net.forthecrown.user.User;
-import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.io.TagUtil;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -24,6 +25,12 @@ import java.util.Random;
 @Getter
 @Setter
 public class Holiday implements InventoryHolder {
+
+    private static final String
+            TAG_SCRIPT = "activateScript",
+            TAG_END_SCRIPT = "periodEndScript",
+            TAG_START_SCRIPT = "periodStartScript";
+
     /**
      * The holiday's name
      */
@@ -74,6 +81,39 @@ public class Holiday implements InventoryHolder {
      */
     private boolean active = false;
 
+    /** Script set all mail messages this holiday sends */
+    private String mailScript;
+
+    /**
+     * Script called when the holiday becomes active
+     * <p>
+     * If the holiday is a single day, this script is never
+     * called, instead {@link #getActivationScript()} will
+     * be called
+     */
+    private String periodStartScript;
+
+    /**
+     * Script called when the holiday becomes inactive.
+     * <p>
+     * If the holiday is a single day, this script is never
+     * called, instead {@link #getActivationScript()} will
+     * be called
+     */
+    private String periodEndScript;
+
+    /**
+     * Script called when the holiday is activated.
+     * <p>
+     * If the holiday is a period holiday, instead of a
+     * single day holiday, this will not be called, instead
+     * {@link #getPeriodStartScript()} will be called for
+     * in the beginning of the period and
+     * {@link #getPeriodEndScript()} called for the period
+     * ending.
+     */
+    private String activationScript;
+
     public Holiday(String name) {
         this.name = name;
         this.inventory = FtcInventory.of(this, ServerHolidays.INV_SIZE, name());
@@ -118,6 +158,18 @@ public class Holiday implements InventoryHolder {
 
             tag.put("inventory", content);
         }
+
+        if (!Strings.isNullOrEmpty(activationScript)) {
+            tag.putString(TAG_SCRIPT, activationScript);
+        }
+
+        if (!Strings.isNullOrEmpty(periodStartScript)) {
+            tag.putString(TAG_START_SCRIPT, periodStartScript);
+        }
+
+        if (!Strings.isNullOrEmpty(periodEndScript)) {
+            tag.putString(TAG_END_SCRIPT, periodEndScript);
+        }
     }
 
     public void load(CompoundTag tag) {
@@ -130,6 +182,10 @@ public class Holiday implements InventoryHolder {
 
         enabled = tag.getBoolean("enabled");
         active = tag.getBoolean("active");
+
+        setActivationScript(tag.getString(TAG_SCRIPT));
+        setPeriodStartScript(tag.getString(TAG_START_SCRIPT));
+        setPeriodEndScript(tag.getString(TAG_END_SCRIPT));
 
         if (tag.contains("mails")) {
             ListTag list = tag.getList("mails", Tag.TAG_STRING);
@@ -210,7 +266,9 @@ public class Holiday implements InventoryHolder {
      * @return The mail attachment tag
      */
     public String getAttachmentTag(boolean removable) {
-        return ServerHolidays.TAG_NAMESPACE + (removable ? (ServerHolidays.TAG_SEPARATOR + "temp") : "") + ServerHolidays.TAG_SEPARATOR + getName();
+        return ServerHolidays.TAG_NAMESPACE
+                + (removable ? (ServerHolidays.TAG_SEPARATOR + "temp") : "")
+                + ServerHolidays.TAG_SEPARATOR + getName();
     }
 
     public Component name() {

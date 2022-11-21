@@ -57,6 +57,14 @@ public class TieredPermission {
         return _getTier(permissible::hasPermission);
     }
 
+    public boolean hasUnlimited(Permissible permissible) {
+        return permissible.hasPermission(getUnlimitedPermission());
+    }
+
+    public boolean hasUnlimited(User user) {
+        return user.hasPermission(getUnlimitedPermission());
+    }
+
     private int _getTier(Predicate<Permission> validate) {
         if (validate.test(getUnlimitedPermission())) {
             return Integer.MAX_VALUE;

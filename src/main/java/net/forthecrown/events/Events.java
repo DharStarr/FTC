@@ -37,15 +37,13 @@ public final class Events {
         register(new PlayerJoinListener());
         register(new PlayerLeaveListener());
 
-        register(new PlayerRidingListener());
-
         // Shop listeners
         register(new ShopCreateListener());
         register(new ShopInteractionListener());
         register(new ShopDestroyListener());
         register(new ShopInventoryListener());
 
-        register(new RegionsListener());
+        register(new WaypointListener());
         register(new MarketListener());
 
         // Random features
@@ -69,6 +67,9 @@ public final class Events {
         register(new WeaponListener());
 
         register(new AutoSellListener());
+        register(new DurabilityListener());
+        register(new PlayerMoveGuildChunkListener());
+        register(new PotionEffectListener());
 
         // Listen for voting plugin votes
         if (Util.isPluginEnabled("VotingPlugin")) {
@@ -77,6 +78,7 @@ public final class Events {
 
         PacketListeners.register(new PlayerPacketListener());
         PacketListeners.register(new ChatPacketListener());
+        PacketListeners.register(new NameTagPacketListener());
     }
 
     /**

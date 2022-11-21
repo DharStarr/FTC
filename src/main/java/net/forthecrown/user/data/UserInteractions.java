@@ -79,10 +79,9 @@ public class UserInteractions extends UserComponent {
     public void divorce() throws IllegalArgumentException {
         Validate.isTrue(isMarried(), "User is not married, cannot divorce");
 
-        var interactions = user.getInteractions();
-        var spouse = Users.get(interactions.getSpouse());
+        var spouse = spouseUser();
 
-        interactions.setSpouse(null);
+        setSpouse(null);
         spouse.getInteractions().setSpouse(null);
 
         // Update time stamps

@@ -5,8 +5,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.commands.tpa.CommandTpask;
-import net.forthecrown.core.Permissions;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.UserHomes;
@@ -43,7 +43,7 @@ public class CommandSetHome extends FtcCommand {
     private int attemptHomeSetting(HomeCreationContext context) throws CommandSyntaxException {
         boolean contains = context.homes.contains(context.name);
 
-        if(!contains && !context.homes.canMakeMore()) {
+        if (!contains && !context.homes.canMakeMore()) {
             throw Exceptions.overHomeLimit(context.user);
         }
 

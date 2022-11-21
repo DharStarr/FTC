@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.forthecrown.grenadier.types.UUIDArgument;
+import net.forthecrown.utils.io.Results;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.NbtOps;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +24,7 @@ public class UUIDSerializerParser implements SerializerParser<UUID> {
     }
 
     @Override
-    public <V> V serialize(DynamicOps<V> ops, UUID value) {
+    public <V> @NotNull V serialize(@NotNull DynamicOps<V> ops, @NotNull UUID value) {
         if (ops instanceof NbtOps) {
             return ops.createIntList(
                     IntStream.of(UUIDUtil.uuidToIntArray(value))
@@ -34,7 +35,7 @@ public class UUIDSerializerParser implements SerializerParser<UUID> {
     }
 
     @Override
-    public <V> DataResult<UUID> deserialize(DynamicOps<V> ops, V element) {
+    public <V> @NotNull DataResult<UUID> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
         var intList = ops.getIntStream(element);
 
         if (intList.error().isEmpty()) {
@@ -42,6 +43,15 @@ public class UUIDSerializerParser implements SerializerParser<UUID> {
         }
 
         return ops.getStringValue(element)
-                .map(UUID::fromString);
+                .flatMap(s -> {
+                    try {
+                        return DataResult.success(UUID.fromString(s));
+                    } catch (IllegalArgumentException e) {
+                        return Results.errorResult(
+                                "Invalid UUID: '%s' error: %s",
+                                s, e.getMessage()
+                        );
+                    }
+                });
     }
 }

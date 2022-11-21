@@ -286,6 +286,7 @@ public class UserTitles extends UserComponent {
                         "lp user %s parent add %s",
                         user.getName(), tier.getLuckPermsGroup()
                 );
+                return;
             }
         }
     }

@@ -3,7 +3,6 @@ package net.forthecrown.utils.math;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.io.JsonWrapper;
@@ -15,18 +14,23 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.lang.ref.WeakReference;
 import java.util.Objects;
 
 @Getter
-@RequiredArgsConstructor
 public class WorldVec3i implements JsonSerializable {
-    private final World world;
+    private final WeakReference<World> world;
     @Delegate
     private final Vector3i pos;
 
     public WorldVec3i(World world, int x, int y, int z) {
-        this.world = Objects.requireNonNull(world, "world was null");
+        this.world = new WeakReference<>(Objects.requireNonNull(world, "world was null"));
         this.pos = Vector3i.from(x, y, z);
+    }
+
+    public WorldVec3i(World world, Vector3i pos) {
+        this.world = new WeakReference<>(world);
+        this.pos = pos;
     }
 
     public static WorldVec3i of(Location l) {
@@ -58,18 +62,22 @@ public class WorldVec3i implements JsonSerializable {
         );
     }
 
+    public World getWorld() {
+        return world == null ? null : world.get();
+    }
+
     public Location toLocation() {
-        return new Location(world, x(), y(), z());
+        return new Location(getWorld(), x(), y(), z());
     }
 
     public Block getBlock() {
-        return Vectors.getBlock(pos, world);
+        return Vectors.getBlock(pos, getWorld());
     }
 
     @Override
     public JsonElement serialize() {
         JsonObject json = (JsonObject) Vectors.writeJson(pos);
-        json.addProperty("world", world.getName());
+        json.addProperty("world", getWorld().getName());
 
         return json;
     }

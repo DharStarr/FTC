@@ -1,7 +1,6 @@
 package net.forthecrown.events.player;
 
 import io.papermc.paper.chat.ChatRenderer;
-import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.forthecrown.core.AfkKicker;
@@ -24,8 +23,6 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 public class ChatListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
@@ -37,21 +34,33 @@ public class ChatListener implements Listener {
         );
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onAsyncChatCommandDecorate(AsyncChatCommandDecorateEvent event) {
-        // This may be a crime to call another event listener in
-        // this listener... but these events perform the same operation
-        onAsyncChatDecorate(event);
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onHandleChat(AsyncChatEvent event) {
+        // Cancel event so no signed chat messages are sent
+        // to anyone
+        event.setCancelled(true);
+
+        // Manually send chat message to all viewers still
+        // left in the viewer list
+        event.viewers().forEach(audience -> {
+            var message = event.renderer()
+                    .render(
+                            event.getPlayer(),
+                            event.getPlayer().displayName(),
+                            event.message(),
+                            audience
+                    );
+
+            audience.sendMessage(event.getPlayer(), message);
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerChat(AsyncChatEvent event) {
-        event.setCancelled(true);
-
         Player player = event.getPlayer();
         User user = Users.get(player);
 
-        event.renderer(new FtcChatRenderer());
+        event.renderer(FtcChatRenderer.INSTANCE);
         var rendered = event.renderer().render(player, user.displayName(), event.message(), player);
         var mute = Punishments.checkMute(player);
 
@@ -59,6 +68,8 @@ public class ChatListener implements Listener {
         // then if mute == hard, report to eaves dropper and cancel event
         if ((mute = BannedWords.checkAndWarn(player, rendered) ? Mute.HARD : mute) == Mute.HARD) {
             EavesDropper.reportChat(rendered, mute);
+
+            event.setCancelled(true);
             return;
         }
 
@@ -66,17 +77,22 @@ public class ChatListener implements Listener {
         // then don't send message to chat, just to staff
         if (StaffChat.toggledPlayers.contains(player.getUniqueId())) {
             StaffChat.send(user.getCommandSource(null), event.message(), false);
+
+            event.setCancelled(true);
             return;
         }
 
         // If vanished, don't say nuthin
         if (user.get(Properties.VANISHED)) {
             user.sendMessage(Messages.CHAT_NO_SPEAK_VANISH);
+
+            event.setCancelled(true);
             return;
         }
 
         // If marriage chat enabled
         if (user.get(Properties.MARRIAGE_CHAT)) {
+            event.setCancelled(true);
             var spouse = user.getInteractions().spouseUser();
 
             // Ensure spouse exists and is online
@@ -117,22 +133,6 @@ public class ChatListener implements Listener {
 
         AfkKicker.addOrDelay(event.getPlayer().getUniqueId());
         AfkListener.checkUnafk(event);
-
-        handleChat(event);
-    }
-
-    private void handleChat(AsyncChatEvent event) {
-        event.viewers().forEach(audience -> {
-            var message = event.renderer()
-                    .render(
-                            event.getPlayer(),
-                            event.getPlayer().displayName(),
-                            event.message(),
-                            audience
-                    );
-
-            audience.sendMessage(event.getPlayer(), message);
-        });
     }
 
     /**
@@ -174,8 +174,8 @@ public class ChatListener implements Listener {
         }
     }
 
-    private static class FtcChatRenderer implements ChatRenderer {
-        private Component message;
+    private enum FtcChatRenderer implements ChatRenderer {
+        INSTANCE;
 
         @Override
         public @NotNull Component render(@NotNull Player source,
@@ -183,18 +183,17 @@ public class ChatListener implements Listener {
                                          @NotNull Component message,
                                          @NotNull Audience viewer
         ) {
-            return Objects.requireNonNullElseGet(
-                    this.message,
-                    () -> this.message = format(source, message)
-            );
+            return format(source, message, viewer);
         }
 
-        private Component format(Player source, Component message) {
+        private Component format(Player source, Component message, Audience viewer) {
             var plain = Text.plain(message);
             warnCase(source, plain);
 
             User user = Users.get(source);
-            return Messages.chatMessage(user, message);
+            boolean prependRank = Users.allowsRankedChat(viewer);
+
+            return Messages.chatMessage(user, message, prependRank);
         }
     }
 }

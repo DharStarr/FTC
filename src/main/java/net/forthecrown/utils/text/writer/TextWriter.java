@@ -3,11 +3,14 @@ package net.forthecrown.utils.text.writer;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.ArrayIterator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * A Chat Writer is a common interface for writing multi-line
@@ -29,6 +32,9 @@ import net.kyori.adventure.text.format.TextColor;
 public abstract class TextWriter implements ComponentLike {
     /** Default field separator: ': ' */
     private static final Component DEF_FIELD_SEPARATOR = Component.text(": ");
+
+    /** New line pattern */
+    public static final Pattern NEW_LINE_PATTERN = Pattern.compile("\n");
 
     /** True, if the current line is empty, false otherwise */
     @Getter
@@ -72,12 +78,24 @@ public abstract class TextWriter implements ComponentLike {
      * @param text The text to write
      */
     public void write(ComponentLike text) {
+        Objects.requireNonNull(text, "Text was null");
+
         if (text.equals(Component.newline())) {
-            onNewLine();
-            lineEmpty = true;
-        } else {
-            onWrite(text.asComponent());
+            newLine();
+            return;
+        }
+
+        Iterator<Component> it = Text.split(NEW_LINE_PATTERN, text.asComponent())
+                .iterator();
+
+        while (it.hasNext()) {
+            var next = it.next();
+            onWrite(next);
             lineEmpty = false;
+
+            if (it.hasNext()) {
+                newLine();
+            }
         }
     }
 
@@ -105,11 +123,14 @@ public abstract class TextWriter implements ComponentLike {
                         .append(field, fieldSeparator)
         );
 
-        write(
-                Component.text()
-                        .style(fieldValueStyle)
-                        .append(value)
-        );
+        // Don't write empty values
+        if (!Objects.equals(Component.empty(), value)) {
+            write(
+                    Component.text()
+                            .style(fieldValueStyle)
+                            .append(value)
+            );
+        }
     }
 
     /**
@@ -212,7 +233,8 @@ public abstract class TextWriter implements ComponentLike {
      * is {@link LoreWriter}
      */
     public void newLine() {
-        write(Component.newline());
+        onNewLine();
+        lineEmpty = true;
     }
 
     /**
@@ -231,16 +253,10 @@ public abstract class TextWriter implements ComponentLike {
      *              converted to a Component
      */
     public void write(String s, Style style) {
-        var split = s.split("\n");
-        var it = ArrayIterator.modifiable(split);
-
-        while (it.hasNext()) {
-            write(Text.renderString(it.next()).style(style));
-
-            if (it.hasNext()) {
-                newLine();
-            }
-        }
+        write(
+                Text.renderString(s)
+                        .style(style)
+        );
     }
 
     /**
@@ -325,7 +341,11 @@ public abstract class TextWriter implements ComponentLike {
      * @return The prefixed writer
      */
     public PrefixedWriter withPrefix(ComponentLike prefix) {
-        return new PrefixedWriter(this, prefix.asComponent());
+        return new PrefixedWriter(
+                this,
+                Objects.requireNonNull(prefix)
+                        .asComponent()
+        );
     }
 
     public PrefixedWriter withIndent(int indent) {

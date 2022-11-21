@@ -1,6 +1,6 @@
 package net.forthecrown.commands;
 
-import net.forthecrown.book.SettingsBook;
+import net.forthecrown.core.SettingsBook;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;

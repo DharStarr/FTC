@@ -2,6 +2,7 @@ package net.forthecrown.commands.arguments;
 
 import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import lombok.Getter;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.Permissions;
@@ -10,13 +11,12 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.UserLookupEntry;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.UserHomes;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Location;
 
 import static net.forthecrown.commands.manager.Commands.EMPTY_READER;
 
 @Getter
-public class HomeParseResult {
+public class HomeParseResult implements ParseResult<Pair<String, Location>> {
     public static final HomeParseResult DEFAULT = new HomeParseResult(EMPTY_READER, UserHomes.DEFAULT);
 
     private final ImmutableStringReader reader;
@@ -35,9 +35,12 @@ public class HomeParseResult {
         this(reader, null, name);
     }
 
-    public Pair<String, Location> getHome(CommandSource source, boolean ignorePerms) throws CommandSyntaxException {
+    public Pair<String, Location> get(CommandSource source, boolean validate) throws CommandSyntaxException {
         if (user != null) {
-            if (!ignorePerms && !source.hasPermission(Permissions.HOME_OTHERS)) {
+            if (validate
+                    && source.isPlayer()
+                    && !source.hasPermission(Permissions.HOME_OTHERS)
+            ) {
                 throw exception();
             }
 

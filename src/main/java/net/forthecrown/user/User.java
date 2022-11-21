@@ -2,6 +2,8 @@ package net.forthecrown.user;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
+import com.google.common.base.Strings;
+import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -16,10 +18,10 @@ import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.config.JoinInfo;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.events.dynamic.HulkSmashListener;
-import net.forthecrown.events.player.PlayerRidingListener;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.AbstractCommand;
-import net.forthecrown.regions.RegionPos;
+import net.forthecrown.guilds.Guild;
+import net.forthecrown.guilds.GuildManager;
 import net.forthecrown.user.data.*;
 import net.forthecrown.user.property.BoolProperty;
 import net.forthecrown.user.property.Properties;
@@ -36,7 +38,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.query.Flag;
 import net.luckperms.api.query.QueryMode;
@@ -57,13 +58,14 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static net.forthecrown.utils.text.Text.nonItalic;
+import static net.forthecrown.user.data.UserTimeTracker.UNSET;
 
 public class User implements ForwardingAudience.Single,
         HoverEventSource<Component>, Identity
@@ -163,6 +165,9 @@ public class User implements ForwardingAudience.Single,
      */
     private CommandSender lastMessage;
 
+    @Getter @Setter
+    private UUID guildId;
+
     /**
      * All components attached to this user, this array may change
      * size depending on how many components have been requested
@@ -218,10 +223,7 @@ public class User implements ForwardingAudience.Single,
 
         // Component doesn't exist -> instantiate
         if (component == null) {
-            var created = type.create(this);
-            components[index] = created;
-
-            return created;
+            return (T) (components[index] = type.create(this));
         }
 
         return component;
@@ -281,13 +283,8 @@ public class User implements ForwardingAudience.Single,
             return false;
         }
 
-        for (var c: components) {
-            if (c != null) {
-                return true;
-            }
-        }
-
-        return false;
+        return ArrayIterator.unmodifiable(components)
+                .hasNext();
     }
 
     /**
@@ -426,8 +423,9 @@ public class User implements ForwardingAudience.Single,
         ip = getPlayer().getAddress().getHostString();
 
         // Show join info, if we should
-        if (JoinInfo.visible || JoinInfo.endVisible) {
-            sendMessage(JoinInfo.display());
+        var joinInfo = JoinInfo.display();
+        if (!Component.empty().equals(joinInfo)) {
+            sendMessage(joinInfo);
         }
 
         // We are definitely not AFK lol
@@ -437,12 +435,13 @@ public class User implements ForwardingAudience.Single,
         updateFlying();
         updateVanished();
         updateGodMode();
-
         updateTabName();
-        TabList.update();
 
         // If in end, but end not open, leave end lol
-        if(getWorld().equals(Worlds.end()) && !EndConfig.open) {
+        if (getWorld().equals(Worlds.end())
+                && !EndConfig.open
+                && !hasPermission(Permissions.ADMIN)
+        ) {
             getPlayer().teleport(GeneralConfig.getServerSpawn());
         }
 
@@ -459,7 +458,8 @@ public class User implements ForwardingAudience.Single,
         // Tell admin if this user has notes
         if (Punishments.hasNotes(this)) {
             var writer = TextWriters.newWriter();
-            var notes = Punishments.entry(this).getNotes();
+            var notes = Punishments.entry(this)
+                    .getNotes();
 
             EntryNote.writeNotes(notes, writer, this);
 
@@ -480,8 +480,14 @@ public class User implements ForwardingAudience.Single,
         // Ensure that titles are synced to permissions
         getTitles().ensureSynced();
 
-        // Ensure names and stuff are correctly transferred
-        if (!getName().equalsIgnoreCase(lastOnlineName)) {
+        // Ensure names and such are in sync
+        if (Strings.isNullOrEmpty(lastOnlineName)) {
+            lastOnlineName = getName();
+        }
+
+        // If name has been changed, transfer across scores
+        // and update lastOnlineName variable
+        if (!Objects.equals(getName(), lastOnlineName)) {
             updateName(lastOnlineName);
 
             previousNames.add(lastOnlineName);
@@ -524,7 +530,12 @@ public class User implements ForwardingAudience.Single,
         }
 
         // Log play time
-        logTime();
+        logTime().resultOrPartial(FTC.getLogger()::warn)
+                .ifPresent(integer -> {
+                    UserManager.get()
+                            .getPlayTime()
+                            .add(getUniqueId(), integer);
+                });
 
         lastOnlineName = getName();
 
@@ -533,45 +544,25 @@ public class User implements ForwardingAudience.Single,
             set(Properties.MARRIAGE_CHAT, false);
         }
 
-        PlayerRidingListener.stopRiding(getPlayer());
         UserManager.get().getOnline().remove(getUniqueId());
+
         TabList.update();
     }
 
     /**
      * Logs the player's playtime
      */
-    private void logTime() {
+    private DataResult<Integer> logTime() {
         var join = getTimeTracker().get(TimeField.LAST_LOGIN);
-        var played = Time.timeSince(join) - getAfkTime();
 
-        var timeSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(played);
-
-        UserManager.get()
-                .getPlayTime()
-                .add(getUniqueId(), timeSeconds);
-    }
-
-    /**
-     * Updates the player's riding status.
-     * If the user has disabled player riding, this function
-     * will force the user to dismount any players they
-     * might be sitting on and force any players sitting
-     * on them to also dismount
-     *
-     * @throws UserOfflineException If the user is not online
-     */
-    public void updateRiding() throws UserOfflineException {
-        ensureOnline();
-
-        // User allows riding, no need to
-        // force dismount
-        if (get(Properties.PLAYER_RIDING)) {
-            return;
+        if (join == UNSET) {
+            return DataResult.error("Join time not set");
         }
 
-        var player = getPlayer();
-        PlayerRidingListener.stopRiding(player);
+        var played = Time.timeSince(join) - getAfkTime();
+        var timeSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(played);
+
+        return DataResult.success(timeSeconds);
     }
 
     /* ----------------------------- MAIL ------------------------------ */
@@ -650,8 +641,9 @@ public class User implements ForwardingAudience.Single,
      * to the current time.
      */
     public void reload() {
-        UserManager.get().getSerializer().deserialize(this);
-        getTimeTracker().setCurrent(TimeField.LAST_LOADED);
+        UserManager.get()
+                .getSerializer()
+                .deserialize(this);
     }
 
     /**
@@ -659,8 +651,9 @@ public class User implements ForwardingAudience.Single,
      * to the current time
      */
     public void save() {
-        getTimeTracker().setCurrent(TimeField.LAST_LOADED);
-        UserManager.get().getSerializer().serialize(this);
+        UserManager.get()
+                .getSerializer()
+                .serialize(this);
     }
 
     /**
@@ -684,29 +677,32 @@ public class User implements ForwardingAudience.Single,
      */
     public void updateName(String last) {
         // Ensure we're online and that the last name is not null
-        if (isOnline()
-                && last != null
-                && !last.equals(getPlayer().getName())
+        if (!isOnline()
+                || last == null
+                || last.equals(getPlayer().getName())
         ) {
-            // Update the user cache with a new name
-            UserLookup cache = UserManager.get().getUserLookup();
-            var newName = getPlayer().getName();
+            return;
+        }
 
-            cache.onNameChange(cache.getEntry(getUniqueId()), newName);
+        // Update the user cache with a new name
+        UserLookup cache = UserManager.get().getUserLookup();
+        String newName = getPlayer().getName();
+        Scoreboard scoreboard = getPlayer().getScoreboard();
 
-            Scoreboard scoreboard = getPlayer().getScoreboard();
+        cache.onNameChange(cache.getEntry(getUniqueId()), newName);
 
-            // Transfer scores
-            for (Objective obj : scoreboard.getObjectives()) {
-                if (!obj.getScore(last).isScoreSet()) {
-                    continue;
-                }
-
-                var lastScore = obj.getScore(last);
-
-                obj.getScore(newName).setScore(lastScore.getScore());
-                lastScore.resetScore();
+        // Transfer scores
+        for (Objective obj : scoreboard.getObjectives()) {
+            if (!obj.getScore(last).isScoreSet()) {
+                continue;
             }
+
+            var lastScore = obj.getScore(last);
+            int score = lastScore.getScore();
+            lastScore.resetScore();
+
+            obj.getScore(newName)
+                    .setScore(score);
         }
     }
 
@@ -714,7 +710,7 @@ public class User implements ForwardingAudience.Single,
      * Unloads the user if they're not online
      */
     public void unloadIfOffline() {
-        if(isOnline()) {
+        if (isOnline()) {
             return;
         }
 
@@ -726,14 +722,6 @@ public class User implements ForwardingAudience.Single,
      */
     public void delete() {
         UserManager.get().getSerializer().delete(getUniqueId());
-    }
-
-    /**
-     * Gets the region pos of the user
-     * @return The user's region pos
-     */
-    public RegionPos getRegionPos() {
-        return RegionPos.of(getLocation());
     }
 
     /**
@@ -909,7 +897,8 @@ public class User implements ForwardingAudience.Single,
 
         if (lpManager.isLoaded(getUniqueId())) {
             return lpManager.getUser(getUniqueId())
-                    .getCachedData().getPermissionData(options)
+                    .getCachedData()
+                    .getPermissionData(options)
                     .checkPermission(name)
                     .asBoolean();
         }
@@ -921,10 +910,8 @@ public class User implements ForwardingAudience.Single,
                     .getPermissionData(options)
                     .checkPermission(name)
                     .asBoolean();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException e) {
+            FTC.getLogger().error("Couldn't fetch permission data from LuckPerms", e);
         }
 
         return false;
@@ -956,6 +943,7 @@ public class User implements ForwardingAudience.Single,
             sendMessage(Messages.canTeleportIn(getTime(TimeField.NEXT_TELEPORT)));
             return false;
         }
+
         return true;
     }
 
@@ -1137,7 +1125,7 @@ public class User implements ForwardingAudience.Single,
      * Gets the user's effective prefix.
      * @return The user's effective prefix
      */
-    public @NotNull Component getEffectivePrefix() {
+    public @NotNull Component getEffectivePrefix(boolean allowRank) {
         // If there's a set prefix, return it
         if (getProperties().contains(Properties.PREFIX)) {
             return get(Properties.PREFIX);
@@ -1145,7 +1133,7 @@ public class User implements ForwardingAudience.Single,
 
         // If our title is anything other han default,
         // return it
-        if(getTitles().getTitle() != RankTitle.DEFAULT) {
+        if (allowRank && getTitles().getTitle() != RankTitle.DEFAULT) {
             return getTitles().getTitle().getPrefix();
         }
 
@@ -1160,7 +1148,7 @@ public class User implements ForwardingAudience.Single,
     public void updateTabName() throws UserOfflineException {
         ensureOnline();
 
-        Component displayName = listDisplayName();
+        Component displayName = listDisplayName(true);
         getPlayer().playerListName(displayName);
 
         TabList.update();
@@ -1171,14 +1159,8 @@ public class User implements ForwardingAudience.Single,
      * for this user.
      * @return The user's TAB display name
      */
-    private Component listDisplayName() {
-        return Component.text()
-                .style(nonItalic(NamedTextColor.WHITE))
-                .append(getEffectivePrefix())
-                .append(getTabName())
-                .append(get(Properties.SUFFIX))
-                .append(isAfk() ? Messages.AFK_SUFFIX : Component.empty())
-                .build();
+    public Component listDisplayName(boolean prependRank) {
+        return Users.createListName(this, getTabName(), prependRank);
     }
 
     public Component getTabName() {
@@ -1448,6 +1430,16 @@ public class User implements ForwardingAudience.Single,
                 .forEach(user -> user.sendMessage(announcement));
 
         sendMessage(Messages.UN_AFK_SELF);
+    }
+
+    /* ----------------------------- GUILDS ------------------------------ */
+
+    public void setGuild(Guild guild) {
+        setGuildId(guild == null ? null : guild.getId());
+    }
+
+    public Guild getGuild() {
+        return getGuildId() == null ? null : GuildManager.get().getGuild(getGuildId());
     }
 
 

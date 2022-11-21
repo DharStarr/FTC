@@ -16,8 +16,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -26,11 +28,11 @@ import static net.forthecrown.utils.Util.MAX_Y;
 import static net.forthecrown.utils.Util.MIN_Y;
 
 public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements Iterable<Block> {
-    private World world;
+    private final WeakReference<World> world;
 
     public WorldBounds3i(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         super(minX, minY, minZ, maxX, maxY, maxZ);
-        this.world = world;
+        this.world = new WeakReference<>(world);
     }
 
     public static WorldBounds3i of(World world, Region region) {
@@ -57,16 +59,19 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
 
     public static WorldBounds3i of(Location l1, Location l2) {
         Validate.isTrue(l1.getWorld().equals(l2.getWorld()), "Locations cannot be in different worlds");
-        return new WorldBounds3i(
+
+        // GenericMath.floor
+        Vector3d p1 = Vectors.fromD(l1);
+        Vector3d p2 = Vectors.fromD(l2);
+
+        p1 = p1.min(p2);
+        p2 = p1.max(p2).ceil();
+
+        return of(
                 l1.getWorld(),
 
-                l1.getBlockX(),
-                l1.getBlockY(),
-                l1.getBlockZ(),
-
-                l2.getBlockX(),
-                l2.getBlockY(),
-                l2.getBlockZ()
+                p1.toInt(),
+                p2.toInt()
         );
     }
 
@@ -116,7 +121,7 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
     }
 
     public World getWorld() {
-        return world;
+        return world == null ? null : world.get();
     }
 
     public WorldBounds3i setWorld(World world) {
@@ -125,7 +130,7 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
 
     @Override
     protected WorldBounds3i cloneAt(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        return new WorldBounds3i(world, minX, minY, minZ, maxX, maxY, maxZ);
+        return new WorldBounds3i(getWorld(), minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override
@@ -202,7 +207,7 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
     @Override
     public Tag save() {
         CompoundTag tag = new CompoundTag();
-        tag.putString("world", world.getName());
+        tag.putString("world", getWorld().getName());
         tag.put("cords", super.save());
 
         return tag;

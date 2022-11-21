@@ -1,16 +1,14 @@
 package net.forthecrown.dungeons.usables;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.dungeons.boss.DrawnedBoss;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.useables.*;
-import net.forthecrown.utils.io.JsonUtils;
-import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.Tag;
@@ -59,11 +57,6 @@ public class ActionGiveArtifact extends UsageAction {
     @UsableConstructor(ConstructType.PARSE)
     public static ActionGiveArtifact parse(StringReader reader, CommandSource source) throws CommandSyntaxException {
         return new ActionGiveArtifact(ARTIFACT_PARSER.parse(reader));
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionGiveArtifact fromJson(JsonElement element) {
-        return new ActionGiveArtifact(JsonUtils.readEnum(DrawnedBoss.Artifacts.class, element));
     }
 
     @UsableConstructor(ConstructType.TAG)

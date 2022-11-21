@@ -1,0 +1,25 @@
+{
+  "daily/log_in": {
+    "displayName": "Log in",
+    "eventClass": "org.bukkit.event.player.PlayerJoinEvent",
+    "script": "challenges/on_join.js",
+    "description": [
+      "Log in once a day!"
+    ],
+    "reward": {
+      "guildExp": 5
+    }
+  },
+  "daily/walk_1000_blocks": {
+    "displayName": "Walk 1,000 blocks",
+    "goal": 1000,
+    "eventClass": "org.bukkit.event.player.PlayerMoveEvent",
+    "script": "challenges/move_1k_blocks.js",
+    "description": [
+      "Walk 1,000 blocks in a day"
+    ],
+    "reward": {
+      "guildExp": 10
+    }
+  }
+}

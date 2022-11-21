@@ -1,14 +1,10 @@
 package net.forthecrown.useables.command;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.inventory.ItemStacks;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.minecraft.nbt.CompoundTag;
@@ -39,15 +35,6 @@ public class Kit extends CommandUsable {
         });
     }
 
-    public Kit(String name, JsonObject json) throws CommandSyntaxException {
-        super(name, json);
-
-        JsonArray itemArray = json.getAsJsonArray("items");
-        for (JsonElement e: itemArray) {
-            items.add(JsonUtils.readItem(e));
-        }
-    }
-
     public Kit(String name, CompoundTag tag) throws CommandSyntaxException {
         super(name, tag);
 
@@ -64,6 +51,8 @@ public class Kit extends CommandUsable {
         for (var i: items) {
             list.add(TagUtil.writeItem(i));
         }
+
+        tag.put("items", list);
     }
 
     @Override

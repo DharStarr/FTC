@@ -18,7 +18,7 @@ public class HulkSmashListener implements Listener {
      * Determines the amount of game ticks between
      * cosmetic effect tick
      */
-    public static final byte TICKS_PER_TICK = 1; //Nice name, I know
+    public static final byte GAME_TICKS_PER_COSMETIC_TICK = 1; //Nice name, I know
 
     private final User user;
     private final TravelEffect effect;
@@ -28,10 +28,10 @@ public class HulkSmashListener implements Listener {
         user.hulkSmashing = true;
 
         Events.register(this);
-        tickTask = Tasks.runTimer(this::tick, TICKS_PER_TICK, TICKS_PER_TICK);
+        tickTask = Tasks.runTimer(this::tick, GAME_TICKS_PER_COSMETIC_TICK, GAME_TICKS_PER_COSMETIC_TICK);
     }
 
-    private short ticks = 30 * (Ticks.TICKS_PER_SECOND / TICKS_PER_TICK);
+    private short ticks = 30 * (Ticks.TICKS_PER_SECOND / GAME_TICKS_PER_COSMETIC_TICK);
     private BukkitTask tickTask;
 
     private void tick() {

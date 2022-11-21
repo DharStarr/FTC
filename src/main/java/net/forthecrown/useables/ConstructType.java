@@ -1,6 +1,5 @@
 package net.forthecrown.useables;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import lombok.Getter;
 import net.forthecrown.grenadier.CommandSource;
@@ -18,19 +17,6 @@ public enum ConstructType {
         @Override
         public UsageType.ReflectionExecutable get(UsageType type) {
             return type.parser;
-        }
-    },
-
-    @Deprecated
-    JSON(JsonElement.class) {
-        @Override
-        public void set(UsageType type, UsageType.ReflectionExecutable executable) {
-            type.jsonLoader = executable;
-        }
-
-        @Override
-        public UsageType.ReflectionExecutable get(UsageType type) {
-            return type.jsonLoader;
         }
     },
 

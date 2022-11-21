@@ -87,7 +87,7 @@ class TriggerNode extends InteractableNode<UsableTrigger> {
                     triggers.remove(trigger);
 
                     c.getSource().sendAdmin(
-                            Text.format("Removed trigger named '{}'", trigger.getName())
+                            Text.format("Removed trigger named '{0}'", trigger.getName())
                     );
                     return 0;
                 });

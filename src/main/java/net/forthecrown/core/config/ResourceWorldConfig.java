@@ -13,7 +13,7 @@ import static net.kyori.adventure.text.Component.text;
 
 @ConfigData(filePath = "resource_world.json")
 public @UtilityClass class ResourceWorldConfig {
-    public boolean enabled;
+    public boolean enabled = true;
 
     public LongList legalSeeds = new LongArrayList();
     public String toHazGate = "res_to_haz";
@@ -34,5 +34,5 @@ public @UtilityClass class ResourceWorldConfig {
 
     public long lastSeed;
 
-    public int nextSize;
+    public int nextSize = 3000;
 }

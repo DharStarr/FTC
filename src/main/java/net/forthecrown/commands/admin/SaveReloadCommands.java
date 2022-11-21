@@ -5,17 +5,20 @@ import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Announcer;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.Punishments;
+import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.core.config.ConfigManager;
 import net.forthecrown.core.holidays.ServerHolidays;
 import net.forthecrown.core.resource.ResourceWorldTracker;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
-import net.forthecrown.regions.RegionManager;
+import net.forthecrown.guilds.GuildManager;
+import net.forthecrown.log.DataManager;
 import net.forthecrown.structure.Structures;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.user.UserManager;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.waypoint.WaypointManager;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -120,9 +123,14 @@ public class SaveReloadCommands extends FtcCommand {
                 Usables.get()::reload
         ),
 
-        REGIONS (
-                RegionManager.get()::save,
-                RegionManager.get()::reload
+        WAYPOINTS (
+                WaypointManager.getInstance()::save,
+                WaypointManager.getInstance()::reload
+        ),
+
+        GUILDS (
+                GuildManager.get()::save,
+                GuildManager.get()::load
         ),
 
         SHOPS (
@@ -163,6 +171,16 @@ public class SaveReloadCommands extends FtcCommand {
         RW_TRACKER (
                 ResourceWorldTracker.get()::save,
                 ResourceWorldTracker.get()::reload
+        ),
+
+        CHALLENGES (
+                ChallengeManager.getInstance()::save,
+                ChallengeManager.getInstance()::load
+        ),
+
+        DATA_LOG (
+                DataManager.getInstance()::save,
+                DataManager.getInstance()::load
         ),
 
         CONFIG (

@@ -7,6 +7,8 @@ import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class InventoryContext {
     /** A context that has no options */
@@ -42,6 +44,10 @@ public class InventoryContext {
     public <T> @Nullable T get(@NotNull ContextOption<T> option) {
         validateOption(option);
         return (T) options[option.getIndex()];
+    }
+
+    public <T> @NotNull T getOrThrow(@NotNull ContextOption<T> option) {
+        return Optional.ofNullable(get(option)).orElseThrow();
     }
 
     public <T> void set(@NotNull ContextOption<T> option, @Nullable T value) {

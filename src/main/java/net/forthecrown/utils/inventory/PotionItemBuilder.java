@@ -2,6 +2,7 @@ package net.forthecrown.utils.inventory;
 
 import lombok.Getter;
 import org.apache.commons.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -23,11 +24,7 @@ public class PotionItemBuilder extends BaseItemBuilder<PotionItemBuilder> {
         super(material, amount);
 
         Validate.isTrue(
-                material == Material.GLASS_BOTTLE
-                || material == Material.SPLASH_POTION
-                || material == Material.TIPPED_ARROW
-                || material == Material.LINGERING_POTION,
-
+                Bukkit.getItemFactory().getItemMeta(material) instanceof PotionMeta,
                 "Invalid material for potion builder: '%s'", material.name()
         );
     }
@@ -56,7 +53,10 @@ public class PotionItemBuilder extends BaseItemBuilder<PotionItemBuilder> {
     protected void onBuild(ItemStack item, ItemMeta meta) {
         var potionMeta = (PotionMeta) meta;
 
-        potionMeta.setBasePotionData(baseEffect);
+        if (baseEffect != null) {
+            potionMeta.setBasePotionData(baseEffect);
+        }
+
         potionMeta.setColor(color);
         potionMeta.clearCustomEffects();
 

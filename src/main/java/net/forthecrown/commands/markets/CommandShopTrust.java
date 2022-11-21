@@ -58,12 +58,10 @@ public class CommandShopTrust extends FtcCommand {
                                 throw Exceptions.NO_SHOP_OWNED;
                             }
 
-                            if (Users.testBlocked(user, target,
+                            Users.testBlockedException(user, target,
                                     STRUST_BLOCKED_SENDER,
                                     STRUST_BLOCKED_TARGET
-                            )) {
-                                return 0;
-                            }
+                            );
 
                             MarketManager region = Economy.get().getMarkets();
                             MarketShop shop = region.get(user.getUniqueId());

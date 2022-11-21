@@ -2,6 +2,10 @@ package net.forthecrown.utils.text.format;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.registry.Keys;
@@ -11,25 +15,35 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.RomanNumeral;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.math.WorldVec3i;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.math.vector.Vectord;
+import org.spongepowered.math.vector.Vectorf;
+import org.spongepowered.math.vector.Vectori;
+import org.spongepowered.math.vector.Vectorl;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.chrono.ChronoZonedDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
+
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
 
 /**
  * A utility class for formatting components.
@@ -171,7 +185,7 @@ public class ComponentFormat implements ComponentLike {
             // resolve the argument into a component
             return type.resolveArgument(args[index], style);
         } catch (CommandSyntaxException e) {
-            return Component.text(result.group());
+            return text(result.group());
         }
     }
 
@@ -244,10 +258,10 @@ public class ComponentFormat implements ComponentLike {
                 }
 
                 if (style.contains("-roman")) {
-                    return Component.text(RomanNumeral.arabicToRoman(number.longValue()));
+                    return text(RomanNumeral.arabicToRoman(number.longValue()));
                 }
 
-                return Component.text(
+                return text(
                         Util.isNullOrBlank(style) ?
                                 Text.NUMBER_FORMAT.format(number)
                                 : createFormat(style).format(number)
@@ -303,7 +317,7 @@ public class ComponentFormat implements ComponentLike {
             }
 
             private Component format(Date date, String style) {
-                return Component.text(
+                return text(
                         Util.isNullOrBlank(style) ?
                                 Text.DATE_FORMAT.format(date)
                                 : new SimpleDateFormat(style).format(date)
@@ -443,7 +457,7 @@ public class ComponentFormat implements ComponentLike {
                 Class c = arg instanceof Class<?> ? (Class) arg : arg.getClass();
                 boolean simple = style.isBlank() || style.contains("-simple");
 
-                return Component.text(
+                return text(
                         simple ? c.getSimpleName() : c.getName()
                 );
             }
@@ -551,10 +565,10 @@ public class ComponentFormat implements ComponentLike {
                 // Test if namespace is FTC's, if it is,
                 // return the key's value only
                 if (key.namespace().equals(Keys.argumentType().getDefaultNamespace())) {
-                    return Component.text(key.value());
+                    return text(key.value());
                 }
 
-                return Component.text(key.asString());
+                return text(key.asString());
             }
         },
 
@@ -598,6 +612,78 @@ public class ComponentFormat implements ComponentLike {
                 }
 
                 return Text.prettyLocation(l, world);
+            }
+        },
+
+        /**
+         * Formats a given arg to be a vector position. Example of
+         * this format's output: 'x23 y64 z89' for a {@link org.spongepowered.math.vector.Vector3i},
+         * For something with more than 4 axes, the result would look
+         * like so: '[12, 45, 654, 85, 6545]' I don't know why you'd
+         * ever need to use a vector with more than 3 axes, but you can
+         * lmao
+         * <p>
+         * Accepts any form of vector from {@link Vectori}, {@link Vectord},
+         * {@link Vectorf}, {@link Vectorl}.
+         * <p>
+         * If the given argument is null or not one of the above-mentioned
+         * vector types, {@link Text#valueOf(Object)} is returned instead
+         */
+        VECTOR {
+            @Override
+            public Component resolveArgument(Object arg, String style) {
+
+
+                if (arg instanceof Vectori veci) {
+                    return of(IntList.of(veci.toArray()));
+                }
+
+                if (arg instanceof Vectord vecd) {
+                    return of(DoubleList.of(vecd.toArray()));
+                }
+
+                if (arg instanceof Vectorf vecf) {
+                    return of(FloatList.of(vecf.toArray()));
+                }
+
+                if (arg instanceof Vectorl vecl) {
+                    return of(LongList.of(vecl.toArray()));
+                }
+
+                return Text.valueOf(arg);
+            }
+
+            private Component of(List<? extends Number> nList) {
+                if (nList.size() > Vectors.NAMEABLE_AXES_LENGTH) {
+                    return Text.valueOf(nList.toString());
+                }
+
+                // Special case for 2D vectors, in our current context
+                // 2D vectors are always represented as X and Z, never as
+                // X and Y, but the math library uses them as X and Y
+                if (nList.size() == 2) {
+                    return text("x" + nList.get(0) + " z" + nList.get(1));
+                }
+
+                TextComponent.Builder builder = text();
+                var it = nList.listIterator();
+
+                while (it.hasNext()) {
+                    int i = it.nextIndex();
+                    var n = it.next();
+
+                    String axis = Vectors.AXES[i];
+
+                    builder.append(
+                            text(axis + n)
+                    );
+
+                    if (it.hasNext()) {
+                        builder.append(space());
+                    }
+                }
+
+                return builder.build();
             }
         };
 

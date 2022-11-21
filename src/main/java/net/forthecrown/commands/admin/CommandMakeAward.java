@@ -78,14 +78,14 @@ public class CommandMakeAward extends FtcCommand {
 
     private ItemStack makeAward(String award, User winner, Material material) {
         return ItemStacks.builder(material, 1)
-                .setName(Component.text("Award for " + award).color(NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false))
-                .addLore(
+                .setNameRaw(Component.text("Award for " + award).color(NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false))
+                .addLoreRaw(
                         Component.text("Winner: ")
                                 .color(NamedTextColor.GOLD)
                                 .decoration(TextDecoration.ITALIC, false)
                                 .append(winner.displayName())
                 )
-                .addLore(
+                .addLoreRaw(
                         Text.format("Won at the {0} FTC awards.",
                                 Text.nonItalic(NamedTextColor.GRAY),
                                 ZonedDateTime.now().getYear()

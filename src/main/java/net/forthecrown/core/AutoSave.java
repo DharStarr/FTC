@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.StackLocatorUtil;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -13,6 +14,8 @@ import java.util.Map;
  * Class which saves the FTC-Core in the interval given in the autoSaveIntervalMins comvar
  */
 public final class AutoSave {
+    private static final Logger LOGGER = FTC.getLogger();
+
     private static final AutoSave INSTANCE = new AutoSave();
 
     private BukkitTask task;
@@ -38,12 +41,14 @@ public final class AutoSave {
             try {
                 e.getValue().run();
                 ++saved;
+
+                LOGGER.debug("Saved {}", e.getKey().getSimpleName());
             } catch (Throwable t) {
-                FTC.getLogger().error("Couldn't save {}", e.getKey().getSimpleName(), t);
+                LOGGER.error("Couldn't save {}", e.getKey().getSimpleName(), t);
             }
         }
 
-        FTC.getLogger().info("Autosaved {} modules", saved);
+        LOGGER.info("Autosaved {} modules", saved);
     }
 
     public void cancel() {

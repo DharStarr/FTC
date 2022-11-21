@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
 import net.forthecrown.core.Worlds;
-import net.forthecrown.regions.Regions;
 import org.bukkit.Location;
 
 import java.util.Set;
@@ -21,7 +20,6 @@ public @UtilityClass class GeneralConfig {
 
     public static String
             onFirstJoinKit              = "noobs",
-            spawnRegion                 = Regions.DEFAULT_SPAWN_NAME,
             discordLink                 = "https://discord.gg/wXjHNdp",
             defaultBanReason            = "This server is not for you";
 

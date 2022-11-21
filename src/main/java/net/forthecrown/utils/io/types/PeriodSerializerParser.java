@@ -20,12 +20,12 @@ public class PeriodSerializerParser implements SerializerParser<Long> {
     }
 
     @Override
-    public <V> V serialize(DynamicOps<V> ops, Long value) {
+    public <V> @NotNull V serialize(@NotNull DynamicOps<V> ops, @NotNull Long value) {
         return SerializerParsers.LONG.serialize(ops, value);
     }
 
     @Override
-    public <V> DataResult<Long> deserialize(DynamicOps<V> ops, V element) {
+    public <V> @NotNull DataResult<Long> deserialize(@NotNull DynamicOps<V> ops, @NotNull V element) {
         return SerializerParsers.LONG.deserialize(ops, element);
     }
 

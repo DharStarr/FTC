@@ -118,7 +118,7 @@ public final class VanillaAccess {
     public static void unfreeze(MappedRegistry registry) {
         try {
             // The only liability here is the frozen variable
-            // It may change with each release but I also don't
+            // It may change with each release, but I also don't
             // believe we could do some kind of
             // for each method (if method == boolean) lookup,
             // as they may just add a different boolean variable

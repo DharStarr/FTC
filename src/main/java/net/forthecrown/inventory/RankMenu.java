@@ -33,8 +33,8 @@ public final class RankMenu {
     private static final MenuNode DEFAULT_OPTION = MenuNode.builder()
             .setItem((user, context) -> {
                 var item = ItemStacks.builder(Material.MAP)
-                        .setName(Component.text("Default").style(nonItalic(NamedTextColor.WHITE)))
-                        .addLore(Component.text("This is the default title!").style(nonItalic(NamedTextColor.GRAY)));
+                        .setNameRaw(Component.text("Default").style(nonItalic(NamedTextColor.WHITE)))
+                        .addLoreRaw(Component.text("This is the default title!").style(nonItalic(NamedTextColor.GRAY)));
 
                 if (user.getTitles().getTitle() == RankTitle.DEFAULT) {
                     item
@@ -159,9 +159,9 @@ public final class RankMenu {
 
     private static ItemStack createHeaderItem(Material mat, String itemName, String description, @Nullable Enchantment enchantment) {
         var builder = ItemStacks.builder(mat)
-                .setName(Component.text(itemName).style(nonItalic(NamedTextColor.AQUA)))
-                .addLore(Component.empty())
-                .addLore(Component.text(description).style(nonItalic(NamedTextColor.GRAY)));
+                .setNameRaw(Component.text(itemName).style(nonItalic(NamedTextColor.AQUA)))
+                .addLoreRaw(Component.empty())
+                .addLoreRaw(Component.text(description).style(nonItalic(NamedTextColor.GRAY)));
 
         if (enchantment != null) {
             builder.addEnchant(enchantment, 1);
@@ -176,7 +176,7 @@ public final class RankMenu {
         return MenuNode.builder()
                 .setItem(
                         ItemStacks.builder(Material.PAPER)
-                                .setName(Component.text("Next page >").style(nonItalic(NamedTextColor.YELLOW)))
+                                .setNameRaw(Component.text("Next page >").style(nonItalic(NamedTextColor.YELLOW)))
                                 .setFlags(ItemFlag.HIDE_ATTRIBUTES)
                                 .build()
                 )
@@ -215,7 +215,7 @@ public final class RankMenu {
         return MenuNode.builder()
                 .setItem((user, context) -> {
                     var item = ItemStacks.builder(user.getTitles().hasTitle(title) ? Material.GLOBE_BANNER_PATTERN : Material.PAPER)
-                            .setName(title.getTruncatedPrefix().style(nonItalic(NamedTextColor.WHITE)));
+                            .setNameRaw(title.getTruncatedPrefix().style(nonItalic(NamedTextColor.WHITE)));
 
                     if (user.getTitles().getTitle() == title) {
                         item

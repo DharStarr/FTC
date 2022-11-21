@@ -1,18 +1,16 @@
 package net.forthecrown.useables.actions;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.TextJoiner;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.useables.util.UsageUtil;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextJoiner;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.Tag;
 import org.bukkit.entity.Player;
@@ -81,14 +79,6 @@ public class ActionItem extends UsageAction {
         return new ActionItem(
                 type,
                 UsageUtil.parseItems(reader, source)
-        );
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionItem fromJson(UsageType<ActionItem> type, JsonElement element) {
-        return new ActionItem(
-                type,
-                ImmutableList.of(JsonUtils.readItem(element))
         );
     }
 

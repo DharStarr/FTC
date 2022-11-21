@@ -18,6 +18,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -81,13 +83,21 @@ public class ResourceWorldListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
+        onBlockBecomeNonNatural(event);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        onBlockBecomeNonNatural(event);
+    }
+
+    private void onBlockBecomeNonNatural(BlockEvent event) {
         if (!testWorld(event.getBlock().getWorld())) {
             return;
         }
 
-        // Record the block being broken
         ResourceWorldTracker.get()
-                .onBlockBreak(Vectors.from(event.getBlock()));
+                .setNonNatural(Vectors.from(event.getBlock()));
     }
 
     // All entity types that aren't allowed to have their

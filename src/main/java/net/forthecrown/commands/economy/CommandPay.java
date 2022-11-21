@@ -1,6 +1,7 @@
 package net.forthecrown.commands.economy;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -11,6 +12,8 @@ import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.BannedWords;
 import net.forthecrown.core.admin.Mute;
 import net.forthecrown.core.admin.Punishments;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.grenadier.command.BrigadierCommand;
@@ -103,7 +106,7 @@ public class CommandPay extends FtcCommand {
                                   int amount = c.getArgument("amount", Integer.class);
                                   List<User> users = Arguments.getUsers(c, "players");
 
-                                  return pay(user, users, amount, null);
+                                  return pay(c, user, users, amount, null);
                               })
 
                               // /pay <user> <amount> <message>
@@ -115,14 +118,19 @@ public class CommandPay extends FtcCommand {
                                           List<User> users = Arguments.getUsers(c, "players");
                                           Component message = Arguments.getMessage(c, "message");
 
-                                          return pay(user, users, amount, message);
+                                          return pay(c, user, users, amount, message);
                                       })
                               )
                       )
                 );
     }
 
-    int pay(User user, List<User> targets, int amount, Component message) throws CommandSyntaxException {
+    int pay(CommandContext<CommandSource> c,
+            User user,
+            List<User> targets,
+            int amount,
+            Component message
+    ) throws CommandSyntaxException {
         if (!user.get(Properties.PAY)) {
             throw Exceptions.SENDER_PAY_DISABLED;
         }
@@ -134,11 +142,9 @@ public class CommandPay extends FtcCommand {
                 throw Exceptions.cannotAfford(amount);
             }
 
-            if (Users.testBlocked(user, target,
+            Users.testBlockedException(user, target,
                     PAY_BLOCKED, PAY_BLOCKED
-            )) {
-                return 0;
-            }
+            );
         }
 
         targets.removeIf(target -> {
@@ -193,6 +199,14 @@ public class CommandPay extends FtcCommand {
 
             paidAmount++;
             target.unloadIfOffline();
+
+            Transactions.builder()
+                    .type(TransactionType.PAY_COMMAND)
+                    .sender(user.getUniqueId())
+                    .target(target.getUniqueId())
+                    .extra("cmd='%s' targets=%s", c.getInput(), targets.size())
+                    .amount(amount)
+                    .log();
         }
 
         if (paidAmount > 1) {

@@ -66,15 +66,19 @@ public final class BannedWords {
     }
 
     public static boolean checkAndWarn(CommandSender sender, Component component) {
-        return checkAndWarn(sender, Text.plain(component));
+        return _checkAndWarn(sender, Text.plain(component));
     }
 
     public static boolean checkAndWarn(CommandSender sender, String input) {
+        return checkAndWarn(sender, Text.renderString(sender, input));
+    }
+
+    private static boolean _checkAndWarn(CommandSender sender, String input) {
         if (sender == null || sender.hasPermission(Permissions.IGNORE_SWEARS)) {
             return false;
         }
 
-        boolean result = contains(input);
+        boolean result = containsBannedWords(input);
 
         if (result) {
             if (!Cooldown.containsOrAdd(sender, COOLDOWN_CATEGORY, COOLDOWN_TIME)) {

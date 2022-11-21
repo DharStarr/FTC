@@ -90,7 +90,7 @@ public final class Punishments {
             uuid = user.getUniqueId();
         }
 
-        if(uuid == null) {
+        if (uuid == null) {
             return null;
         }
 

@@ -81,7 +81,7 @@ public final class Cooldown {
         boolean contains = contains(sender, category);
 
         // Sender is not in the map, add them lol
-        if(!contains) {
+        if (!contains) {
             add(sender, category, ticks);
         }
 
@@ -160,17 +160,9 @@ public final class Cooldown {
 
         // Since we just removed an entry from the category's list
         // we'll check if it's empty, if it is, remove it from the map
-        if(set1.isEmpty()) {
+        if (set1.isEmpty()) {
             COOLDOWN_MAP.remove(category);
         }
-    }
-
-    public static void testAndThrow(Audience audience) throws CommandSyntaxException {
-        testAndThrow(audience, GENERAL, NO_END_COOLDOWN);
-    }
-
-    public static void testAndThrow(Audience audience, int ticks) throws CommandSyntaxException {
-        testAndThrow(audience, GENERAL, ticks);
     }
 
     public static void testAndThrow(Audience audience, String category, int ticks) throws CommandSyntaxException {

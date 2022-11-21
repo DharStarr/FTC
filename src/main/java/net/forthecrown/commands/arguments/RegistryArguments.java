@@ -25,22 +25,33 @@ import net.forthecrown.useables.UsageTest;
 import net.forthecrown.useables.UsageType;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserTimeTracker;
+import net.forthecrown.waypoint.WaypointProperties;
+import net.forthecrown.waypoint.WaypointProperty;
 
 import java.util.concurrent.CompletableFuture;
 
 public class RegistryArguments<T> implements ArgumentType<Holder<T>>, VanillaMappedArgument {
 
-    public static final RegistryArguments<BlockStructure> STRUCTURE = new RegistryArguments<>(Structures.get().getRegistry(), "Structure");
+    public static final RegistryArguments<BlockStructure>
+            STRUCTURE = new RegistryArguments<>(Structures.get().getRegistry(), "Structure");
 
-    public static final RegistryArguments<KeyedBoss> DUNGEON_BOSS =  new RegistryArguments<>(Registries.DUNGEON_BOSSES, "Dungeon boss");
+    public static final RegistryArguments<KeyedBoss>
+            DUNGEON_BOSS =  new RegistryArguments<>(Registries.DUNGEON_BOSSES, "Dungeon boss");
 
-    public static final RegistryArguments<JailCell> JAIL_CELL = new RegistryArguments<>(Registries.JAILS, "Jail Cell");
+    public static final RegistryArguments<JailCell>
+            JAIL_CELL = new RegistryArguments<>(Registries.JAILS, "Jail Cell");
 
-    public static final RegistryArguments<SimpleNpc> NPC = new RegistryArguments<>(Registries.NPCS, "NPC");
+    public static final RegistryArguments<SimpleNpc>
+            NPC = new RegistryArguments<>(Registries.NPCS, "NPC");
 
-    public static final RegistryArguments<SellShopMenu> SELLS_SHOP = new RegistryArguments<>(Economy.get().getSellShop().getMenus(), "Menu");
+    public static final RegistryArguments<SellShopMenu>
+            SELLS_SHOP = new RegistryArguments<>(Economy.get().getSellShop().getMenus(), "Menu");
 
-    public static final RegistryArguments<TimeField> TIME_FIELDS = new RegistryArguments<>(UserTimeTracker.TIME_FIELDS, "TimeStamp");
+    public static final RegistryArguments<TimeField>
+            TIME_FIELDS = new RegistryArguments<>(UserTimeTracker.TIME_FIELDS, "TimeStamp");
+
+    public static final RegistryArguments<WaypointProperty>
+            WAYPOINT_PROPERTY = new RegistryArguments<>(WaypointProperties.REGISTRY, "Waypoint property");
 
     public static final RegistryArguments<UsageType<UsageAction>> USAGE_ACTION =  new RegistryArguments<>(
             ((Registry) Registries.USAGE_ACTIONS), "Usage action"

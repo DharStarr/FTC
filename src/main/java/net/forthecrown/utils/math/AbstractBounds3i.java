@@ -1,21 +1,17 @@
 package net.forthecrown.utils.math;
 
 import com.google.gson.JsonObject;
-import com.sk89q.worldedit.math.BlockVector3;
 import net.forthecrown.utils.JsonSerializable;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.Vector;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
+
+import static org.spongepowered.math.GenericMath.clamp;
 
 public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements JsonSerializable {
     protected final int
@@ -49,28 +45,10 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         return expand(x, y, z, x, y, z);
     }
 
-    public T expand(Direction dir, int amount) {
-        return expand(dir.getStepX(), dir.getStepY(), dir.getStepZ(), amount);
-    }
-
-    public T expand(BlockFace dir, int amount) {
-        return expand(dir.getModX(), dir.getModY(), dir.getModZ(), amount);
-    }
-
-    public T expand(int dirX, int dirY, int dirZ, int amount) {
-        return expand(
-                -dirX * amount,
-                -dirY * amount,
-                -dirZ * amount,
-                 dirZ * amount,
-                 dirZ * amount,
-                 dirZ * amount
-        );
-    }
-
     public T expand(int val) { 
         return expand(val, val, val, val, val, val); 
     }
+
     public T expand(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         return set(
                 this.minX - minX,
@@ -85,32 +63,15 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     public T contract(Vector3i vec3) {
         return contract(vec3.x(), vec3.y(), vec3.z());
     }
+
     public T contract(int x, int y, int z) {
         return contract(x, y, z, x, y, z);
-    }
-
-    public T contract(Direction dir, int amount) {
-        return contract(dir.getStepX(), dir.getStepY(), dir.getStepZ(), amount);
-    }
-
-    public T contract(BlockFace dir, int amount) {
-        return contract(dir.getModX(), dir.getModY(), dir.getModZ(), amount);
-    }
-
-    public T contract(int dirX, int dirY, int dirZ, int amount) {
-        return contract(
-                -dirX * amount,
-                -dirY * amount,
-                -dirZ * amount,
-                 dirX * amount,
-                 dirY * amount,
-                 dirZ * amount
-        );
     }
 
     public T contract(int val) { 
         return contract(val, val, val, val, val, val); 
     }
+
     public T contract(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         return set(
                 this.minX + minX,
@@ -122,7 +83,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         );
     }
 
-    public T combine(AbstractBounds3i<T>... others) {
+    public T combine(AbstractBounds3i... others) {
         T result = clone();
 
         for (AbstractBounds3i<T> o: others) {
@@ -132,7 +93,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         return result;
     }
 
-    public T combine(AbstractBounds3i<T> o) {
+    public T combine(AbstractBounds3i o) {
         return combine(o.minX(), o.minY(), o.minZ(), o.maxX(), o.maxY(), o.maxZ());
     }
 
@@ -162,7 +123,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         );
     }
 
-    public T intersection(AbstractBounds3i<T> o) {
+    public T intersection(AbstractBounds3i o) {
         return intersection(o.minX(), o.minY(), o.minZ(), o.maxX(), o.maxY(), o.maxZ());
     }
 
@@ -176,30 +137,6 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
                 Math.min(this.maxX, maxX),
                 Math.min(this.maxY, maxY),
                 Math.min(this.maxZ, maxZ)
-        );
-    }
-
-    public T move(Direction dir) {
-        return move(dir, 1);
-    }
-
-    public T move(Direction dir, int amount) {
-        return move(dir.getStepX(), dir.getStepY(), dir.getStepZ(), amount);
-    }
-
-    public T move(BlockFace dir) {
-        return move(dir, 1);
-    }
-
-    public T move(BlockFace dir, int amount) {
-        return move(dir.getModX(), dir.getModY(), dir.getModZ(), amount);
-    }
-
-    public T move(int xDir, int yDir, int zDir, int amount) {
-        return move(
-                xDir * amount,
-                yDir * amount,
-                zDir * amount
         );
     }
 
@@ -222,20 +159,8 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         return contains(vec.x(), vec.y(), vec.z());
     }
 
-    public boolean contains(BlockVector3 vec) {
-        return contains(vec.getX(), vec.getY(), vec.getZ());
-    }
-
-    public boolean contains(Vector vec) {
-        return contains(vec.getBlockX(), vec.getBlockY(), vec.getBlockZ());
-    }
-
-    public boolean contains(Vec3i vec) {
-        return contains(vec.getX(), vec.getY(), vec.getZ());
-    }
-
     public boolean contains(Entity entity) {
-        return contains(entity.getLocation());
+        return overlaps(entity.getBoundingBox());
     }
 
     public boolean contains(Block block) {
@@ -252,7 +177,20 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
                 y >= minY && y <= maxY;
     }
 
-    public boolean overlaps(AbstractBounds3i<T> o) {
+    public boolean contains(double x, double y, double z) {
+        return x >= minX && x <= maxX &&
+                z >= minZ && z <= maxZ &&
+                y >= minY && y <= maxY;
+    }
+
+    public boolean overlaps(org.bukkit.util.BoundingBox box) {
+        return overlaps(
+                box.getMinX(), box.getMinY(), box.getMinZ(),
+                box.getMaxX(), box.getMaxY(), box.getMaxZ()
+        );
+    }
+
+    public boolean overlaps(AbstractBounds3i o) {
         return overlaps(o.minX(), o.minY(), o.minZ(), o.maxX(), o.maxY(), o.maxZ());
     }
 
@@ -262,7 +200,13 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
                 && this.maxY >= minY && this.minY <= maxY;
     }
 
-    public boolean contains(AbstractBounds3i<T> o) {
+    public boolean overlaps(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+        return this.maxX > minX && this.minX < maxX
+                && this.maxZ > minZ && this.minZ < maxZ
+                && this.maxY > minY && this.minY < maxY;
+    }
+
+    public boolean contains(AbstractBounds3i o) {
         return contains(o.minX(), o.minY(), o.minZ(), o.maxX(), o.maxY(), o.maxZ());
     }
 
@@ -318,10 +262,6 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
 
     public T setMaxZ(int maxZ) {
         return set(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    public BoundingBox toVanilla() {
-        return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     public org.bukkit.util.BoundingBox toBukkit() {
@@ -423,6 +363,14 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
 
     public int[] toIntArray() {
         return new int[] { minX(), minY(), minZ(), maxX(), maxY(), maxZ() };
+    }
+
+    public Vector3d getClosestPosition(Vector3d pos) {
+        return Vector3d.from(
+                clamp(pos.x(), minX, maxX),
+                clamp(pos.y(), minY, maxY),
+                clamp(pos.z(), minZ, maxZ)
+        );
     }
 
     @Override

@@ -57,7 +57,7 @@ public class LevelArchiveStorage {
         BlockStructure structure = new BlockStructure();
         StructureFillConfig config = StructureFillConfig.builder()
                 .blockPredicate(block -> !block.getType().isAir())
-                .area(level.getLevelBounds().toWorldBounds(DungeonWorld.get()))
+                .area(level.getChunkMap().getTotalArea().toWorldBounds(DungeonWorld.get()))
                 .build();
 
         structure.fill(config);

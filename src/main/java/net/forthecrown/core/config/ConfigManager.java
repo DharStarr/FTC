@@ -137,6 +137,5 @@ public class ConfigManager {
         void accept(Field field) throws ReflectiveOperationException;
     }
 
-
     private record ConfigFileData(Path filePath, Class configClass) {}
 }

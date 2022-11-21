@@ -1,17 +1,17 @@
 package net.forthecrown.economy.market;
 
-import com.destroystokyo.paper.profile.CraftPlayerProfile;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.registry.Keys;
-import net.forthecrown.utils.math.Vectors;
-import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.utils.text.format.UnitFormat;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -40,7 +40,7 @@ public class ShopEntrance implements JsonSerializable {
     public static final NamespacedKey NOTICE_KEY = Keys.key("ftc", "market_notice");
     public static final NamespacedKey DOOR_SIGN = Keys.key("ftc", "door_sign");
 
-    public static final CraftPlayerProfile NOTICE_PROFILE = Util.profileWithTexture(
+    public static final PlayerProfile NOTICE_PROFILE = Util.profileWithTexture(
             "Pearl", Identity.nil().uuid(),
             "7d16ae951120394f368f2250b7c3ad3fb12cea55ec1b2db5a94d1fb7fd4b6fa"
     );

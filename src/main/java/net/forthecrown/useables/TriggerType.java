@@ -1,7 +1,7 @@
 package net.forthecrown.useables;
 
 import net.forthecrown.utils.math.WorldBounds3i;
-import org.spongepowered.math.vector.Vector3i;
+import org.bukkit.util.BoundingBox;
 
 /**
  * A {@link UsableTrigger}'s type.
@@ -14,34 +14,52 @@ public enum TriggerType {
     /** Type which allows activation if the player has entered the trigger */
     ENTER {
         @Override
-        public boolean shouldRun(WorldBounds3i bounds3i, Vector3i pos, Vector3i dest) {
-            return bounds3i.contains(dest) && !bounds3i.contains(pos);
+        public boolean shouldRun(WorldBounds3i bounds3i,
+                                 BoundingBox pos,
+                                 BoundingBox dest
+        ) {
+            return bounds3i.overlaps(dest)
+                    && !bounds3i.overlaps(pos);
         }
     },
 
     /** Allows activation when the player is leaving the trigger */
     EXIT {
         @Override
-        public boolean shouldRun(WorldBounds3i bounds3i, Vector3i pos, Vector3i dest) {
-            return !bounds3i.contains(dest) && bounds3i.contains(pos);
+        public boolean shouldRun(WorldBounds3i bounds3i,
+                                 BoundingBox pos,
+                                 BoundingBox dest
+        ) {
+            return !bounds3i.overlaps(dest)
+                    && bounds3i.overlaps(pos);
         }
     },
 
     /** Activates either when the player leaves or enters */
     EITHER {
         @Override
-        public boolean shouldRun(WorldBounds3i bounds3i, Vector3i pos, Vector3i dest) {
-            return EXIT.shouldRun(bounds3i, pos, dest) || ENTER.shouldRun(bounds3i, pos, dest);
+        public boolean shouldRun(WorldBounds3i bounds3i,
+                                 BoundingBox pos,
+                                 BoundingBox dest
+        ) {
+            return EXIT.shouldRun(bounds3i, pos, dest)
+                    || ENTER.shouldRun(bounds3i, pos, dest);
         }
     },
 
     /** Activates whenever a player moves inside the trigger */
     MOVE {
         @Override
-        public boolean shouldRun(WorldBounds3i bounds3i, Vector3i pos, Vector3i dest) {
-            return bounds3i.contains(dest);
+        public boolean shouldRun(WorldBounds3i bounds3i,
+                                 BoundingBox pos,
+                                 BoundingBox dest
+        ) {
+            return bounds3i.overlaps(dest);
         }
     };
 
-    public abstract boolean shouldRun(WorldBounds3i bounds3i, Vector3i pos, Vector3i dest);
+    public abstract boolean shouldRun(WorldBounds3i bounds3i,
+                                      BoundingBox pos,
+                                      BoundingBox dest
+    );
 }

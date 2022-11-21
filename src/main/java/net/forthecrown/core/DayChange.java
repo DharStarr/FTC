@@ -52,12 +52,13 @@ public class DayChange {
         return INSTANCE;
     }
 
-    private void changeDay() {
+    public void changeDay() {
         LOGGER.info("Updating date");
 
         ZonedDateTime time = ZonedDateTime.now();
         listeners.forEach(r -> {
             try {
+                LOGGER.debug("Updating date of {}", r.getClass().getSimpleName());
                 r.onDayChange(time);
             } catch (Throwable e){
                 LOGGER.error("Could not update date of " + r.getClass().getSimpleName(), e);

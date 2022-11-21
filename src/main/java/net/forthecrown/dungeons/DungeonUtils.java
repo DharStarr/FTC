@@ -31,8 +31,8 @@ public final class DungeonUtils {
 
     public static ItemStack makeDungeonItem(Material material, int amount, @Nullable Component name) {
         return ItemStacks.builder(material, amount)
-                .setName(name)
-                .addLore(DUNGEON_LORE)
+                .setNameRaw(name)
+                .addLoreRaw(DUNGEON_LORE)
                 .build();
     }
 
@@ -67,10 +67,6 @@ public final class DungeonUtils {
 
     public static @Nullable Player getOptimalTarget(LivingEntity e, WorldBounds3i inBox){
         Player result = getNearestVisiblePlayer(e, inBox);
-
-        if (e.getLastDamageCause() == null) {
-            return result;
-        }
 
         if (!(e.getLastDamageCause() instanceof EntityDamageByEntityEvent event)) {
             return result;

@@ -4,7 +4,9 @@ import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,8 +32,7 @@ public class Transformers {
 
     // A list of all current data transformers
     private static final DataUpdater[] CURRENT_TRANSFORMERS = {
-            new UsablesJsonToTag(),
-            new VoteTopUpdater()
+            new RegionsToWaypointsUpdate()
     };
 
     private static final Set<String> COMPLETED_TRANSFORMERS = new HashSet<>();
@@ -57,12 +58,11 @@ public class Transformers {
             return;
         }
 
-        try {
-            BufferedReader reader = Files.newBufferedReader(f);
+        try (BufferedReader reader = Files.newBufferedReader(f)) {
             reader.lines()
                     .forEach(s -> {
-                        LOGGER.info("Loaded completed transformer: {}", s);
                         COMPLETED_TRANSFORMERS.add(s);
+                        LOGGER.debug("Loaded completed updater: '{}'", s);
                     });
         } catch (IOException e) {
             LOGGER.error("Couldn't load transformer data file", e);
@@ -98,6 +98,7 @@ public class Transformers {
 
         if (DataUpdater.LOGGER.getOutput() != null) {
             DataUpdater.LOGGER.close();
+            FTC.getLogger().info("Completed all data updaters");
         }
     }
 
@@ -111,10 +112,11 @@ public class Transformers {
             FTC.getLogger().info("Running current data updaters!");
         }
 
-        if (c.runUpdater()) {
-            COMPLETED_TRANSFORMERS.add(c.getClass().getName());
+        if (!c.runUpdater()) {
+            return;
         }
 
+        COMPLETED_TRANSFORMERS.add(c.getClass().getName());
         save();
     }
 }

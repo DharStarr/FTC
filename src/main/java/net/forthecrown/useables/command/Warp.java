@@ -1,10 +1,8 @@
 package net.forthecrown.useables.command;
 
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.user.UserTeleport;
 import net.forthecrown.user.Users;
-import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.TagUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -22,11 +20,6 @@ public class Warp extends CommandUsable {
     public Warp(String name, Location destination) {
         super(name);
         this.destination = destination;
-    }
-
-    public Warp(String name, JsonObject json) throws CommandSyntaxException {
-        super(name, json);
-        setDestination(JsonUtils.readLocation(json.getAsJsonObject("location")));
     }
 
     public Warp(String name, CompoundTag tag) throws CommandSyntaxException {

@@ -1,5 +1,6 @@
 package net.forthecrown.user.data;
 
+import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.script.Scripts;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.JsonSerializable;
 import net.forthecrown.utils.Util;
@@ -40,9 +42,10 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
             KEY_GEMS = "gems",
             KEY_TAG = "tag",
             KEY_COMMANDS = "onClaim",
-            KEY_CLAIMED = "claimed";
+            KEY_CLAIMED = "claimed",
+            KEY_SCRIPT = "script";
 
-    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
+    /* -------------------------- INSTANCE FIELDS --------------------------- */
 
     /** The item the attachment gives upon being claimed */
     private ItemStack item;
@@ -63,6 +66,17 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
     /** True, if this attachment's rewards have been claimed */
     private boolean claimed;
 
+    /**
+     * The Attachment's script, ran when claimed.
+     * <p>
+     * This script is executed by calling a 'onMailClaim' method with
+     * 1 parameter. The user object that's claiming the attachment is
+     * passed directly to this script
+     */
+    private String script;
+
+    /* ------------------------ STATIC CONSTRUCTORS ------------------------- */
+
     public static MailAttachment item(ItemStack item) {
         MailAttachment attachment = new MailAttachment();
         attachment.item = item;
@@ -70,28 +84,7 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
         return attachment;
     }
 
-    public static MailAttachment rhines(int rhines) {
-        MailAttachment attachment = new MailAttachment();
-        attachment.rhines = rhines;
-
-        return attachment;
-    }
-
-    public static MailAttachment gems(int gems) {
-        MailAttachment attachment = new MailAttachment();
-        attachment.gems = gems;
-
-        return attachment;
-    }
-
-    public static MailAttachment of(ItemStack item, int rhines, int gems) {
-        MailAttachment attachment = new MailAttachment();
-        attachment.gems = gems;
-        attachment.rhines = rhines;
-        attachment.item = item;
-
-        return attachment;
-    }
+    /* ------------------------------ METHODS ------------------------------- */
 
     /**
      * Checks if the given attachment is empty or null
@@ -106,19 +99,25 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
         writer.write(claimed ? "Items claimed" : "Items not claimed");
 
         if (hasItem()) {
-            writer.formattedLine("Item: &e{0, item}", item);
+            writer.field("Item", Text.itemDisplayName(item));
         }
 
         if (rhines > 0) {
-            writer.formattedLine("Rhines: &e{0, rhines}", rhines);
+            writer.field("Rhines", UnitFormat.rhines(rhines));
         }
 
         if (gems > 0) {
-            writer.formattedLine("Gems: &e{0, gems}", gems);
+            writer.field("Gems", UnitFormat.gems(gems));
         }
 
-        if (FTC.inDebugMode() && !Util.isNullOrBlank(tag)) {
-            writer.formattedLine("Tag: '&e{0}&r'", tag);
+        if (FTC.inDebugMode()) {
+            if (!Strings.isNullOrEmpty(tag)) {
+                writer.field("Tag", tag);
+            }
+
+            if (!Strings.isNullOrEmpty(script)) {
+                writer.field("Script", script);
+            }
         }
     }
 
@@ -158,10 +157,18 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
         }
 
         if (hasItem()) {
-            user.getInventory().addItem(item.clone());
+            Util.giveOrDropItem(
+                    user.getInventory(),
+                    user.getLocation(),
+                    item.clone()
+            );
         }
 
         setClaimed(true);
+
+        if (!Strings.isNullOrEmpty(script)) {
+            Scripts.run(script, "onMailClaim", user);
+        }
     }
 
     public void testClaimable(User user) throws CommandSyntaxException {
@@ -175,7 +182,10 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
     }
 
     public boolean isEmpty() {
-        return rhines <= 0 && gems <= 0 && !hasItem();
+        return rhines <= 0
+                && gems <= 0
+                && !hasItem()
+                && Strings.isNullOrEmpty(script);
     }
 
     @Override
@@ -187,7 +197,7 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
                 .asHoverEvent(op);
     }
 
-    /* ----------------------------- SERIALIZATION ------------------------------ */
+    /* --------------------------- SERIALIZATION ---------------------------- */
 
     @Override
     public JsonElement serialize() {
@@ -209,8 +219,12 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
             json.add(KEY_RHINES, rhines);
         }
 
-        if (!Util.isNullOrBlank(tag)) {
+        if (!Strings.isNullOrEmpty(tag)) {
             json.add(KEY_TAG, tag);
+        }
+
+        if (!Strings.isNullOrEmpty(script)) {
+            json.add(KEY_SCRIPT, script);
         }
 
         json.add(KEY_CLAIMED, claimed);
@@ -264,6 +278,10 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
 
         if (json.has(KEY_CLAIMED)) {
             result.setClaimed(json.getBool(KEY_CLAIMED));
+        }
+
+        if (json.has(KEY_SCRIPT)) {
+            result.setScript(json.getString(KEY_SCRIPT));
         }
 
         return result;

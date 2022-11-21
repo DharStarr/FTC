@@ -8,6 +8,8 @@ import net.forthecrown.utils.VanillaAccess;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.entity.Player;
 
+import java.util.concurrent.Executor;
+
 /**
  * A packet's read write context
  */
@@ -36,13 +38,19 @@ public class PacketCall {
      * Gets the packet listener connection the
      * server-side player uses to recieve packets.
      */
-    @Getter
     private final ServerGamePacketListenerImpl packetListener;
+
+    /**
+     * Main thread executor to use for delegating tasks to
+     * main thread, as packets are handled over async IO threads
+     */
+    private final Executor executor;
 
     PacketCall(Player player) {
         this.player = player;
         this.user = Users.get(player);
 
         this.packetListener = VanillaAccess.getPacketListener(player);
+        this.executor = VanillaAccess.getServer();
     }
 }

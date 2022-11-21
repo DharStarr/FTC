@@ -1,9 +1,10 @@
 package net.forthecrown.core.holidays;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.*;
-import net.forthecrown.core.Messages;
+import net.forthecrown.core.script.Scripts;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;
@@ -51,9 +52,6 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
 
     public ServerHolidays() {
         super(PathUtil.pluginPath("holidays.dat"));
-
-        DayChange.get().addListener(this);
-        AutoSave.get().addCallback(this::save);
     }
 
     public static ServerHolidays get() {
@@ -62,6 +60,9 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
 
     private static void init() {
         get().reload();
+
+        DayChange.get().addListener(get());
+        AutoSave.get().addCallback(get()::save);
     }
 
     @Override
@@ -161,6 +162,11 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
      * @param holiday The holiday to disable
      */
     public void deactivate(Holiday holiday) {
+        if (!Strings.isNullOrEmpty(holiday.getPeriodEndScript())) {
+            Scripts.read(holiday.getPeriodEndScript())
+                    .invoke("onHolidayEnd");
+        }
+
         UserManager.get().getAllUsers().whenComplete((users, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("Couldn't get all users", throwable);
@@ -201,8 +207,24 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
     public void runHoliday(Holiday holiday) {
         Validate.isTrue(!holiday.hasNoRewards(), "Holiday has no rewards to give");
 
+        if (holiday.getPeriod().isExact()) {
+            if (!Strings.isNullOrEmpty(holiday.getActivationScript())) {
+                Scripts.run(
+                        holiday.getActivationScript(),
+                        "onHolidayRun"
+                );
+            }
+        } else {
+            if (!Strings.isNullOrEmpty(holiday.getPeriodStartScript())) {
+                Scripts.run(
+                        holiday.getPeriodStartScript(),
+                        "onHolidayStart"
+                );
+            }
+        }
+
         UserManager.get().getAllUsers().whenComplete((users, throwable) -> {
-            if(throwable != null) {
+            if (throwable != null) {
                 LOGGER.error("Couldn't get all users", throwable);
                 return;
             }
@@ -251,7 +273,9 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
         } else {
             builder.append(
                     Component.text("Holiday!", NamedTextColor.YELLOW)
-                            .append(Component.text(" What holiday? We don't know :D", NamedTextColor.GRAY))
+                            .append(Component.text(" What holiday? We don't know :D",
+                                    NamedTextColor.GRAY
+                            ))
             );
         }
 
@@ -309,9 +333,11 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
         Container chest = (Container) meta.getBlockState();
         Inventory inv = chest.getInventory();
 
-        for (int i = 0; i < INV_SIZE; i++) {
-            ItemStack instItem = holiday.getInventory().getItem(i);
-            if(ItemStacks.isEmpty(instItem)) continue;
+        var it = ItemStacks.nonEmptyIterator(holiday.getInventory());
+
+        while (it.hasNext()) {
+            int i = it.nextIndex();
+            var instItem = it.next();
 
             instItem = instItem.clone();
             ItemMeta meta1 = instItem.getItemMeta();

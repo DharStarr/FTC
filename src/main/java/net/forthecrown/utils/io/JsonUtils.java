@@ -2,9 +2,11 @@ package net.forthecrown.utils.io;
 
 import com.google.gson.*;
 import com.google.gson.internal.bind.TypeAdapters;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.JsonOps;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.kyori.adventure.key.Key;
@@ -29,6 +31,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Utility class for methods to make serializing various objects
@@ -240,5 +244,45 @@ public final class JsonUtils {
                 return deserializer.apply(element);
             }
         };
+    }
+
+    public static Stream<JsonElement> stream(JsonArray array) {
+        return StreamSupport.stream(array.spliterator(), false);
+    }
+
+    public static JsonArray ofStream(Stream<JsonElement> stream) {
+        return (JsonArray) JsonOps.INSTANCE.createList(stream);
+    }
+
+    public static class EnumTypeAdapter implements TypeAdapterFactory {
+        @Override
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            if (!type.getRawType().isEnum()) {
+                return null;
+            }
+
+            Class<? extends Enum> eClass = (Class<? extends Enum>) type.getRawType();
+
+            return new TypeAdapter<>() {
+                @Override
+                public void write(JsonWriter out, T value) throws IOException {
+                    Enum e = (Enum) value;
+                    out.value(e.name().toLowerCase());
+                }
+
+                @Override
+                public T read(JsonReader in) throws IOException {
+                    String name = in.nextString().toUpperCase();
+
+                    for (Enum constant: eClass.getEnumConstants()) {
+                        if (constant.name().equals(name)) {
+                            return (T) constant;
+                        }
+                    }
+
+                    return null;
+                }
+            };
+        }
     }
 }

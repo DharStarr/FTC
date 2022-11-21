@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.commands.manager.CmdValidate;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
@@ -93,7 +93,7 @@ public class CommandNotes extends FtcCommand {
                                             }
 
                                             int index = c.getArgument("index", Integer.class);
-                                            CmdValidate.index(index, notes.size());
+                                            Commands.ensureIndexValid(index, notes.size());
 
                                             notes.remove(index - 1);
 

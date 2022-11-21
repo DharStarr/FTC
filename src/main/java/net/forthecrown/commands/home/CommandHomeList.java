@@ -10,7 +10,9 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.UserHomes;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CommandHomeList extends FtcCommand {
     public CommandHomeList(){
@@ -59,6 +61,20 @@ public class CommandHomeList extends FtcCommand {
         } else {
             builder.append(Messages.homeListHeader(user));
         }
+
+        if (!Permissions.MAX_HOMES.hasUnlimited(user)) {
+            int max = Permissions.MAX_HOMES.getTier(user);
+            int homeCount = homes.size();
+
+            builder.append(
+                    Text.format("({0, number} / {1, number})",
+                            NamedTextColor.YELLOW,
+                            homeCount, max
+                    )
+            );
+        }
+
+        builder.append(Component.text(": ", NamedTextColor.GOLD));
 
         String prefix = self ? "" : user.getName() + ":";
         builder.append(Messages.listHomes(homes, "/homes " + prefix));

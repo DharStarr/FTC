@@ -138,4 +138,9 @@ public class Slot {
     public int hashCode() {
         return index;
     }
+
+    @Override
+    public String toString() {
+        return  "(x=" + column + ", y=" + row + ")";
+    }
 }

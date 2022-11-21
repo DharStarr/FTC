@@ -137,7 +137,7 @@ public class CommandSelfOrUser extends FtcCommand {
                         if (set.contains(id)) {
                             state = !set.remove(id);
                         } else {
-                            state = !set.add(id);
+                            state = set.add(id);
                         }
 
                         sendMessages(user, source, self, state);

@@ -1,6 +1,5 @@
 package net.forthecrown.useables;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -29,7 +28,6 @@ public class UsageType<T extends UsageInstance> {
 
     private final Class<T> typeClass;
 
-    ReflectionExecutable<T> jsonLoader;
     ReflectionExecutable<T> tagLoader;
     ReflectionExecutable<T> parser;
 
@@ -45,11 +43,9 @@ public class UsageType<T extends UsageInstance> {
 
         findConstructors(this);
 
-        boolean hasNullConstructor = jsonLoader == null
-                || tagLoader == null
-                || parser == null;
+        boolean requiresEmptyConstructor = tagLoader == null || parser == null;
 
-        if (hasNullConstructor && emptyConstructor == null) {
+        if (requiresEmptyConstructor && emptyConstructor == null) {
             throw new IllegalStateException(
                     "Missing 1 or more constructors and missing an empty constructor"
             );
@@ -68,10 +64,6 @@ public class UsageType<T extends UsageInstance> {
 
     public T load(Tag tag) throws CommandSyntaxException {
         return orEmpty(tagLoader, tag);
-    }
-
-    public T load(JsonElement element) throws CommandSyntaxException {
-        return orEmpty(jsonLoader, element);
     }
 
     public T create() throws CommandSyntaxException {
@@ -105,7 +97,7 @@ public class UsageType<T extends UsageInstance> {
         } catch (InvocationTargetException exc) {
 
             // Invocation target exception means the constructor or
-            // method screwed up and it's not our fault, so we throw
+            // method screwed up, and it's not our fault, so we throw
             // the cause of the exception
             throw new IllegalStateException(exc.getCause());
         } catch (ReflectiveOperationException e) {

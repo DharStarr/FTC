@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.Messages;
 import net.forthecrown.economy.Economy;
+import net.forthecrown.economy.TransactionType;
+import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.UserShopData;
 import net.forthecrown.user.property.Properties;
@@ -103,6 +105,14 @@ public final class ItemSeller {
         user.getComponent(UserShopData.class)
                 .add(sell.getItemData().getMaterial(), result.getEarned());
 
+        // Log transaction
+        Transactions.builder()
+                .target(user.getUniqueId().toString())
+                .extra("item_type=%s sold=%s", material, result.getSold())
+                .type(TransactionType.SELL_SHOP)
+                .amount(result.getEarned())
+                .log();
+
         if (send) {
             user.sendMessage(Messages.soldItems(result, material));
         }
@@ -160,9 +170,6 @@ public final class ItemSeller {
         Int2ObjectMap<ItemStack> items = new Int2ObjectOpenHashMap<>();
         int found = 0;
         int target = user.get(Properties.SELL_AMOUNT).getValue();
-
-        boolean includeNamed = user.get(Properties.SELLING_NAMED_ITEMS);
-        boolean includeLore = user.get(Properties.SELLING_LORE_ITEMS);
 
         var inventory = user.getInventory();
         var it = ItemStacks.nonEmptyIterator(inventory);
@@ -231,7 +238,8 @@ public final class ItemSeller {
                 item.getType(),
                 price,
                 user.getComponent(UserShopData.class),
-                item.getAmount(), item.getAmount()
+                item.getAmount(),
+                item.getAmount()
         );
 
         // Return the seller with a singleton map that has the

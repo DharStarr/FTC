@@ -1,7 +1,6 @@
 package net.forthecrown.utils;
 
-import com.destroystokyo.paper.profile.CraftPlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.errorprone.annotations.FormatMethod;
 import com.google.errorprone.annotations.FormatString;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -23,9 +22,10 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -64,19 +64,22 @@ public final class Util {
         return object;
     }
 
-    public static CraftPlayerProfile profileWithTexture(@Nullable String name, @Nullable UUID id, String textureID) {
+    public static PlayerProfile profileWithTexture(@Nullable String name,
+                                                   @Nullable UUID id,
+                                                   String textureID
+    ) {
         var textureLink = "http://textures.minecraft.net/texture/" + textureID;
-        CraftPlayerProfile profile = new CraftPlayerProfile(id, name);
+        PlayerProfile profile = Bukkit.getServer().createProfile(id, name);
 
-        profile.setProperty(
-                new ProfileProperty(
-                        "textures",
-                        Base64.getEncoder().encodeToString(
-                                ("{\"textures\":{\"SKIN\":{\"url\":\"" + textureLink + "\"}}}").getBytes()
-                        )
-                )
-        );
+        var textures = profile.getTextures();
 
+        try {
+            textures.setSkin(new URL(textureLink));
+        } catch (MalformedURLException exc) {
+            FTC.getLogger().error("Couldn't set textures of profile", exc);
+        }
+
+        profile.setTextures(textures);
         return profile;
     }
 
@@ -89,7 +92,11 @@ public final class Util {
             pos = pos.withY(i);
             var block = Vectors.getBlock(pos, world);
 
-            if (block.isCollidable() || block.isSolid()) {
+            if (block.isEmpty() || block.isPassable()) {
+                continue;
+            }
+
+            if (block.isSolid()) {
                 return false;
             }
         }
@@ -105,7 +112,9 @@ public final class Util {
         }
     }
 
-    public static Region getSelectionSafe(com.sk89q.worldedit.entity.Player wePlayer) throws CommandSyntaxException {
+    public static Region getSelectionSafe(com.sk89q.worldedit.entity.Player wePlayer)
+            throws CommandSyntaxException
+    {
         Region selection;
 
         try {
@@ -117,17 +126,7 @@ public final class Util {
         return selection;
     }
 
-    public static <F, T> List<T> fromIterable(Iterable<F> from, Function<F, T> converter){
-        List<T> convert = new ArrayList<>();
-
-        for (F f: from) {
-            convert.add(converter.apply(f));
-        }
-
-        return convert;
-    }
-
-    public static boolean isNullOrEmpty(@Nullable Collection<?> collection){
+    public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
@@ -145,11 +144,14 @@ public final class Util {
         }
     }
 
-    public static <T> Set<T> pickUniqueEntries(List<T> list, Random random, int amount) {
+    public static <T> Set<T> pickUniqueEntries(List<T> list,
+                                               Random random,
+                                               int amount
+    ) {
         Validate.isTrue(amount <= list.size());
 
         if (amount == list.size()) {
-            return new ObjectOpenHashSet<>(amount);
+            return new ObjectOpenHashSet<>(list);
         }
 
         Set<T> result = new ObjectOpenHashSet<>();
@@ -164,7 +166,9 @@ public final class Util {
     }
 
     public static int getDataVersion() {
-        return SharedConstants.getCurrentVersion().getWorldVersion();
+        return SharedConstants.getCurrentVersion()
+                .getDataVersion()
+                .getVersion();
     }
 
     public static boolean isPluginEnabled(String s) {
@@ -183,5 +187,15 @@ public final class Util {
                 Bukkit.getConsoleSender(),
                 format.formatted(args)
         );
+    }
+
+    /**
+     * Creates a new illegal argument exception
+     * @param format The message format
+     * @param args The arguments to give to the message
+     * @return The created message
+     */
+    public static @FormatMethod IllegalArgumentException newException(@FormatString String format, Object... args) {
+        return new IllegalArgumentException(String.format(format, args));
     }
 }

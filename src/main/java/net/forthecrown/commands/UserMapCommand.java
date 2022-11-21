@@ -11,18 +11,18 @@ import net.forthecrown.core.Messages;
 import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserScoreMap;
+import net.forthecrown.user.UserDataMap;
 import net.kyori.adventure.text.Component;
 
 import static net.forthecrown.utils.text.Text.format;
 
 public class UserMapCommand extends FtcCommand {
 
-    private final UserScoreMap map;
+    private final UserDataMap map;
     private final Long2ObjectFunction<Component> displayProvider;
 
     public UserMapCommand(String name,
-                          UserScoreMap map,
+                          UserDataMap map,
                           Long2ObjectFunction<Component> displayProvider,
                           String... aliases
     ) {

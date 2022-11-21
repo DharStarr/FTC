@@ -11,6 +11,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 @ConfigData(filePath = "rules.json")
 public @UtilityClass class ServerRules {
+    // Use array, because that's safer for GSON to use
     public Component[] rules = new Component[0];
 
     public ComponentLike display() {

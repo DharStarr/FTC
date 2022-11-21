@@ -95,7 +95,10 @@ public class CommandTpask extends FtcCommand {
         }
     }
 
-    public static void testWorld(World world, CommandSender sender, CommandSyntaxException exc) throws CommandSyntaxException {
+    public static void testWorld(World world,
+                                 CommandSender sender,
+                                 CommandSyntaxException exc
+    ) throws CommandSyntaxException {
         if (sender.hasPermission(Permissions.WORLD_BYPASS)) {
             return;
         }

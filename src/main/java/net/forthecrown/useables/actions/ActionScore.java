@@ -1,12 +1,10 @@
 package net.forthecrown.useables.actions;
 
-import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.core.registry.FtcKeyed;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.grenadier.CommandSource;
@@ -14,7 +12,7 @@ import net.forthecrown.grenadier.types.args.ArgsArgument;
 import net.forthecrown.grenadier.types.args.Argument;
 import net.forthecrown.grenadier.types.scoreboard.ObjectiveArgument;
 import net.forthecrown.useables.*;
-import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -101,19 +99,6 @@ public class ActionScore extends UsageAction {
                 type,
                 parsed.get(VAL_ARG),
                 parsed.get(OBJ_ARG).getName()
-        );
-    }
-
-    @UsableConstructor(ConstructType.JSON)
-    public static ActionScore fromJson(UsageType<ActionScore> type, JsonElement element) throws CommandSyntaxException {
-        JsonWrapper wrapper = JsonWrapper.wrap(element.getAsJsonObject());
-        float amount = wrapper.getFloat("amount");
-        Objective obj = ObjectiveArgument.objective().parse(new StringReader(wrapper.getString("objective")));
-
-        return new ActionScore(
-                type,
-                amount,
-                obj.getName()
         );
     }
 
