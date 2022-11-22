@@ -33,18 +33,23 @@ import java.util.Set;
 import static net.kyori.adventure.text.Component.text;
 
 public @UtilityClass class Waypoints {
+    /* ------------------------- COLUMN CONSTANTS --------------------------- */
+
+    /** The required center column for guild waypoints */
     public final Material[] GUILD_COLUMN = {
             Material.STONE_BRICKS,
             Material.STONE_BRICKS,
             Material.LODESTONE,
     };
 
+    /** The required center column for player waypoints */
     public final Material[] PLAYER_COLUMN = {
             Material.STONE_BRICKS,
             Material.STONE_BRICKS,
             Material.CHISELED_STONE_BRICKS,
     };
 
+    /** The required center column for region poles */
     public final Material[] REGION_POLE_COLUMN = {
             Material.GLOWSTONE,
             Material.GLOWSTONE,

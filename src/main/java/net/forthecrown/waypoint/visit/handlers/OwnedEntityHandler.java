@@ -9,7 +9,10 @@ import net.forthecrown.utils.math.WorldBounds3i;
 import net.forthecrown.waypoint.visit.VisitHandler;
 import net.forthecrown.waypoint.visit.WaypointVisit;
 import org.bukkit.Location;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Tameable;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +21,6 @@ import java.util.UUID;
 public class OwnedEntityHandler implements VisitHandler {
     public ObjectSet<UUID> ignored = new ObjectOpenHashSet<>();
     final List<Entity> toTeleport = new ObjectArrayList<>();
-    boolean hasLeashed = false;
     private Location entityTpLocation;
 
     @Override
@@ -37,31 +39,28 @@ public class OwnedEntityHandler implements VisitHandler {
 
         WorldBounds3i box = visit.getNearestWaypoint()
                 .getBounds()
-                .toWorldBounds(visit.getDestination().getWorld())
+                .toWorldBounds(visit.getNearestWaypoint().getWorld())
                 .expand(1);
 
         User user = visit.getUser();
 
         toTeleport.addAll(
                 box.getEntities(e -> {
-                    if (ignored.contains(e.getUniqueId())) {
-                        return false;
-                    }
-
-                    // Don't move entities inside vehicles
-                    if (e.isInsideVehicle()) {
-                        return false;
-                    }
-
-                    //Skip players
-                    if (e.getType() == EntityType.PLAYER) {
+                    if (ignored.contains(e.getUniqueId())
+                            || e.isInsideVehicle()
+                            || e.getType() == EntityType.PLAYER
+                    ) {
                         return false;
                     }
 
                     //If the entity is tameable and has been tamed
                     //by the visitor
-                    if (e instanceof Tameable) {
-                        Tameable tameable = (Tameable) e;
+                    if (e instanceof Tameable tameable) {
+                        if (!tameable.isTamed()
+                                || tameable.getOwnerUniqueId() == null
+                        ) {
+                            return false;
+                        }
 
                         return Objects.equals(
                                 tameable.getOwnerUniqueId(),
@@ -71,23 +70,21 @@ public class OwnedEntityHandler implements VisitHandler {
 
                     //If they're leashed by the visitor
                     if (e instanceof LivingEntity living) {
-                        try {
-                            Entity leashHolder = living.getLeashHolder();
-                            if (leashHolder.getUniqueId().equals(user.getUniqueId())) {
-                                hasLeashed = true;
-                                return true;
-                            }
-                        } catch (IllegalStateException e1) {
+                        if (!living.isLeashed()) {
+                            return false;
                         }
+
+                        Entity leashHolder = living.getLeashHolder();
+
+                        return leashHolder.getUniqueId()
+                                .equals(user.getUniqueId());
                     }
 
                     return false;
                 })
         );
 
-        // If you've got a leashed entity, teleporting might be a bit
-        // dodgy, so set it to false
-        visit.setHulkSmashSafe(!hasLeashed);
+        visit.setHulkSmashSafe(toTeleport.isEmpty());
     }
 
     @Override
@@ -96,8 +93,6 @@ public class OwnedEntityHandler implements VisitHandler {
         tpDelayed(toTeleport, entityTpLocation);
     }
 
-    // Enjoy this essay of a comment lmao
-    //
     // If we tp'd all entities just after the user teleported
     // the entities would go into limbo because the chunks might
     // not be loaded, so we have to delay the teleport half a

@@ -51,6 +51,10 @@ public interface Exceptions {
     // --- SECTION: EXCEPTION FACTORIES / UTILITIES ---
     // ------------------------------------------------
 
+    static CommandSyntaxException create(Component component) {
+        return INSTANCE.create(component);
+    }
+
     /**
      * Creates an exception with the given message
      * @param message The message to create an exception with

@@ -20,8 +20,7 @@ import net.forthecrown.waypoint.WaypointProperties;
 import net.forthecrown.waypoint.Waypoints;
 import net.forthecrown.waypoint.type.WaypointTypes;
 import net.forthecrown.waypoint.visit.handlers.OwnedEntityHandler;
-import net.forthecrown.waypoint.visit.handlers.PassengerHandler;
-import net.forthecrown.waypoint.visit.handlers.RidingVehicleHandler;
+import net.forthecrown.waypoint.visit.handlers.VehicleVisitHandler;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -114,7 +113,7 @@ public class WaypointVisit implements Runnable {
      * <p>
      * Instantiates a {@link WaypointVisit} instance, adds
      * the 2 predicates declared in static methods in {@link VisitPredicate}
-     * and adds the {@link RidingVehicleHandler} and {@link OwnedEntityHandler}
+     * and adds the {@link VehicleVisitHandler} and {@link OwnedEntityHandler}
      * to the visit then calls {@link #run()}
      *
      * @param visitor The user visiting the region
@@ -124,12 +123,12 @@ public class WaypointVisit implements Runnable {
         new WaypointVisit(visitor, region, WaypointManager.getInstance())
                 .addPredicate(VisitPredicate.RIDING_VEHICLE)
                 .addPredicate(VisitPredicate.IS_NEAR)
-                .addPredicate(VisitPredicate.DESTINATION_EXISTS)
+                .addPredicate(VisitPredicate.DESTINATION_VALID)
+                .addPredicate(VisitPredicate.NEAREST_VALID)
 
                 // This order matters, vehicles must be handled before
                 // other passengers
-                .addHandler(new RidingVehicleHandler())
-                .addHandler(new PassengerHandler())
+                .addHandler(new VehicleVisitHandler())
                 .addHandler(new OwnedEntityHandler())
 
                 .run();
@@ -236,7 +235,7 @@ public class WaypointVisit implements Runnable {
             );
         } else {
             // Execute travel effect, if they have one
-            if(activeEffect != null) {
+            if (activeEffect != null) {
                 Tasks.runLater(() -> {
                     activeEffect.onPoleTeleport(
                             user,
