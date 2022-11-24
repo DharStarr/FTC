@@ -8,10 +8,15 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.guilds.GuildManager;
 import net.forthecrown.guilds.GuildPermission;
 import net.forthecrown.guilds.Guilds;
+import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.writer.TextWriter;
+import net.forthecrown.waypoint.Waypoint;
+import net.forthecrown.waypoint.Waypoints;
+import net.forthecrown.waypoint.type.WaypointTypes;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.Objects;
@@ -28,9 +33,14 @@ class GuildSetNode extends GuildCommandNode {
         writer.field("set name <name>", "Sets your guild name");
         writer.field("set leader <user>", "Sets your guild's leader");
 
+        writer.field("set waypoint", "Sets your guilds waypoint to the one " +
+                "you're looking at, or the one you're close to"
+        );
+
         if (source.hasPermission(Permissions.GUILD_ADMIN)) {
             writer.field("set name <name> <guild>", "Sets a guild's name");
             writer.field("set leader <user> <guild>", "Sets a guild's leader");
+            writer.field("set waypoint <guild>", "Sets the guild's waypoint");
         }
     }
 
@@ -42,6 +52,9 @@ class GuildSetNode extends GuildCommandNode {
         var leaderArg = argument("user", Arguments.USER);
         addGuildCommand(leaderArg, this::leader);
 
+        var waypointArg = literal("waypoint");
+        addGuildCommand(waypointArg, this::waypoint);
+
         command
                 .then(literal("name")
                         .then(nameArg)
@@ -49,10 +62,14 @@ class GuildSetNode extends GuildCommandNode {
 
                 .then(literal("leader")
                         .then(leaderArg)
-                );
+                )
+
+                .then(waypointArg);
     }
 
-    private int rename(CommandContext<CommandSource> c, GuildProvider provider) throws CommandSyntaxException {
+    private int rename(CommandContext<CommandSource> c,
+                       GuildProvider provider
+    ) throws CommandSyntaxException {
         var guild = provider.get(c);
         var user = getUserSender(c);
 
@@ -86,7 +103,9 @@ class GuildSetNode extends GuildCommandNode {
         return 0;
     }
 
-    private int leader(CommandContext<CommandSource> c, GuildProvider provider) throws CommandSyntaxException {
+    private int leader(CommandContext<CommandSource> c,
+                       GuildProvider provider
+    ) throws CommandSyntaxException {
         var guild = provider.get(c);
         var user = getUserSender(c);
 
@@ -134,6 +153,62 @@ class GuildSetNode extends GuildCommandNode {
                         user, target
                 )
         );
+        return 0;
+    }
+
+    private int waypoint(CommandContext<CommandSource> c,
+                         GuildProvider provider
+    ) throws CommandSyntaxException {
+        var guild = provider.get(c);
+        var user = getUserSender(c);
+
+        testPermission(
+                user,
+                guild,
+                GuildPermission.CAN_RELOCATE,
+                Exceptions.NO_PERMISSION
+        );
+
+        Waypoint nearest = Waypoints.getNearest(user);
+
+        if (nearest == null
+                || !nearest.getBounds().contains(user.getPlayer())
+        ) {
+            Waypoints.tryCreate(c.getSource(), provider.simplify(c));
+            return 0;
+        }
+
+        if (nearest.getType() != WaypointTypes.PLAYER
+                || nearest.getType() != WaypointTypes.GUILD
+        ) {
+            throw Exceptions.format(
+                    "Cannot set {0} waypoint as guild home!",
+                    nearest.getType().getDisplayName()
+            );
+        }
+
+        var opt = Waypoints.isValidWaypointArea(
+                nearest.getPosition(),
+                WaypointTypes.GUILD,
+                nearest.getWorld(),
+                false
+        );
+
+        if (opt.isPresent()) {
+            throw opt.get();
+        }
+
+        var manager = GuildManager.get();
+        var cPos = Vectors.getChunk(nearest.getPosition());
+
+        var owner = manager.getOwner(cPos);
+
+        if (!Objects.equals(guild, owner)) {
+            throw Exceptions.G_EXTERNAL_WAYPOINT;
+        }
+
+        nearest.setType(WaypointTypes.GUILD);
+        Waypoints.setGuildWaypoint(guild, nearest, user);
         return 0;
     }
 }

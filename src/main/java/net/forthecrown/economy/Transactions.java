@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.log.DataLogs;
 import net.forthecrown.log.LogEntry;
@@ -75,6 +76,7 @@ public @UtilityClass class Transactions {
     }
 
     // Called reflectively by BootStrap
+    @OnEnable
     private void init() {
         // Force class load
     }

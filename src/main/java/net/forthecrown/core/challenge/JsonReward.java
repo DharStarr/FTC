@@ -70,6 +70,12 @@ public class JsonReward {
     }
 
     public void write(TextWriter writer) {
+        if (isEmpty()) {
+            return;
+        }
+
+        writer.field("Rewards", "");
+
         if (rhines > 0) {
             writer.field("Rhines", UnitFormat.rhines(rhines));
         }

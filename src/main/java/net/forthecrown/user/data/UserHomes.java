@@ -16,6 +16,7 @@ import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.waypoint.Waypoint;
 import net.forthecrown.waypoint.WaypointManager;
+import net.forthecrown.waypoint.Waypoints;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Location;
 
@@ -84,6 +85,7 @@ public class UserHomes extends UserComponent {
 
             if (wayOld != null) {
                 wayOld.removeResident(uuid);
+                Waypoints.removeIfPossible(wayOld);
             }
         }
 

@@ -136,10 +136,6 @@ public class TreeGenerator {
                 || depthRange.contains((int) result.endDepthStats.getAverage());
     }
 
-    static final int FIRST_BETTER = -1;
-    static final int SECOND_BETTER = 1;
-    static final int EQUAL = 0;
-
     private LevelGenResult compileResult() {
         ValidationVisitor walker = new ValidationVisitor();
         level.getRoot().visit(walker);

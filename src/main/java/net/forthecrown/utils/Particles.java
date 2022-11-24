@@ -51,14 +51,25 @@ public @UtilityClass class Particles {
 
     public static void drawBounds(World w, AbstractBounds3i bounds, Color color) {
         var min = bounds.min().toDouble();
-        var max = bounds.max().toDouble();
+        var max = bounds.max()
+                .toDouble()
+                .add(Vector3d.ONE);
 
         drawBounds(min, max, w, color);
     }
 
+    public static void drawBounds(Vector3d min, Vector3d max, World w, Color color) {
+        var builder = Particle.REDSTONE.builder()
+                .data(new Particle.DustOptions(color, 1.5F));
+
+        drawBounds(min, max, w, builder);
+    }
+
     public static void drawBounds(World w, AbstractBounds3i bounds, ParticleBuilder builder) {
         var min = bounds.min().toDouble();
-        var max = bounds.max().toDouble();
+        var max = bounds.max()
+                .toDouble()
+                .add(Vector3d.ONE);
 
         drawBounds(min, max, w, builder);
     }
@@ -95,12 +106,5 @@ public @UtilityClass class Particles {
             line(w, points[2], points[5], builder);
             line(w, points[3], points[4], builder);
         }
-    }
-
-    public static void drawBounds(Vector3d min, Vector3d max, World w, Color color) {
-        var builder = Particle.REDSTONE.builder()
-                .data(new Particle.DustOptions(color, 1.5F));
-
-        drawBounds(min, max, w, builder);
     }
 }

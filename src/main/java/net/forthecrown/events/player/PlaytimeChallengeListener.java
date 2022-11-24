@@ -2,8 +2,9 @@ package net.forthecrown.events.player;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.challenge.ChallengeManager;
+import net.forthecrown.core.challenge.Challenges;
 import net.forthecrown.utils.Tasks;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,13 +19,19 @@ import java.util.function.Consumer;
 public class PlaytimeChallengeListener implements Listener {
     public static final long TIME = 60 * 20;
 
-    private final Map<UUID, TaskRunnable>
-            tasks = new Object2ObjectOpenHashMap<>();
+    private static final Map<UUID, TaskRunnable>
+            TASKS = new Object2ObjectOpenHashMap<>();
+
+    private static boolean active = false;
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!active) {
+            return;
+        }
+
         TaskRunnable runnable = new TaskRunnable(event.getPlayer());
-        TaskRunnable old = tasks.put(event.getPlayer().getUniqueId(), runnable);
+        TaskRunnable old = TASKS.put(event.getPlayer().getUniqueId(), runnable);
 
         if (old != null) {
             old.cancelled = true;
@@ -35,15 +42,49 @@ public class PlaytimeChallengeListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        var runnable = tasks.remove(event.getPlayer().getUniqueId());
+        var runnable = TASKS.remove(event.getPlayer().getUniqueId());
 
         if (runnable != null) {
             runnable.cancelled = true;
         }
     }
 
+    public static void reset() {
+        if (!active) {
+            return;
+        }
+
+        TASKS.forEach((uuid, runnable) -> {
+            runnable.minutesPassed = 0;
+        });
+    }
+
+    public static void setActive(boolean active) {
+        PlaytimeChallengeListener.active = active;
+
+        if (active) {
+            for (var p: Bukkit.getOnlinePlayers()) {
+                track(p);
+            }
+        } else {
+            TASKS.forEach((uuid, runnable) -> runnable.cancelled = true);
+            TASKS.clear();
+        }
+    }
+
+    private static void track(Player player) {
+        TaskRunnable runnable = new TaskRunnable(player);
+        TaskRunnable old = TASKS.put(player.getUniqueId(), runnable);
+
+        if (old != null) {
+            old.cancelled = true;
+        }
+
+        Tasks.runTimer(runnable, TIME, TIME);
+    }
+
     @RequiredArgsConstructor
-    private class TaskRunnable implements Consumer<BukkitTask> {
+    private static class TaskRunnable implements Consumer<BukkitTask> {
         private final Player player;
         private int minutesPassed = 0;
         private boolean cancelled;
@@ -55,19 +96,15 @@ public class PlaytimeChallengeListener implements Listener {
                 return;
             }
 
-            ++minutesPassed;
+            Challenges.apply("daily/playtime", challenge -> {
+                ++minutesPassed;
+                challenge.trigger(player);
 
-            var challenge = ChallengeManager.getInstance()
-                    .getChallengeRegistry()
-                    .get("daily/playtime")
-                    .orElseThrow();
-
-            challenge.trigger(player);
-
-            if (minutesPassed >= challenge.getGoal()) {
-                tasks.remove(player.getUniqueId());
-                Tasks.cancel(task);
-            }
+                if (minutesPassed >= challenge.getGoal()) {
+                    TASKS.remove(player.getUniqueId());
+                    Tasks.cancel(task);
+                }
+            });
         }
     }
 }

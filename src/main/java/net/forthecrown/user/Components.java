@@ -1,6 +1,7 @@
 package net.forthecrown.user;
 
 import com.google.common.collect.Iterators;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.economy.market.MarketManager;
 import net.forthecrown.user.data.*;
 import net.forthecrown.user.property.Properties;
@@ -161,6 +162,7 @@ public final class Components {
      * Empty initializer method to force
      * the class to load
      */
+    @OnEnable
     static void init() {}
 
     /**

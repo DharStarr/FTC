@@ -8,6 +8,8 @@ import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.core.config.ConfigManager;
 import net.forthecrown.core.config.Configs;
 import net.forthecrown.core.holidays.ServerHolidays;
+import net.forthecrown.core.module.ModuleServices;
+import net.forthecrown.core.resource.ResourceWorld;
 import net.forthecrown.core.resource.ResourceWorldTracker;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.datafix.Transformers;
@@ -17,6 +19,7 @@ import net.forthecrown.dungeons.level.LevelManager;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.Transactions;
 import net.forthecrown.events.Events;
+import net.forthecrown.events.MobHealthBar;
 import net.forthecrown.grenadier.exceptions.RoyalCommandException;
 import net.forthecrown.guilds.GuildManager;
 import net.forthecrown.guilds.unlockables.Unlockables;
@@ -26,16 +29,16 @@ import net.forthecrown.structure.Structures;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.user.Components;
 import net.forthecrown.user.UserManager;
+import net.forthecrown.user.packet.PacketListeners;
 import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.text.ChatEmotes;
+import net.forthecrown.utils.world.WorldLoader;
 import net.forthecrown.waypoint.WaypointManager;
 import net.forthecrown.waypoint.WaypointProperties;
 import net.forthecrown.waypoint.type.WaypointTypes;
-import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.function.Supplier;
 
 
 /**
@@ -46,66 +49,106 @@ final class BootStrap {
     private BootStrap() {}
 
     private static final Logger LOGGER = FTC.getLogger();
-    static final String INIT_METHOD = "init";
 
     static void init() {
         RoyalCommandException.ENABLE_HOVER_STACK_TRACE = FTC.inDebugMode();
 
-        init(Transformers.class);
+        // Guilds
         init(Unlockables.class);
-        init(GuildManager.class);
-        init(UserManager.class);
-        init(ChatEmotes.class);
-        init(ServerHolidays.class);
-        init(Structures.class);
-        init(WaypointTypes.class);
-        init(WaypointManager.class);
-        init(WaypointProperties.class);
-        init(FtcEnchants.class);
-        init(Bosses.class);
-        init(ExtendedItems.class);
-        init(Cosmetics.class);
+        init(GuildManager::get);
+
+        // Users
+        init(UserManager::get);
         init(Components.class);
         init(Properties.class);
-        init(Usables.class);
-        init(ResourceWorldTracker.class);
+
+        // Transformers
+        init(Transformers.class);
+
+        // Waypoints
+        init(WaypointTypes.class);
+        init(WaypointManager::getInstance);
+        init(WaypointProperties.class);
+
+        // Dungeons
+        init(FtcEnchants.class);
+        init(Bosses.class);
+
+        // Bunch of miscellaneous modules
+        init(ChatEmotes.class);
+        init(ExtendedItems.class);
+        init(Cosmetics.class);
+        init(Usables::getInstance);
+        init(ResourceWorldTracker::get);
+        init(ServerHolidays::get);
+        init(Structures::get);
+        init(LevelManager::get);
+        init(Announcer::get);
+        init(Economy::get);
+        init(Configs.class);
+        init(ConfigManager::get);
+        init(MobHealthBar.class);
+        init(WorldLoader.class);
+        init(PacketListeners.class);
+        init(Punishments::get);
+
+        // Commands and events
         init(Commands.class);
         init(Events.class);
-        init(LevelManager.class);
+
+        // The following 2 classes must be loaded
+        // before the data manager, they register
+        // the data log schemas required.
         init(ChallengeLogs.class);
         init(Transactions.class);
-        init(DataManager.class);
-        init(ChallengeManager.class);
-        init(Announcer.class);
-        init(Economy.class);
-        init(Configs.class);
+        init(DataManager::getInstance);
 
+        // Must be initialized after the data manager
+        // since it queries it to find the currently
+        // active challenges
+        init(ChallengeManager::getInstance);
+
+        // Only day change listeners
+        init(ResourceWorld::get);
+        init(EndOpener::get);
+        init(Economy.get()::getMarkets);
+
+        // Save and load the banner words list
         FTC.getPlugin().saveResource("banned_words.json", true);
         BannedWords.load();
 
-        DayChange.get().schedule();
-        AutoSave.get().schedule();
+        // Schedule and run module services
+        ModuleServices.DAY_CHANGE.schedule();
+        ModuleServices.AUTO_SAVE.schedule();
+        ModuleServices.ON_ENABLE.run();
+        ModuleServices.RELOAD.run();
+
+        // Only required for startup, afterwards, they're useless
+        ModuleServices.ON_ENABLE
+                .getCallbacks()
+                .clear();
 
         ServerIcons.loadIcons();
         Transformers.runCurrent();
-
-        Punishments.get().reload();
-        Economy.get().reload();
-
-        ConfigManager.get().load();
     }
 
-    static void init(Class<?> c) {
+    static <T> void init(Supplier<T> supplier) {
+        init(supplier.get());
+    }
+
+    static <T> void init(T instance) {
+        _init(instance, (Class<T>) instance.getClass());
+    }
+
+    static void init(Class<?> clazz) {
+        _init(null, clazz);
+    }
+
+    static <T> void _init(T instance, Class<T> c) {
         try {
-            Method init = c.getDeclaredMethod(INIT_METHOD);
-            init.setAccessible(true);
-
-            Validate.isTrue(Modifier.isStatic(init.getModifiers()), "% method is not static", INIT_METHOD);
-            Validate.isTrue(init.getReturnType() == Void.TYPE, "%s method return value is not void", INIT_METHOD);
-
-            init.invoke(null);
-
-            LOGGER.debug("{} Initialized", c.getSimpleName());
+            for (var s: ModuleServices.SERVICES) {
+                s.addAll(c, instance);
+            }
         } catch (Throwable t) {
             LOGGER.error("Couldn't initialize {}:", c.getSimpleName(), t);
         }

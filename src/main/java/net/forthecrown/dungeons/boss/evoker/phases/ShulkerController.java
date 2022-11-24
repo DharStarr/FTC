@@ -173,10 +173,10 @@ public class ShulkerController {
         shulker.setPeek(1.0f);
         shulker.customName(Component.text("Shulker traitor"));
 
-        EvokerEffects.shockwave(world, Vectors.fromD(shulker.getLocation()), 1, false);
+        EvokerEffects.shockwave(world, Vectors.doubleFrom(shulker.getLocation()), 1, false);
 
         data.phase = Phase.TRAITOR;
-        data.target = Vectors.fromD(boss.getBossEntity().getLocation())
+        data.target = Vectors.doubleFrom(boss.getBossEntity().getLocation())
                 .add(0, boss.getBossEntity().getHeight() / 2, 0);
 
         // Check if all shulkers are traitors
@@ -190,7 +190,7 @@ public class ShulkerController {
     void removeAll() {
         for (ShulkerData d: shulkers) {
             Shulker s = d.shulker;
-            Vector3d pos = Vectors.fromD(s.getLocation());
+            Vector3d pos = Vectors.doubleFrom(s.getLocation());
 
             new ParticleBuilder(Particle.SOUL_FIRE_FLAME)
                     .location(world, pos.x(), pos.y() + (s.getHeight() / 2) + 0.25, pos.z())
@@ -220,8 +220,8 @@ public class ShulkerController {
         Player target = PotionPhase.findTarget(boss);
         if(target == null) return null;
 
-        Vector3d pos = Vectors.fromD(target.getLocation());
-        Vector3d vel = Vectors.fromD(target.getVelocity());
+        Vector3d pos = Vectors.doubleFrom(target.getLocation());
+        Vector3d vel = Vectors.doubleFrom(target.getVelocity());
 
         return pos.add(vel)
                 .add(0, target.getHeight() / 2, 0);
@@ -240,7 +240,7 @@ public class ShulkerController {
 
         public ShulkerData(Shulker shulker) {
             this.shulker = shulker;
-            beamOrigin = Vectors.fromD(shulker.getLocation()).add(0, shulker.getHeight() / 2, 0);
+            beamOrigin = Vectors.doubleFrom(shulker.getLocation()).add(0, shulker.getHeight() / 2, 0);
             phase = Phase.NONE;
         }
     }

@@ -14,6 +14,7 @@
     "displayName": "Vote",
     "eventClass": "com.bencodez.votingplugin.events.PlayerPostVoteEvent",
     "script": "challenges/on_vote.js",
+    "goal": 2,
     "description": [
       "Vote for the server"
     ],
@@ -47,7 +48,7 @@
     "displayName": "Walk 1,000 blocks",
     "goal": 1000,
     "eventClass": "org.bukkit.event.player.PlayerMoveEvent",
-    "script": "challenges/move_1k_blocks.js",
+    "script": "challenges/on_walk.js",
     "description": [
       "Walk 1,000 blocks on the ground"
     ],
@@ -90,21 +91,24 @@
       "guildExp": 15
     }
   },
-  "daily/wither": {
+  "weekly/wither": {
     "displayName": "Wither",
     "eventClass": "org.bukkit.event.entity.EntityDeathEvent",
     "script": "challenges/on_wither_kill.js",
+    "type": "weekly",
+    "goal": 5,
     "description": [
-      "Kill a wither"
+      "Kill 5 withers"
     ],
     "reward": {
       "guildExp": 20
     }
   },
-  "daily/warden": {
+  "weekly/warden": {
     "displayName": "Warden",
     "eventClass": "org.bukkit.event.entity.EntityDeathEvent",
     "script": "challenges/on_warden_kill.js",
+    "type": "weekly",
     "description": [
       "Kill a warden"
     ],
@@ -123,32 +127,36 @@
       "guildExp": 20
     }
   },
-  "daily/lightning": {
+  "weekly/lightning": {
     "displayName": "Lightning",
     "eventClass": "org.bukkit.event.entity.EntityDamageByEntityEvent",
     "script": "challenges/on_lightning.js",
+    "type": "weekly",
     "description": [
       "Damage any entity by summoning lightning"
     ],
     "reward": {
-      "guildExp": 20
+      "guildExp": 40
     }
   },
-  "daily/elite_bank_run": {
+  "weekly/elite_bank_run": {
     "displayName": "Elite Bank Run",
     "eventClass": "custom",
     "script": "challenges/on_bank_run.js",
+    "type": "weekly",
+    "goal": 2,
     "description": [
-      "Complete an elite bank run"
+      "Complete 2 elite bank runs"
     ],
     "reward": {
-      "guildExp": 20
+      "guildExp": 45
     }
   },
   "daily/playtime": {
     "displayName": "Playtime",
     "goal": 30,
     "eventClass": "custom",
+    "script": "challenges/playtime.js",
     "description": [
       "Play for 30 minutes"
     ],

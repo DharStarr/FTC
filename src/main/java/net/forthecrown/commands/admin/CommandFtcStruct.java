@@ -316,7 +316,7 @@ public class CommandFtcStruct extends FtcCommand {
         builder
                 .transform(transform)
                 .world(location.getWorld())
-                .pos(Vectors.fromI(location))
+                .pos(Vectors.intFrom(location))
                 .paletteName(args.get(PALETTE_ARG));
 
         StructurePlaceConfig config = builder.build();

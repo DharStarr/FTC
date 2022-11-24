@@ -1,9 +1,10 @@
 package net.forthecrown.economy;
 
 import lombok.Getter;
-import net.forthecrown.core.AutoSave;
-import net.forthecrown.core.DayChange;
 import net.forthecrown.core.config.ConfigManager;
+import net.forthecrown.core.module.OnEnable;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.economy.market.MarketConfig;
 import net.forthecrown.economy.market.MarketManager;
 import net.forthecrown.economy.sell.SellShop;
@@ -44,23 +45,20 @@ public class Economy {
         return INSTANCE;
     }
 
+    @OnEnable
     static void init() {
         if (!Files.exists(get().getSellShop().getPath())) {
             get().getSellShop().createDefaults();
         }
-
-        DayChange.get()
-                .addListener(get().getMarkets());
-
-        AutoSave.get()
-                .addCallback(get()::save);
     }
 
+    @OnSave
     public void save() {
         shops.save();
         markets.save();
     }
 
+    @OnLoad
     public void reload() {
         shops.reload();
         markets.load();

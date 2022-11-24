@@ -3,6 +3,7 @@ package net.forthecrown.user.packet;
 import io.netty.channel.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnDisable;
 import net.forthecrown.utils.VanillaAccess;
 import net.minecraft.network.protocol.Packet;
 import org.apache.commons.lang3.Validate;
@@ -144,6 +145,7 @@ public class PacketListeners {
     /**
      * Removes packet handlers from every player
      */
+    @OnDisable
     public static void removeAll() {
         for (var p: Bukkit.getOnlinePlayers()) {
             uninject(p);

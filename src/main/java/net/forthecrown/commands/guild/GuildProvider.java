@@ -7,9 +7,9 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.guilds.Guild;
 import net.forthecrown.user.Users;
 
-interface GuildProvider {
-    GuildProvider SENDERS_GUILD = c -> {
-        var user = Users.get(c.getSource().asPlayer());
+public interface GuildProvider {
+    GuildProvider.Simple SENDERS_GUILD = source -> {
+        var user = Users.get(source.asPlayer());
         var guild = user.getGuild();
 
         if (guild == null) {
@@ -23,5 +23,20 @@ interface GuildProvider {
 
     static GuildProvider argument(String name) {
         return c -> c.getArgument(name, Guild.class);
+    }
+
+    default Simple simplify(CommandContext<CommandSource> c) {
+        return source -> get(c);
+    }
+
+    interface Simple extends GuildProvider {
+        @Override
+        default Guild get(CommandContext<CommandSource> c)
+                throws CommandSyntaxException
+        {
+            return get(c.getSource());
+        }
+
+        Guild get(CommandSource source) throws CommandSyntaxException;
     }
 }

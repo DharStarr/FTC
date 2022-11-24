@@ -6,8 +6,8 @@ import net.forthecrown.core.config.ConfigData;
 @ConfigData(filePath = "challenges.json")
 public @UtilityClass class ChallengeConfig {
     public int
-            maxDailyChallenges          = 12,
-            maxWeeklyChallenges         = 4;
+            maxDailyChallenges          = 5,
+            maxWeeklyChallenges         = 10;
 
     public boolean
             allowRepeatingChallenges    = false;

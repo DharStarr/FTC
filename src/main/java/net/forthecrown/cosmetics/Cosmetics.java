@@ -1,5 +1,6 @@
 package net.forthecrown.cosmetics;
 
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.cosmetics.arrows.ArrowEffect;
@@ -34,6 +35,7 @@ public final class Cosmetics {
     public static final CosmeticType<LoginEffect>
             LOGIN = new CosmeticType<>("login_effects", null);
 
+    @OnEnable
     private static void init() {
         initializeValues(ARROWS, ArrowEffects.class);
         initializeValues(DEATH,  DeathEffects.class);

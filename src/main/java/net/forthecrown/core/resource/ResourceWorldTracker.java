@@ -6,9 +6,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.config.ResourceWorldConfig;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.io.PathUtil;
@@ -30,7 +30,7 @@ public class ResourceWorldTracker implements SerializableObject {
     /** File format used by sections, custom */
     private static final String FORMAT_SUFFIX = ".non_natural";
 
-    private static ResourceWorldTracker inst;
+    private static final ResourceWorldTracker inst = new ResourceWorldTracker();
 
     /** Map of region position to region */
     private final Map<McRegionPos, WorldRegion> nonNaturalBySection = new Object2ObjectOpenHashMap<>();
@@ -39,20 +39,19 @@ public class ResourceWorldTracker implements SerializableObject {
     @Getter
     private final Path directory;
 
+    private ResourceWorldTracker() {
+        this.directory = PathUtil.getPluginDirectory("rw_data");
+    }
+
     /* ----------------------------- INSTANCES ------------------------------ */
 
     public static ResourceWorldTracker get() {
         return inst;
     }
 
-    private static void init() {
-        inst = new ResourceWorldTracker(PathUtil.getPluginDirectory("rw_data"));
-        AutoSave.get().addCallback(inst::save);
-    }
-
     /* ----------------------------- SAVE / RELOAD FOR ALL SECTIONS ------------------------------ */
 
-    @Override
+    @Override @OnSave
     public void save() {
         for (var e: nonNaturalBySection.entrySet()) {
             try {

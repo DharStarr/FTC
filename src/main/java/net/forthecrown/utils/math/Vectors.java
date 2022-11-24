@@ -136,19 +136,19 @@ public class Vectors {
         return new Vector(v.x(), v.y(), v.z());
     }
 
-    public Vector3i fromI(Location l) {
+    public Vector3i intFrom(Location l) {
         return Vector3i.from(l.getBlockX(), l.getBlockY(), l.getBlockZ());
     }
 
-    public Vector3i fromI(Vector l) {
+    public Vector3i intFrom(Vector l) {
         return Vector3i.from(l.getBlockX(), l.getBlockY(), l.getBlockZ());
     }
 
-    public Vector3d fromD(Location l) {
+    public Vector3d doubleFrom(Location l) {
         return Vector3d.from(l.getX(), l.getY(), l.getZ());
     }
 
-    public Vector3d fromD(Vector l) {
+    public Vector3d doubleFrom(Vector l) {
         return Vector3d.from(l.getX(), l.getY(), l.getZ());
     }
 

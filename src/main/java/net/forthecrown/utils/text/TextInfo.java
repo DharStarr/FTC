@@ -1,4 +1,4 @@
-package net.forthecrown.utils.book;
+package net.forthecrown.utils.text;
 
 import org.bukkit.map.MinecraftFont;
 import org.jetbrains.annotations.NotNull;

@@ -8,8 +8,8 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
-import net.forthecrown.core.DayChangeListener;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.utils.io.JsonUtils;
@@ -21,13 +21,12 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class MarketManager implements DayChangeListener {
+public class MarketManager {
     private static final Logger LOGGER = FTC.getLogger();
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
@@ -48,8 +47,8 @@ public class MarketManager implements DayChangeListener {
 
     /* ----------------------------- METHODS ------------------------------ */
 
-    @Override
-    public void onDayChange(ZonedDateTime time) {
+    @OnDayChange
+    void onDayChange() {
         if (!MarketConfig.autoEvictionsEnabled) {
             return;
         }

@@ -1,8 +1,9 @@
 package net.forthecrown.structure;
 
 import lombok.Getter;
-import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
@@ -33,11 +34,7 @@ public final class Structures {
         return inst;
     }
 
-    private static void init() {
-        get().load();
-        AutoSave.get().addCallback(() -> get().save());
-    }
-
+    @OnSave
     public void save() {
         for (var structure: registry.entries()) {
             Path p = getPath(structure);
@@ -45,6 +42,7 @@ public final class Structures {
         }
     }
 
+    @OnLoad
     public void load() {
         registry.clear();
 

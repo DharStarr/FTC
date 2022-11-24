@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.util.function.Consumer
 
 plugins {
@@ -7,7 +10,7 @@ plugins {
 }
 
 String minecraftVersion = "1.19.2"
-boolean devBuild = true;
+boolean devBuild = isDebugBuild()
 String nashornDependency = 'org.openjdk.nashorn:nashorn-core:15.4'
 
 group = 'net.forthecrown'
@@ -70,7 +73,7 @@ dependencies {
 
     // Voting plugin for VoteEvent
 
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:+'
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
 
     //Grenadier, Dynmap and GSit
     libJar('Grenadier-1.5.3-dev')
@@ -115,6 +118,96 @@ processResources {
     }
 }
 
+assemble {
+    archivesBaseName = 'ForTheCrown-' + (devBuild ? "Debug" : "Plugin")
+    dependsOn(reobfJar)
+}
+
+build {
+    doLast {
+        if (!devBuild) {
+            incrementBuildID()
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+/* ------------- Custom Task ------------- */
+
+task build_to_test_server(dependsOn: build) {
+    group 'build'
+    description 'Builds the server\'s jar and moves it to the test server in test_server.properties'
+
+    doLast {
+        Properties properties = new Properties()
+
+        try {
+            FileInputStream stream = new FileInputStream("test_server.properties")
+            properties.load(stream)
+        } catch (IOException exc) {
+            printf("Couldn't read test_server.properties!: %s", exc)
+            return
+        }
+
+        String dir = properties.getProperty("test_server_directory")
+
+        if (dir == null || dir.isEmpty()) {
+            println("No test server directory found to move to!")
+            return
+        } else {
+            printf("Moving plugin to dir: '%s'", dir)
+        }
+
+        java.nio.file.Path path = Paths.get(dir)
+        java.nio.file.Path pluginsDir = path.resolve("plugins")
+
+        String fileSuffix = String.format(
+                "ForTheCrown-%s-%s.jar",
+                devBuild ? "Debug" : "Plugin",
+                version
+        )
+
+        java.nio.file.Path dest = pluginsDir.resolve(fileSuffix)
+        java.nio.file.Path source = getBuildDir().toPath()
+                .resolve("libs")
+                .resolve(fileSuffix)
+
+
+        Files.copy(
+                source, dest,
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.COPY_ATTRIBUTES
+        )
+
+        String launchFile = properties.getProperty("launchFile")
+
+        if (launchFile == null || launchFile.isEmpty()) {
+            print("Launch options not given! Cannot start server")
+            return
+        }
+
+        exec {
+            workingDir path.toString()
+            commandLine 'cmd', '/c', "start " + launchFile
+        }
+    }
+}
+
+/* ------------- Utility ------------- */
+
+boolean isDebugBuild() {
+    boolean result = false
+
+    consumeProperties(p -> {
+        result = Boolean.parseBoolean(p.getProperty("debug_build"))
+    })
+
+    return result
+}
+
 int buildID() {
     int result = 1
 
@@ -141,22 +234,5 @@ void consumeProperties(Consumer<Properties> propertiesConsumer) {
 
     propertiesConsumer.accept(properties)
 
-    properties.store(new FileOutputStream(f), "Saves the last build ID, last build:")
-}
-
-assemble {
-    archivesBaseName = 'ForTheCrown-' + (devBuild ? "Debug" : "Plugin")
-    dependsOn(reobfJar)
-}
-
-build {
-    doLast {
-        if (!devBuild) {
-            incrementBuildID()
-        }
-    }
-}
-
-test {
-    useJUnitPlatform()
+    properties.store(new FileOutputStream(f), "Saves the last build ID and the debug build state, last build:")
 }

@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import lombok.Getter;
 import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.Tasks;
@@ -39,14 +40,6 @@ public class Announcer extends SerializableObject.Json {
         return INSTANCE;
     }
 
-    private static void init() {
-        get().reload();
-        get().start();
-
-        AutoSave.get()
-                .addCallback(get()::save);
-    }
-
     protected void save(final JsonWrapper json) {
         JsonArray array = new JsonArray();
 
@@ -76,6 +69,7 @@ public class Announcer extends SerializableObject.Json {
     /**
      * Starts the AutoAnnouncer
      */
+    @OnEnable
     public void start() {
         stop();
         broadcaster = Tasks.runTimer(new BroadcastRunnable(), 20, GeneralConfig.broadcastDelay);

@@ -66,7 +66,7 @@ public class WorldChunkMap<T extends BoundsHolder> {
     }
 
     public Set<T> get(Location location) {
-        return get(location.getWorld(), Vectors.fromI(location));
+        return get(location.getWorld(), Vectors.intFrom(location));
     }
 
     public Set<T> get(World world, Vector3i pos) {
@@ -94,7 +94,7 @@ public class WorldChunkMap<T extends BoundsHolder> {
     }
 
     public ObjectDoublePair<T> findNearest(Location location) {
-        return findNearest(Vectors.fromD(location), location.getWorld());
+        return findNearest(Vectors.doubleFrom(location), location.getWorld());
     }
 
     public ObjectDoublePair<T> findNearest(Vector3d pos, World world) {

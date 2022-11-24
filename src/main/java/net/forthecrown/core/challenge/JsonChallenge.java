@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Scripts;
+import net.forthecrown.core.script.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.Component;
@@ -154,7 +154,7 @@ public class JsonChallenge implements Challenge {
             return;
         }
 
-        listener.script = Scripts.read(script);
+        listener.script = Script.read(script);
     }
 
     @Override
@@ -207,6 +207,11 @@ public class JsonChallenge implements Challenge {
         }
 
         if (eventClass != null) {
+            if (eventClass.isInstance(input)) {
+                listener.execute(listener, (Event) input);
+                return;
+            }
+
             FTC.getLogger().error(
                     "Cannot manually invoke script {}! Event class has "
                             + "been specified!",
@@ -217,6 +222,11 @@ public class JsonChallenge implements Challenge {
         }
 
         if (!getListener().getScript().hasMethod(METHOD_ON_EVENT)) {
+            if (input instanceof Player player) {
+                listener.getHandle().givePoint(player);
+                return;
+            }
+
             FTC.getLogger().error(
                     "Cannot manually invoke script {}! No onEvent method set",
                     getListener().getScript()

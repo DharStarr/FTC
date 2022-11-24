@@ -28,6 +28,7 @@ public class ScriptManager {
 
     public ScriptManager() {
         this.directory = PathUtil.getPluginDirectory("scripts");
+        System.setProperty("nashorn.args.prepend", "--language=es6");
     }
 
     public boolean isExistingScript(String script) {

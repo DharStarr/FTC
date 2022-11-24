@@ -2,7 +2,8 @@ package net.forthecrown.dungeons.level;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.AutoSave;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.io.PathUtil;
@@ -47,12 +48,6 @@ public class LevelManager {
         return inst;
     }
 
-    private static void init() {
-        get().load();
-
-        AutoSave.get().addCallback(get()::save);
-    }
-
     public Path getLevelPath() {
         return directory.resolve("level.dat");
     }
@@ -73,6 +68,7 @@ public class LevelManager {
                 .visit(tickVisitor);
     }
 
+    @OnLoad
     public void load() {
         Path levelPath = getLevelPath();
 
@@ -84,6 +80,7 @@ public class LevelManager {
         SerializationHelper.readTagFile(levelPath, level::load);
     }
 
+    @OnSave
     public void save() {
         if (currentLevel == null) {
             PathUtil.safeDelete(getLevelPath());

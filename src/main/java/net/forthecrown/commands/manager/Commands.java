@@ -24,6 +24,7 @@ import net.forthecrown.commands.usables.UseCmdCommand;
 import net.forthecrown.commands.user.UserCommands;
 import net.forthecrown.commands.waypoint.*;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.user.data.RankTitle;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -43,6 +44,7 @@ public final class Commands {
     private Commands(){}
 
     //Command loading
+    @OnEnable
     private static void init() {
         if (FTC.inDebugMode()) {
             TestCommands.createCommands();
@@ -91,6 +93,7 @@ public final class Commands {
         new CommandFtcStruct();
         new CommandGetOffset();
         new CommandStructFunction();
+        new CommandScripts();
 
         InteractableCommands.createCommands();
         CommandSpecificGameMode.createCommands();

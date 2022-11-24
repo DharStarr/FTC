@@ -64,7 +64,7 @@ class TriggerNode extends InteractableNode<UsableTrigger> {
 
     private int createTrigger(CommandContext<CommandSource> c, WorldBounds3i area) throws CommandSyntaxException {
         String name = c.getArgument("name", String.class);
-        var triggers = Usables.get().getTriggers();
+        var triggers = Usables.getInstance().getTriggers();
 
         if (triggers.contains(name)) {
             throw Exceptions.alreadyExists("Trigger", name);
@@ -82,7 +82,7 @@ class TriggerNode extends InteractableNode<UsableTrigger> {
         command
                 .executes(c -> {
                     var trigger = provider.get(c);
-                    var triggers = Usables.get().getTriggers();
+                    var triggers = Usables.getInstance().getTriggers();
 
                     triggers.remove(trigger);
 

@@ -8,7 +8,7 @@ import lombok.Setter;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
-import net.forthecrown.core.script.Scripts;
+import net.forthecrown.core.script.Script;
 import net.forthecrown.economy.TransactionType;
 import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
@@ -175,7 +175,7 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
         setClaimed(true);
 
         if (!Strings.isNullOrEmpty(script)) {
-            Scripts.run(script, "onMailClaim", user);
+            Script.run(script, "onMailClaim", user);
         }
     }
 

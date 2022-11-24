@@ -28,10 +28,10 @@ public interface Arguments {
     TriggerArgument TRIGGER = new TriggerArgument();
 
     UseCmdArgument<Warp> WARPS = new UseCmdArgument<>(
-            () -> Usables.get().getWarps(), Warp.class
+            () -> Usables.getInstance().getWarps(), Warp.class
     );
     UseCmdArgument<Kit> KITS = new UseCmdArgument<>(
-            () -> Usables.get().getKits(), Kit.class
+            () -> Usables.getInstance().getKits(), Kit.class
     );
 
     UserArgument USER         = new UserArgument(false, true);

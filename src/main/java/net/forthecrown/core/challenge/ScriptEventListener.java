@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
-import org.bukkit.event.EventException;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerEvent;
@@ -28,14 +27,14 @@ public class ScriptEventListener implements Listener, EventExecutor {
     @Override
     public void execute(@NotNull Listener listener,
                         @NotNull Event event
-    ) throws EventException {
+    ) {
         if (event instanceof Cancellable cancellable
                 && cancellable.isCancelled()
         ) {
             return;
         }
 
-        if (event.getClass() != handle.getChallenge().getEventClass()) {
+        if (!handle.getChallenge().getEventClass().isInstance(event)) {
             return;
         }
 
@@ -60,20 +59,13 @@ public class ScriptEventListener implements Listener, EventExecutor {
     }
 
     private Player findPlayer(Event event) {
-        if (script == null) {
+        if (script == null
+                || !script.hasMethod(Challenges.METHOD_GET_PLAYER)
+        ) {
             return getFromEvent(event);
         }
 
-        if (script.hasMethod(Challenges.METHOD_GET_PLAYER)) {
-            return getFromEvent(event);
-        }
-
-        var runResult = script
-                .invoke(Challenges.METHOD_GET_PLAYER, event);
-
-        if (runResult.errorIsMissingMethod()) {
-            return getFromEvent(event);
-        }
+        var runResult = script.invoke(Challenges.METHOD_GET_PLAYER, event);
 
         if (runResult.result().isEmpty()) {
             LOGGER.error(

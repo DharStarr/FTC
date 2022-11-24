@@ -27,7 +27,7 @@ public class StepResult {
      */
     public static final byte MAX_SECTION_DEPTH = 3;
 
-    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
+    /* -------------------------- INSTANCE FIELDS --------------------------- */
 
     /** The created child sections */
     final List<PieceGenerator> sections;
@@ -49,19 +49,34 @@ public class StepResult {
      */
     final byte resultCode;
 
-    /* ----------------------------- STATIC CONSTRUCTORS ------------------------------ */
+    /* ------------------------ STATIC CONSTRUCTORS ------------------------- */
 
+    /**
+     * Creates a successful result
+     * @param sections Newly created child sections
+     *                 leading off into further rooms
+     * @param room The generated room
+     * @return The created result
+     */
     public static StepResult success(List<PieceGenerator> sections,
                                      DungeonRoom room
     ) {
         return new StepResult(sections, room, SUCCESS);
     }
 
+    /**
+     * Creates a failed result
+     * @param code The failure code
+     * @return The created result
+     * @see #FAILED
+     * @see #MAX_DEPTH
+     * @see #MAX_SECTION_DEPTH
+     */
     public static StepResult failure(byte code) {
         return new StepResult(Collections.emptyList(), null, code);
     }
 
-    /* ----------------------------- METHODS ------------------------------ */
+    /* ------------------------------ METHODS ------------------------------- */
 
     public boolean failed() {
         return resultCode != SUCCESS;

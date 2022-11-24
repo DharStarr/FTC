@@ -2,7 +2,6 @@ package net.forthecrown.core.admin;
 
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.user.Users;
@@ -22,8 +21,6 @@ public class Punisher extends SerializableObject.Json {
 
     public Punisher() {
         super(PathUtil.pluginPath("punishments.json"));
-
-        AutoSave.get().addCallback(this::save);
     }
 
     /**

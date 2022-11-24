@@ -33,7 +33,6 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
 
     public static final String
             TAG_PIECES = "pieces",
-            TAG_PARAMS = "parameters",
             TAG_ROOT = "root",
             TAG_BOSS_ROOM = "bossRoom";
 
@@ -75,6 +74,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         }
 
         pieceLookup.put(piece.getId(), piece);
+        piece.level = this;
 
         if (piece instanceof DungeonRoom) {
             chunkMap.add(piece);
@@ -140,7 +140,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
 
     // Note on piece serialization:
     //
-    // This overly elaborate-ass piece serialization format
+    // This overly elaborate-ass piece serialization format is
     // the result of my attempts at ensuring the NBT max tag
     // depth is never reached by serializing all pieces into
     // a flat list and then, during loading, relinking all
@@ -149,7 +149,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
     // Which occurs in the loadPieces(Tag, UUID) method,
     // which loads all the pieces from the flat List tag and
     // then uses a temporary Set<Pair> and Map<UUID, Piece>
-    // combo to relink them before calling addRecursively()
+    // combo to relink them before calling addPiece()
     // and having them added to the level properly.
     //    -- Jules
 

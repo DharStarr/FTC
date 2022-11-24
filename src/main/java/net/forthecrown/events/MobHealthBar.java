@@ -2,6 +2,7 @@ package net.forthecrown.events;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.forthecrown.core.Worlds;
+import net.forthecrown.core.module.OnDisable;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.Util;
@@ -163,6 +164,7 @@ public class MobHealthBar implements Listener {
         return TextColor.lerp((float) progress, NamedTextColor.YELLOW, NamedTextColor.RED);
     }
 
+    @OnDisable
     public static void shutdown() {
         NAMES.forEach(Entity::customName);
         HIT_MARKERS.forEach(Entity::remove);

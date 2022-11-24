@@ -4,8 +4,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.DayChange;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.ModuleServices;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.utils.Particles;
@@ -15,6 +15,7 @@ import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.Color;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 import static net.kyori.adventure.text.Component.text;
 
 public class CommandFtcTest extends FtcCommand {
+    private static final Logger LOGGER = FTC.getLogger();
 
     public CommandFtcTest() {
         super("FtcTest");
@@ -72,7 +74,7 @@ public class CommandFtcTest extends FtcCommand {
 
                 .then(literal("run_day_change")
                         .executes(c -> {
-                            DayChange.get().changeDay();
+                            ModuleServices.DAY_CHANGE.run();
                             return 0;
                         })
                 )
@@ -83,14 +85,20 @@ public class CommandFtcTest extends FtcCommand {
                                 renderTriggers = Tasks.cancel(renderTriggers);
                             } else {
                                 renderTriggers = Tasks.runTimer(() -> {
-                                     var triggers = Usables.get().getTriggers()
+                                     var triggers = Usables.getInstance().getTriggers()
                                              .getTriggers();
 
                                      for (var t: triggers) {
                                          var bounds = t.getBounds();
                                          World w = bounds.getWorld();
 
-                                         Particles.drawBounds(w, bounds, Color.RED);
+                                         try {
+                                             Particles.drawBounds(w, bounds, Color.RED);
+                                         } catch (Throwable exc) {
+                                             LOGGER.error("Error drawing bounds of {}: {}",
+                                                     t.getName(), bounds, exc
+                                             );
+                                         }
                                      }
 
                                 }, 15, 15);
@@ -136,8 +144,8 @@ public class CommandFtcTest extends FtcCommand {
                             c.getSource().sendMessage("fSplit:");
                             fSplit.forEach(component -> c.getSource().sendMessage(component));
 
-                            if (fSplit.size() != 3) {
-                                throw Exceptions.format("First failed, expected size {0}, found {1}", 3, fSplit.size());
+                            if (fSplit.size() != 4) {
+                                throw Exceptions.format("First failed, expected size {0}, found {1}", 4, fSplit.size());
                             }
 
                             Component second = text("Hello julian!\n Great to meet you :D");
@@ -168,15 +176,19 @@ public class CommandFtcTest extends FtcCommand {
                                             text("Second "),
                                             text("Third ", NamedTextColor.YELLOW),
                                             text("Fourth", NamedTextColor.GOLD, TextDecoration.BOLD),
-                                            text("Firth"),
+                                            text("Fifth"),
                                             text("Sixth Seventh", NamedTextColor.RED)
                                     )
 
                                     .build();
 
-                            List<Component> foSplit = Text.split(Pattern.compile(" "), fourth);
+                            List<Component> foSplit = Text.split(Pattern.compile("\s+"), fourth);
                             c.getSource().sendMessage("foSplit:");
                             foSplit.forEach(component -> c.getSource().sendMessage(component));
+
+                            if (foSplit.size() != 5) {
+                                throw Exceptions.format("Fourth failed, expected size {0}, found {1}", 5, foSplit.size());
+                            }
 
                             return 0;
                         })

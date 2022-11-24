@@ -33,11 +33,11 @@ class UsableEntityNode extends BukkitUsableNode<UsableEntity> {
                                 throw Exceptions.PLAYER_USABLE;
                             }
 
-                            if (Usables.get().isUsableEntity(entity)) {
+                            if (Usables.getInstance().isUsableEntity(entity)) {
                                 throw Exceptions.ALREADY_USABLE_ENTITY;
                             }
 
-                            Usables.get().createEntity(entity);
+                            Usables.getInstance().createEntity(entity);
 
                             c.getSource().sendAdmin("Creating usable entity");
                             return 0;
@@ -50,7 +50,7 @@ class UsableEntityNode extends BukkitUsableNode<UsableEntity> {
         command
                 .executes(c -> {
                     var holder = provider.get(c);
-                    Usables.get().deleteEntity(holder);
+                    Usables.getInstance().deleteEntity(holder);
 
                     c.getSource().sendAdmin("Deleted usable entity");
                     return 0;
@@ -65,7 +65,7 @@ class UsableEntityNode extends BukkitUsableNode<UsableEntity> {
     @Override
     protected UsableEntity get(String argumentName, CommandContext<CommandSource> context) throws CommandSyntaxException {
         var entity = EntityArgument.getEntity(context, argumentName);
-        var usables = Usables.get();
+        var usables = Usables.getInstance();
 
         if (!usables.isUsableEntity(entity)) {
             throw Exceptions.ENTITY_NOT_USABLE;

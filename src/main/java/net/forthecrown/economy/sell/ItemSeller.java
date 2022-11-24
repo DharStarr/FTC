@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.Messages;
-import net.forthecrown.core.challenge.ChallengeManager;
+import net.forthecrown.core.challenge.Challenges;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.TransactionType;
 import net.forthecrown.economy.Transactions;
@@ -118,8 +118,6 @@ public final class ItemSeller {
                 .amount(result.getEarned())
                 .log();
 
-        triggerChallenge();
-
         if (send) {
             player.sendMessage(Messages.soldItems(result, material));
         }
@@ -129,14 +127,8 @@ public final class ItemSeller {
             player.sendMessage(Messages.priceDropped(material, beforePrice, afterPrice));
         }
 
+        Challenges.trigger("daily/sell", this);
         return result;
-    }
-
-    void triggerChallenge() {
-        ChallengeManager.getInstance()
-                .getChallengeRegistry()
-                .get("daily/sell")
-                .ifPresent(challenge -> challenge.trigger(this));
     }
 
     void removeItems(SellResult result) {

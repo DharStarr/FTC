@@ -32,6 +32,7 @@ import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permissible;
+import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -597,7 +598,7 @@ public final class Text {
      * @throws NullPointerException If either the regex or component
      *                              parameters were null
      */
-    private static @NotNull List<Component> split(@NotNull String pattern,
+    private static @NotNull List<Component> split(@NotNull @RegExp String pattern,
                                                   @NotNull Component component
     ) throws NullPointerException {
         Objects.requireNonNull(pattern);
@@ -632,9 +633,7 @@ public final class Text {
             return ObjectLists.singleton(component);
         }
 
-        return new TextSplitter(component, pattern)
-                .build()
-                .getResult();
+        return new TextSplitter(pattern).split(component);
     }
 
     /* ---------------------------- ARG JOINERS ----------------------------- */

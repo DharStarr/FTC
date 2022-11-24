@@ -1,0 +1,26 @@
+Current TODO:
+
+- Missing/broken guild upgrades:
+    - Max Chunks
+    - Max Members
+    - Guild chest size
+
+- /shop item challenges
+- #./# in /challenges
+- GC rank toggle, for each individual rank :sad:
+- Hide waypoint logic from player
+- /rocket <entity> add <vector>
+- Fix /msg preview
+
+- Add color unlocking menu for guilds
+- Different formats for colors:
+    - different borders
+    - use 2 colors as gradient
+    - name in italic
+
+
+
+
+
+
+Finished:

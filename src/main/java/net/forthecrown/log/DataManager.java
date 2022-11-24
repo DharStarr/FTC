@@ -1,11 +1,13 @@
 package net.forthecrown.log;
 
 import lombok.Getter;
-import net.forthecrown.core.AutoSave;
-import net.forthecrown.core.DayChange;
-import net.forthecrown.core.DayChangeListener;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnDayChange;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.commons.lang3.Range;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Files;
 import java.time.LocalDate;
@@ -16,9 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 @Getter
-public class DataManager implements DayChangeListener {
+public class DataManager {
     @Getter
     private static final DataManager instance = new DataManager();
+
+    private static final Logger LOGGER = FTC.getLogger();
 
     /* -------------------------- INSTANCE FIELDS --------------------------- */
 
@@ -37,17 +41,10 @@ public class DataManager implements DayChangeListener {
         logRange = Range.is(date);
     }
 
-    private static void init() {
-        instance.load();
-
-        AutoSave.get().addCallback(instance::save);
-        DayChange.get().addListener(instance);
-    }
-
     /* ------------------------------ METHODS ------------------------------- */
 
-    @Override
-    public void onDayChange(ZonedDateTime time) {
+    @OnDayChange
+    void onDayChange(ZonedDateTime time) {
         save();
 
         date = time.toLocalDate();
@@ -75,19 +72,35 @@ public class DataManager implements DayChangeListener {
 
         ChronoLocalDate d = searchRange.getMaximum();
 
+        short safeGuard = Short.MAX_VALUE / 2;
+
         // While within search range, query logs of specific day
         // and then move the date backwards by one
         while (searchRange.contains(d)) {
+            --safeGuard;
+
+            if (safeGuard < 0) {
+                LOGGER.error(
+                        "Query operation passed safeGuard loop limit! " +
+                                "date={}, queryRange={}, searchDate={}",
+                        date, searchRange, d,
+                        new RuntimeException()
+                );
+
+                break;
+            }
+
             LogContainer container;
 
             // If current date, then don't load file,
             // File will most likely have invalid data,
             // use the loaded container
-            if (d.equals(date)) {
+            if (d.compareTo(date) == 0) {
                 container = this.logs;
             } else {
                 // If the file don't exist, nothing to look for
                 if (!Files.exists(storage.getLogFile(d))) {
+                    d = d.minus(1, ChronoUnit.DAYS);
                     continue;
                 }
 
@@ -113,18 +126,17 @@ public class DataManager implements DayChangeListener {
 
     /* --------------------------- SERIALIZATION ---------------------------- */
 
+    @OnSave
     public void save() {
         storage.saveLogs(date, logs);
     }
 
+    @OnLoad
     public void load() {
         logs = new LogContainer();
         storage.loadLogs(date, logs);
 
-        var minYear = storage.findMinLog();
-        logRange = Range.between(
-                LocalDate.of(minYear.getYear(), minYear.getMonth(), 1),
-                date
-        );
+        LocalDate minDate = storage.findMinLog();
+        logRange = Range.between(minDate, date);
     }
 }

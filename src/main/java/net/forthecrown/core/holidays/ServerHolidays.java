@@ -3,8 +3,10 @@ package net.forthecrown.core.holidays;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.forthecrown.core.*;
-import net.forthecrown.core.script.Scripts;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.Messages;
+import net.forthecrown.core.module.OnDayChange;
+import net.forthecrown.core.script.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;
@@ -34,7 +36,7 @@ import java.util.Map;
 /**
  * The class which manages the server's automated Holiday system.
  */
-public class ServerHolidays extends SerializableObject.NbtDat implements DayChangeListener {
+public class ServerHolidays extends SerializableObject.NbtDat {
     /**
      * The size of the holiday inventory given in shulkers/chests
      */
@@ -58,15 +60,8 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
         return inst;
     }
 
-    private static void init() {
-        get().reload();
-
-        DayChange.get().addListener(get());
-        AutoSave.get().addCallback(get()::save);
-    }
-
-    @Override
-    public void onDayChange(ZonedDateTime time) {
+    @OnDayChange
+    void onDayChange(ZonedDateTime time) {
         // Go through each holiday
         for (var h: holidays.values()) {
             // If the holiday has no rewards or is disabled, skip it
@@ -163,7 +158,7 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
      */
     public void deactivate(Holiday holiday) {
         if (!Strings.isNullOrEmpty(holiday.getPeriodEndScript())) {
-            Scripts.read(holiday.getPeriodEndScript())
+            Script.read(holiday.getPeriodEndScript())
                     .invoke("onHolidayEnd");
         }
 
@@ -209,14 +204,14 @@ public class ServerHolidays extends SerializableObject.NbtDat implements DayChan
 
         if (holiday.getPeriod().isExact()) {
             if (!Strings.isNullOrEmpty(holiday.getActivationScript())) {
-                Scripts.run(
+                Script.run(
                         holiday.getActivationScript(),
                         "onHolidayRun"
                 );
             }
         } else {
             if (!Strings.isNullOrEmpty(holiday.getPeriodStartScript())) {
-                Scripts.run(
+                Script.run(
                         holiday.getPeriodStartScript(),
                         "onHolidayStart"
                 );

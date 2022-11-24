@@ -125,7 +125,7 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
         evoker.setLootTable(LootTables.EMPTY.getLootTable());
 
         Location l = evoker.getLocation();
-        EvokerEffects.impactEffect(getWorld(), Vectors.fromD(l));
+        EvokerEffects.impactEffect(getWorld(), Vectors.doubleFrom(l));
 
         runComponents(component -> component.onSpawn(this, currentContext));
 
@@ -144,7 +144,7 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
 
         if (!force) {
             Location l = evoker.getLocation();
-            Vector3d pos = Vectors.fromD(l);
+            Vector3d pos = Vectors.doubleFrom(l);
             EvokerEffects.shockwave(getWorld(), pos);
 
             finalizeKill(currentContext);

@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.script.Script;
-import net.forthecrown.core.script.Scripts;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.Results;
@@ -36,13 +35,8 @@ public class ChallengeParser {
     public static DataResult<JsonChallenge> parse(JsonObject object) {
         JsonWrapper json = JsonWrapper.wrap(object);
 
-        if (!json.has(KEY_NAME)
-                || !json.has(KEY_EVENT_CLASS)
-        ) {
-            return Results.errorResult(
-                    "Missing one of the following fields: %s, %s",
-                    KEY_NAME, KEY_EVENT_CLASS
-            );
+        if (!json.has(KEY_NAME)) {
+            return Results.errorResult("No display name specified");
         }
 
         JsonChallenge.Builder builder = JsonChallenge.builder()
@@ -125,7 +119,7 @@ public class ChallengeParser {
             return build(builder, null);
         }
 
-        return build(builder, Scripts.read(builder.script()));
+        return build(builder, Script.read(builder.script()));
     }
     static DataResult<JsonChallenge> build(JsonChallenge.Builder builder,
                                            Script script

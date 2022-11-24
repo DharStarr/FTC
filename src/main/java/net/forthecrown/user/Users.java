@@ -145,23 +145,27 @@ public @UtilityClass class Users {
         }
     }
 
+    /* ----------------------- BLOCKED/IGNORE TESTING ----------------------- */
+
     /**
-     * Tests if the given user was blocked, is blocking, or was
-     * separated from the target user. If they were blocked or
-     * separated, this method will send the <code>sender</code>
-     * a message informing them that they were
+     * Tests if the given user was blocked, is blocking, or was separated from
+     * the target user. If they were blocked or separated, this method will send
+     * the <code>sender</code> a message informing them that they were
      * <p>
-     * Argument 0 on the 2 message format parameters will be
-     * the given target's {@link User} object... That was a
-     * long way to say argument 0 is the target.
+     * Argument 0 on the 2 message format parameters will be the given target's
+     * {@link User} object... That was a long way to say argument 0 is the
+     * target.
      *
      * @see #testBlockedMessage(User, User, String, String)
      * @param sender The user
      * @param target The target user
-     * @param senderIgnoredFormat The format to use if the sender has blocked the target
-     * @param targetIgnoredFormat The format to use if the target has blocked the sender
-     * @return True, if either of the 2 users has blocked the other or
-     *         have been separated, false otherwise
+     * @param senderIgnoredFormat The format to use if the sender has blocked
+     *                            the target
+     * @param targetIgnoredFormat The format to use if the target has blocked
+     *                            the sender
+     *
+     * @return True, if either of the 2 users has blocked the other or have been
+     *         separated, false otherwise
      */
     public boolean testBlocked(User sender,
                                User target,
@@ -181,24 +185,24 @@ public @UtilityClass class Users {
     }
 
     /**
-     * Tests if the given user was blocked, is blocking, or was
-     * separated from the target user. If they were blocked or
-     * separated, this method will throw a command syntax exception
-     * with the given formats.
+     * Tests if the given user was blocked, is blocking, or was separated from
+     * the target user. If they were blocked or separated, this method will
+     * throw a command syntax exception with the given formats.
      * <p>
-     * Argument 0 on the 2 message format parameters will be
-     * the given target's {@link User} object... That was a
-     * long way to say argument 0 is the target.
+     * Argument 0 on the 2 message format parameters will be the given target's
+     * {@link User} object... That was a long way to say argument 0 is the
+     * target.
      *
      * @see #testBlockedMessage(User, User, String, String)
      * @param sender The user
      * @param target The target user
-     * @param senderIgnoredFormat The format to use if the sender
-     *                            has blocked the target
-     * @param targetIgnoredFormat The format to use if the target
-     *                            has blocked the sender
-     * @throws CommandSyntaxException If the two users were separated
-     *                                or if either had blocked the other
+     * @param senderIgnoredFormat The format to use if the sender has blocked
+     *                            the target
+     * @param targetIgnoredFormat The format to use if the target has blocked
+     *                            the sender
+     *
+     * @throws CommandSyntaxException If the two users were separated or if
+     *                                either had blocked the other
      */
     public void testBlockedException(User sender,
                                      User target,
@@ -218,27 +222,26 @@ public @UtilityClass class Users {
     }
 
     /**
-     * Tests if the given user was blocked, is blocking, or was
-     * separated from the target user. If they were blocked or
-     * separated, this method will return the corresponding
-     * message from the 2 ignore formats given. If the user and
-     * sender are forcefully separated, the result is
-     * {@link Messages#SEPARATED_FORMAT}. If the users aren't
-     * blocked or separated at all, an empty optional is returned
+     * Tests if the given user was blocked, is blocking, or was separated from
+     * the target user. If they were blocked or separated, this method will
+     * return the corresponding message from the 2 ignore formats given. If the
+     * user and sender are forcefully separated, the result is
+     * {@link Messages#SEPARATED_FORMAT}. If the users aren't blocked or
+     * separated at all, an empty optional is returned
      * <p>
-     * Argument 0 on the 2 message format parameters will be
-     * the given target's {@link User} object... That was a
-     * long way to say argument 0 is the target.
+     * Argument 0 on the 2 message format parameters will be the given target's
+     * {@link User} object... That was a long way to say argument 0 is the
+     * target.
      *
      * @param sender The user
      * @param target The target user
-     * @param senderIgnoredFormat The format to use if the sender
-     *                            has blocked the target
-     * @param targetIgnoredFormat The format to use if the target
-     *                            has blocked the sender
+     * @param senderIgnoredFormat The format to use if the sender has blocked
+     *                            the target
+     * @param targetIgnoredFormat The format to use if the target has blocked
+     *                            the sender
      *
-     * @return Corresponding ignore message, empty, if not blocked or
-     *         separated in any way
+     * @return Corresponding ignore message, empty, if not blocked or separated
+     *         in any way
      */
     public Optional<String> testBlockedMessage(User sender,
                                                User target,
@@ -285,6 +288,8 @@ public @UtilityClass class Users {
         return userInter.isBlockedPlayer(target.getUniqueId())
                 || targetInter.isOnlyBlocked(sender.getUniqueId());
     }
+
+    /* ---------------------------------------------------------------------- */
 
     /**
      * Marries both of the given users

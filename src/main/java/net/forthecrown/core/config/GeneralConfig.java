@@ -45,7 +45,16 @@ public @UtilityClass class GeneralConfig {
             allowNonOwnerSwords         = false,
             useAsyncTpForPlayers        = false,
             staffLogEnabled             = false,
-            announcePunishments         = false;
+            announcePunishments         = false,
+
+            /**
+             * Determines whether chunk loader runs in parallel or in series.
+             * <p>
+             * This means that if this value is true, it'll only load 1 section
+             * at a time, instead of running all the world's sections in
+             * parallel
+             */
+            chunkLoaderRunsInSeries     = true;
 
     public static int
             effectCost_arrow            = 1000,

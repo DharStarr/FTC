@@ -109,18 +109,18 @@ public class SaveReloadCommands extends FtcCommand {
         ),
 
         KITS (
-                Usables.get().getKits()::save,
-                Usables.get().getKits()::reload
+                Usables.getInstance().getKits()::save,
+                Usables.getInstance().getKits()::reload
         ),
 
         WARPS (
-                Usables.get().getWarps()::save,
-                Usables.get().getWarps()::reload
+                Usables.getInstance().getWarps()::save,
+                Usables.getInstance().getWarps()::reload
         ),
 
         USABLES (
-                Usables.get()::save,
-                Usables.get()::reload
+                Usables.getInstance()::save,
+                Usables.getInstance()::reload
         ),
 
         WAYPOINTS (

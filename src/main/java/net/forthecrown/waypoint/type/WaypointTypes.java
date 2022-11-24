@@ -1,6 +1,7 @@
 package net.forthecrown.waypoint.type;
 
 import lombok.experimental.UtilityClass;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.waypoint.Waypoints;
@@ -13,6 +14,8 @@ public @UtilityClass class WaypointTypes {
     public final PlayerWaypointType GUILD = register("guild", new PlayerWaypointType("Guild Waypoint", Waypoints.GUILD_COLUMN));
     public final PlayerWaypointType PLAYER = register("player", new PlayerWaypointType("Player-Made", Waypoints.PLAYER_COLUMN));
 
+    // Called reflectively by BootStrap
+    @OnEnable
     private static void init() {
         REGISTRY.freeze();
     }

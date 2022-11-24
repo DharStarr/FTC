@@ -107,8 +107,8 @@ public class TriggerManager {
     }
 
     public void run(Player player, Location source, Location destination) {
-        Vector3d p1 = Vectors.fromD(source);
-        Vector3d p2 = Vectors.fromD(destination);
+        Vector3d p1 = Vectors.doubleFrom(source);
+        Vector3d p2 = Vectors.doubleFrom(destination);
 
         double hWidth = player.getWidth() / 2;
         double height = player.getHeight();

@@ -1,6 +1,8 @@
 package net.forthecrown.dungeons;
 
 import net.forthecrown.core.config.ConfigManager;
+import net.forthecrown.core.module.OnDisable;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.dungeons.boss.*;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
@@ -28,6 +30,7 @@ public class Bosses {
             HIDEY_SPIDEY    = register(new HideySpideyBoss()),
             DRAWNED         = register(new DrawnedBoss());
 
+    @OnEnable
     static void init() {
         DUNGEON_BOSSES.freeze();
 
@@ -44,6 +47,7 @@ public class Bosses {
         return (T) DUNGEON_BOSSES.register(boss.getKey(), boss).getValue();
     }
 
+    @OnDisable
     public static void shutdown() {
         DUNGEON_BOSSES.forEach(boss -> boss.kill(true));
     }

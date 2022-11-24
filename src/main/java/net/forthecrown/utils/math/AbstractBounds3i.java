@@ -265,7 +265,15 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     }
 
     public org.bukkit.util.BoundingBox toBukkit() {
-        return new org.bukkit.util.BoundingBox(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
+        return new org.bukkit.util.BoundingBox(
+                minX,
+                minY,
+                minZ,
+
+                maxX + 1,
+                maxY + 1,
+                maxZ + 1
+        );
     }
 
     @Override

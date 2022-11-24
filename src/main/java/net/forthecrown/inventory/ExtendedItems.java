@@ -1,5 +1,6 @@
 package net.forthecrown.inventory;
 
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.inventory.weapon.RoyalSword;
 import net.forthecrown.inventory.weapon.RoyalSwordType;
@@ -19,6 +20,7 @@ public final class ExtendedItems {
     /** Item type which represents crowns */
     public static final ExtendedItemType<RoyalCrown> CROWN          = register(new CrownType());
 
+    @OnEnable
     public static void init() {
         Registries.ITEM_TYPES.freeze();
     }

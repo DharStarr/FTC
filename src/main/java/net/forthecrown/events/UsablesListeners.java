@@ -23,11 +23,11 @@ public class UsablesListeners implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
-        if (!Usables.get().isUsableEntity(event.getEntity())) {
+        if (!Usables.getInstance().isUsableEntity(event.getEntity())) {
             return;
         }
 
-        var manager = Usables.get();
+        var manager = Usables.getInstance();
         var entity = event.getEntity();
         var usable = manager.getLoadedEntity(entity);
 
@@ -44,11 +44,11 @@ public class UsablesListeners implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityMove(EntityMoveEvent event) {
-        if (!Usables.get().isUsableEntity(event.getEntity())) {
+        if (!Usables.getInstance().isUsableEntity(event.getEntity())) {
             return;
         }
 
-        var manager = Usables.get();
+        var manager = Usables.getInstance();
         var entity = event.getEntity();
         var usable = manager.getEntity(entity);
 
@@ -91,7 +91,7 @@ public class UsablesListeners implements Listener {
             return false;
         }
 
-        var manager = Usables.get();
+        var manager = Usables.getInstance();
 
         try {
             if (manager.isUsableEntity(entity)) {
@@ -120,7 +120,7 @@ public class UsablesListeners implements Listener {
 
     // Returns whether the event should be cancelled
     public boolean check(Block block, Player player) {
-        var manager = Usables.get();
+        var manager = Usables.getInstance();
 
         try {
             if (manager.isUsableBlock(block)) {

@@ -19,6 +19,9 @@ public class LogQuery implements Predicate<LogEntry> {
     private final Predicate[] predicates;
     private final Holder<LogSchema> schema;
     private final Range<ChronoLocalDate> searchRange;
+
+    private final Predicate<LogEntry> entryPredicate;
+
     private final int maxResults;
 
     @Override
@@ -35,7 +38,8 @@ public class LogQuery implements Predicate<LogEntry> {
             }
         }
 
-        return true;
+        return entryPredicate == null
+                || entryPredicate.test(entry);
     }
 
     public static Builder<?> builder(Holder<LogSchema> schema) {
@@ -47,6 +51,8 @@ public class LogQuery implements Predicate<LogEntry> {
     public static class Builder<F> {
         private final Predicate[] predicates;
         private final Holder<LogSchema> schema;
+
+        private Predicate<LogEntry> entryPredicate;
 
         private int maxResults = Integer.MAX_VALUE;
         private Range<ChronoLocalDate> queryRange;
@@ -95,7 +101,13 @@ public class LogQuery implements Predicate<LogEntry> {
         }
 
         public LogQuery build() {
-            return new LogQuery(predicates, schema, queryRange, maxResults);
+            return new LogQuery(
+                    predicates,
+                    schema,
+                    queryRange,
+                    entryPredicate,
+                    maxResults
+            );
         }
     }
 }

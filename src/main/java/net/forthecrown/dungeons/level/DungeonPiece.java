@@ -65,6 +65,9 @@ public abstract class DungeonPiece implements BoundsHolder {
     @Getter
     private Rotation rotation = Rotation.NONE;
 
+    @Getter
+    DungeonLevel level;
+
     /* ----------------------------- CONSTRUCTORS ------------------------------ */
 
     public DungeonPiece(PieceType type) {
@@ -138,6 +141,8 @@ public abstract class DungeonPiece implements BoundsHolder {
     }
 
     public void apply(Transform transform) {
+        level.getChunkMap().remove(this);
+
         if (transform.getRotation() != Rotation.NONE) {
             this.rotation = this.rotation.add(transform.getRotation());
         }
@@ -147,6 +152,8 @@ public abstract class DungeonPiece implements BoundsHolder {
                 transform.apply(b.min()),
                 transform.apply(b.max())
         );
+
+        level.getChunkMap().add(this);
     }
 
     public Vector3i getPivotPosition() {

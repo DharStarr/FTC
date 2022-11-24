@@ -52,7 +52,7 @@ public class PlayerJoinListener implements Listener {
             user.getInventory().addItem(sword);
 
             //Give join kit
-            Kit kit = Usables.get()
+            Kit kit = Usables.getInstance()
                     .getKits()
                     .get(GeneralConfig.onFirstJoinKit);
 

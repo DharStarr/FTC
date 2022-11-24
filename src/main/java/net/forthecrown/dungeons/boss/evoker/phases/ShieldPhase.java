@@ -25,7 +25,7 @@ public class ShieldPhase implements AttackPhase {
 
         EvokerEffects.shieldLoseEffect(
                 boss.getWorld(),
-                Vectors.fromD(boss.getBossEntity().getLocation()),
+                Vectors.doubleFrom(boss.getBossEntity().getLocation()),
                 boss.getRoom()
         );
 
@@ -48,7 +48,7 @@ public class ShieldPhase implements AttackPhase {
 
             Evoker entity = boss.getBossEntity();
             entity.setGlowing(true);
-            EvokerEffects.shieldGainEffect(boss.getWorld(), Vectors.fromD(entity.getLocation()), boss.getRoom());
+            EvokerEffects.shieldGainEffect(boss.getWorld(), Vectors.doubleFrom(entity.getLocation()), boss.getRoom());
         }
 
         tick = 0;

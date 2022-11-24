@@ -379,9 +379,9 @@ public class CommandMarket extends FtcCommand {
 
         Vector3i doorSignPos = usePlayerPos ?
                 figureSignLoc(c.getSource().asPlayer())
-                : Vectors.fromI(PositionArgument.getLocation(c, "doorSign_pos"));
+                : Vectors.intFrom(PositionArgument.getLocation(c, "doorSign_pos"));
 
-        Vector3i noticePos = Vectors.fromI(noticeLoc);
+        Vector3i noticePos = Vectors.intFrom(noticeLoc);
         ShopEntrance e = new ShopEntrance(face, noticePos, doorSignPos);
 
         shop.addEntrance(e);
@@ -397,7 +397,7 @@ public class CommandMarket extends FtcCommand {
 
     Vector3i figureSignLoc(Player player) {
         World w = player.getWorld();
-        Vector3i pos = Vectors.fromI(player.getLocation());
+        Vector3i pos = Vectors.intFrom(player.getLocation());
 
         BlockFace face = player.getFacing();
 

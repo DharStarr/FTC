@@ -10,8 +10,12 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.Getter;
-import net.forthecrown.core.*;
+import net.forthecrown.core.Announcer;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.FtcDiscord;
+import net.forthecrown.core.Worlds;
 import net.forthecrown.core.admin.StaffChat;
+import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.structure.BlockStructure;
 import net.forthecrown.structure.StructurePlaceConfig;
 import net.forthecrown.structure.Structures;
@@ -53,7 +57,6 @@ import org.mcteam.ancientgates.Gate;
 import org.mcteam.ancientgates.Gates;
 import org.spongepowered.math.vector.Vector3i;
 
-import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +65,7 @@ import static net.forthecrown.core.FtcDiscord.C_RW;
 import static net.forthecrown.core.config.ResourceWorldConfig.*;
 
 @Getter
-public class ResourceWorld implements DayChangeListener {
+public class ResourceWorld {
     private static final Logger LOGGER = FTC.getLogger();
 
     private static final ResourceWorld INSTANCE = new ResourceWorld();
@@ -140,7 +143,6 @@ public class ResourceWorld implements DayChangeListener {
     private boolean seedSearchActive;
 
     private ResourceWorld() {
-        DayChange.get().addListener(this);
     }
 
     public static ResourceWorld get() {
@@ -304,7 +306,7 @@ public class ResourceWorld implements DayChangeListener {
             toHaz.addFrom(null);
             toHaz.addFrom(gateLocation);
 
-            LOGGER.info("Moved rw -> haz gate to {}", Vectors.fromI(gateLocation));
+            LOGGER.info("Moved rw -> haz gate to {}", Vectors.intFrom(gateLocation));
         }
 
         // Move RW -> Haz gate destination
@@ -315,11 +317,11 @@ public class ResourceWorld implements DayChangeListener {
             toRes.addTo(null);
             toRes.addTo(destination);
 
-            LOGGER.info("Moved haz -> rw destination to {}", Vectors.fromI(destination));
+            LOGGER.info("Moved haz -> rw destination to {}", Vectors.intFrom(destination));
         }
 
         // Move portal warp or create it
-        CmdUsables<Warp> warps = Usables.get().getWarps();
+        CmdUsables<Warp> warps = Usables.getInstance().getWarps();
         Warp portalWarp = warps.get(PORTAL_WARP);
 
         if (portalWarp == null) {
@@ -418,8 +420,8 @@ public class ResourceWorld implements DayChangeListener {
         }
     }
 
-    @Override
-    public void onDayChange(ZonedDateTime time) {
+    @OnDayChange
+    void onDayChange() {
         if (!enabled) {
             LOGGER.info("Resource world auto reset is disabled, not running");
             return;

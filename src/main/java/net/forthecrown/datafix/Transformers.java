@@ -1,6 +1,8 @@
 package net.forthecrown.datafix;
 
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -45,10 +47,7 @@ public class Transformers {
         return !COMPLETED_TRANSFORMERS.contains(c.getClass().getName());
     }
 
-    static void init() {
-        load();
-    }
-
+    @OnLoad
     private static void load() {
         COMPLETED_TRANSFORMERS.clear();
 
@@ -69,6 +68,7 @@ public class Transformers {
         }
     }
 
+    @OnSave
     public static void save() {
         Path p = getPath();
 

@@ -2,7 +2,7 @@ package net.forthecrown.core;
 
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
-import net.forthecrown.utils.book.TextInfo;
+import net.forthecrown.utils.text.TextInfo;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
@@ -14,8 +14,7 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 
 import static net.forthecrown.utils.text.Text.gradient;
-import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.*;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class TabList {
@@ -115,11 +114,17 @@ public final class TabList {
 
         var header = text()
                 .append(
+                        space(),
                         border,
+                        space(),
+
                         newline(),
                         SERVER_TITLE,
                         newline(),
-                        border
+
+                        space(),
+                        border,
+                        space()
                 );
 
         // If we have an objective set to be displayed in

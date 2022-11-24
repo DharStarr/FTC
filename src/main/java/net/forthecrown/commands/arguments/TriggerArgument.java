@@ -20,7 +20,7 @@ public class TriggerArgument implements ArgumentType<UsableTrigger>, VanillaMapp
     public UsableTrigger parse(StringReader reader) throws CommandSyntaxException {
         int cursor = reader.getCursor();
         String name = Arguments.FTC_KEY.parse(reader);
-        var trigger = Usables.get().getTriggers().getNamed(name);
+        var trigger = Usables.getInstance().getTriggers().getNamed(name);
 
         if (trigger == null) {
             throw Exceptions.unknownTrigger(reader, cursor, name);
@@ -31,7 +31,7 @@ public class TriggerArgument implements ArgumentType<UsableTrigger>, VanillaMapp
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CompletionProvider.suggestMatching(builder, Usables.get().getTriggers().getNames());
+        return CompletionProvider.suggestMatching(builder, Usables.getInstance().getTriggers().getNames());
     }
 
     @Override

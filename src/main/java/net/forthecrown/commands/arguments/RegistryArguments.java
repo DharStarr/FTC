@@ -8,6 +8,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.admin.JailCell;
+import net.forthecrown.core.challenge.Challenge;
+import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.core.npc.SimpleNpc;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
@@ -52,6 +54,11 @@ public class RegistryArguments<T> implements ArgumentType<Holder<T>>, VanillaMap
 
     public static final RegistryArguments<WaypointProperty>
             WAYPOINT_PROPERTY = new RegistryArguments<>(WaypointProperties.REGISTRY, "Waypoint property");
+
+    public static final RegistryArguments<Challenge> CHALLENGE = new RegistryArguments<>(
+            ChallengeManager.getInstance().getChallengeRegistry(),
+            "Challenge"
+    );
 
     public static final RegistryArguments<UsageType<UsageAction>> USAGE_ACTION =  new RegistryArguments<>(
             ((Registry) Registries.USAGE_ACTIONS), "Usage action"

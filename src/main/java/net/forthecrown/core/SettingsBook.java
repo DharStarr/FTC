@@ -8,7 +8,7 @@ import net.forthecrown.commands.click.ClickableTexts;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.book.BookBuilder;
 import net.forthecrown.utils.book.BookSetting;
-import net.forthecrown.utils.book.TextInfo;
+import net.forthecrown.utils.text.TextInfo;
 import net.kyori.adventure.text.Component;
 
 import java.util.ArrayList;

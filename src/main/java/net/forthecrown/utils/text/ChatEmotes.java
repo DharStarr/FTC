@@ -2,6 +2,7 @@ package net.forthecrown.utils.text;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.grenadier.CmdUtil;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.kyori.adventure.text.Component;
@@ -22,6 +23,7 @@ public final class ChatEmotes {
     public static final char EMOTE_CHAR = ':';
     public static final Map<String, Component> TOKEN_2_EMOTE = new HashMap<>();
 
+    @OnEnable
     static void init() {
         register("shrug",       "¯\\_(ツ)_/¯");
         register("ughcry",      "(ಥ﹏ಥ)");

@@ -1231,7 +1231,7 @@ public interface Messages {
      * @return The formatted message
      */
     static Component healing(User target) {
-        return format("Healing &6{0}&r!", NamedTextColor.YELLOW, target);
+        return format("Healing &6{0, user}&r!", NamedTextColor.YELLOW, target);
     }
 
     /**

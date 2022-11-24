@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.guilds.Guild;
-import net.forthecrown.utils.book.TextInfo;
+import net.forthecrown.utils.text.TextInfo;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.config.GeneralConfig;

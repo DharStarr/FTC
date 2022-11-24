@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
-import net.forthecrown.core.challenge.ChallengeManager;
+import net.forthecrown.core.challenge.Challenges;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.economy.TransactionType;
@@ -143,43 +143,40 @@ public class SignShopSession {
      * @param market The market shop this session's shop is located in
      */
     private void triggerChallenge(@NotNull MarketShop market) {
-        ChallengeManager.getInstance()
-                .getChallengeRegistry()
-                .get("daily/buy")
-                .ifPresent(challenge -> {
-                    // Create initial query to find if they've bought
-                    // from this shop before
-                    var query = LogQuery.builder(Transactions.TRANSACTION_SCHEMA)
-                            .maxResults(1)
+        Challenges.apply("daily/buy", challenge -> {
+            // Create initial query to find if they've bought
+            // from this shop before
+            var query = LogQuery.builder(Transactions.TRANSACTION_SCHEMA)
+                    .maxResults(1)
 
-                            .field(Transactions.T_EXTRA)
-                            .add(Objects::nonNull)
-                            .addOr(s -> s.contains("market=" + market.getName()));
+                    .field(Transactions.T_EXTRA)
+                    .add(Objects::nonNull)
+                    .addOr(s -> s.contains("market=" + market.getName()));
 
-                    // Set the correct field to be the active field
-                    //
-                    // If user is buying from shop, they're sending
-                    // money, if they're selling to the shop, they're
-                    // getting the money, aka being the target
-                    if (shop.getType().isBuyType()) {
-                        query.field(Transactions.T_SENDER);
-                    } else {
-                        query.field(Transactions.T_TARGET);
-                    }
+            // Set the correct field to be the active field
+            //
+            // If user is buying from shop, they're sending
+            // money, if they're selling to the shop, they're
+            // getting the money, aka being the target
+            if (shop.getType().isBuyType()) {
+                query.field(Transactions.T_SENDER);
+            } else {
+                query.field(Transactions.T_TARGET);
+            }
 
-                    // Add predicates to the new active field
-                    query.add(Objects::nonNull)
-                            .add(s -> s.contains(customer.getUniqueId().toString()));
+            // Add predicates to the new active field
+            query.add(Objects::nonNull)
+                    .add(s -> s.contains(customer.getUniqueId().toString()));
 
-                    // Great variable name
-                    boolean hasBoughtFromMarketBefore = DataLogs.query(query.build())
-                            .findAny()
-                            .isPresent();
+            // Great variable name
+            boolean hasBoughtFromMarketBefore = DataLogs.query(query.build())
+                    .findAny()
+                    .isPresent();
 
-                    if (!hasBoughtFromMarketBefore) {
-                        challenge.trigger(customer);
-                    }
-                });
+            if (!hasBoughtFromMarketBefore) {
+                challenge.trigger(customer);
+            }
+        });
     }
 
     /**

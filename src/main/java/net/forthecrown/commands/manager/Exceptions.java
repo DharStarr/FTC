@@ -7,6 +7,7 @@ import net.forthecrown.core.Messages;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.admin.PunishEntry;
 import net.forthecrown.core.admin.PunishType;
+import net.forthecrown.core.challenge.Challenge;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.holidays.Holiday;
 import net.forthecrown.economy.market.MarketDisplay;
@@ -34,6 +35,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
 import static net.forthecrown.commands.manager.OpenExceptionType.INSTANCE;
@@ -248,6 +250,12 @@ public interface Exceptions {
 
     static CommandSyntaxException requestAlreadySent(User target) {
         return format("You've already sent a request to {0, user}.", target);
+    }
+
+    static CommandSyntaxException nonActiveChallenge(Challenge challenge) {
+        return format("Challenge {0} is not active!",
+                challenge.displayName()
+        );
     }
 
     // -------------------------------------
@@ -588,10 +596,15 @@ public interface Exceptions {
         return format("Unknown region: '{0}'", name);
     }
 
-    static CommandSyntaxException farFromWaypoint(int x, int z) {
+    static CommandSyntaxException farFromWaypoint(Waypoint waypoint) {
+        var pos = waypoint.getPosition();
+        return farFromWaypoint(pos.x(), pos.y(), pos.z());
+    }
+
+    static CommandSyntaxException farFromWaypoint(int x, int y, int z) {
         return format("Too far from a region post to teleport." +
-                        "\nClosest pole is at x={0}, z={1}.",
-                x, z
+                        "\nClosest pole is at {0, vector}",
+                Vector2i.from(x, z)
         );
     }
 
@@ -631,7 +644,7 @@ public interface Exceptions {
     }
 
     static CommandSyntaxException overlappingWaypoints(int overlapping) {
-        return format("This waypoint is overlapping {0, number} waypoint(s)",
+        return format("This waypoint is overlapping {0, number} other waypoint(s)",
                 overlapping
         );
     }

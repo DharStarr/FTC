@@ -2,6 +2,7 @@ package net.forthecrown.core.challenge;
 
 import com.mojang.serialization.Codec;
 import lombok.experimental.UtilityClass;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.log.LogSchema;
 import net.forthecrown.log.SchemaField;
@@ -33,17 +34,22 @@ public @UtilityClass class ChallengeLogs {
     public final Holder<LogSchema> ACTIVE;
 
     public final SchemaField<String> A_CHALLENGE;
+    public final SchemaField<ResetInterval> A_TYPE;
+    public final SchemaField<Long> A_TIME;
     public final SchemaField<String> A_EXTRA;
 
     static {
         var builder = LogSchema.builder("challenges/active");
 
         A_CHALLENGE = builder.add("challenge", Codec.STRING);
-        A_EXTRA = builder.add("extra", Codec.STRING);
+        A_EXTRA     = builder.add("extra", Codec.STRING);
+        A_TYPE      = builder.add("type", FtcCodecs.enumCodec(ResetInterval.class));
+        A_TIME      = builder.add("time", FtcCodecs.TIMESTAMP_CODEC);
 
         ACTIVE = builder.register();
     }
 
+    @OnEnable
     static void init() {
         // Empty thing to force class load
     }

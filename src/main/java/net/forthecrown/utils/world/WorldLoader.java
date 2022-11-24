@@ -1,11 +1,14 @@
 package net.forthecrown.utils.world;
 
+import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.experimental.UtilityClass;
 import net.forthecrown.core.FTC;
-import net.forthecrown.utils.text.format.PeriodFormat;
+import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.module.OnDisable;
 import net.forthecrown.utils.VanillaAccess;
-import net.minecraft.core.SectionPos;
+import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.utils.text.format.PeriodFormat;
 import net.minecraft.world.level.ChunkPos;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +17,9 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
+import org.spongepowered.math.GenericMath;
 
+import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -36,14 +41,14 @@ public @UtilityClass class WorldLoader {
     private final Logger LOGGER = FTC.getLogger();
 
     /**
-     * Determines if the loader should log an
-     * excessive amount of info or not
+     * Determines if loader instances will load worlds 1 section at a time in
+     * series, or load all sections in parallel
      */
-    public boolean VERBOSE = FTC.inDebugMode();
+    public boolean SINGLE_SECTION_LOADING = true;
 
     /**
-     * The amount of chunks that have to be loaded before
-     * the logger logs a progress update message
+     * The amount of chunks that have to be loaded before the logger logs a
+     * progress update message
      */
     public int LOG_INTERVAL = 100;
 
@@ -152,6 +157,7 @@ public @UtilityClass class WorldLoader {
      * <p></p>
      * ONLY TO BE USED BY onDisable IN MAIN
      */
+    @OnDisable
     public void shutdown() {
         // Close all loader instances
         for (LoaderInstance i: ONGOING.values()) {
@@ -239,8 +245,9 @@ public @UtilityClass class WorldLoader {
             // the size of the world border, only load chunks within world
             // border
             WorldBorder border = world.getWorldBorder();
-            int chunkSize = SectionPos.blockToSectionCoord((int) (border.getSize() / 2));
-            this.progress = new LoadProgress(world, (chunkSize * 2) * (chunkSize * 2));
+            int chunkSize = Vectors.toChunk(
+                    GenericMath.floor(border.getSize() / 2)
+            );
 
             // Offset position to correct for negative cords
             ChunkPos start = new ChunkPos(-chunkSize, -chunkSize);
@@ -250,21 +257,22 @@ public @UtilityClass class WorldLoader {
             int sectionedSize = (int) Math.max(1, Math.ceil(val));
             this.sections = new LoadSection[sectionedSize * sectionedSize];
 
+            // Calculate total progress based off of
+            // sections instead of world size
+            this.progress = new LoadProgress(
+                    world,
+                    sections.length * SECTION_SIZE
+            );
+
             // Create the load sections
-            for (int i = 0; i < sections.length; i++) {
-                // Find X and Z from 1D array, google
-                // this I don't know math
-                int x = i / sectionedSize;
-                int z = i % sectionedSize;
-
-                final int
-                        xOffset = x * SECTION_SIZE,
-                        zOffset = z * SECTION_SIZE;
-
-                // Set the section to start at the calculated values
-                // Since the section's size is a constant, we don't
-                // need to specify that.
-                sections[i] = new LoadSection(this, new ChunkPos(start.x + xOffset, start.z + zOffset));
+            int index = 0;
+            for (int x = -sectionedSize; x < sectionedSize; x++) {
+                for (int z = -sectionedSize; z < sectionedSize; z++) {
+                    sections[index++] = new LoadSection(
+                            this,
+                            new ChunkPos(x, z)
+                    );
+                }
             }
 
             // Log load data
@@ -287,10 +295,14 @@ public @UtilityClass class WorldLoader {
                 }
             }
 
+            complete();
+        }
+
+        private void complete() {
             // Shutdown this loader instance
             onCancel();
             progress.onFinish();
-            complete(world);
+            WorldLoader.complete(world);
 
             // Complete the result callback
             result.complete(world);
@@ -300,10 +312,44 @@ public @UtilityClass class WorldLoader {
         public void run() {
             LOGGER.info("Started load of world: " + world.getName());
 
-            // Start all sections
-            for (LoadSection s: sections) {
-                EXECUTOR.execute(s);
+            if (GeneralConfig.chunkLoaderRunsInSeries) {
+                EXECUTOR.execute(this::loadSingleSectioned);
+            } else {
+                // Start all sections
+                for (LoadSection s: sections) {
+                    EXECUTOR.execute(s);
+                }
             }
+        }
+
+        // Method called to load the current world one section at a time
+        // instead of having all sections run in parallel
+        private void loadSingleSectioned() {
+            Deque<LoadSection> queue = Queues.newArrayDeque();
+
+            // Fill deque
+            for (var s: sections) {
+                if (s == null) {
+                    continue;
+                }
+
+                queue.addLast(s);
+            }
+
+            // Load 1 section at a time
+            while (!queue.isEmpty()) {
+                var section = queue.pop();
+                section.load();
+
+                section.completed = true;
+                LOGGER.info("Finished section {}", section);
+
+                if (stopped) {
+                    return;
+                }
+            }
+
+            complete();
         }
 
         public void onCancel() {
@@ -329,6 +375,11 @@ public @UtilityClass class WorldLoader {
 
         @Override
         public void run() {
+            load();
+            complete();
+        }
+
+        public void load() {
             // Run a nested for loop through all of these sections'
             // chunks and load those
             for (int x = 0; x < SECTION_SIZE; x++) {
@@ -350,40 +401,36 @@ public @UtilityClass class WorldLoader {
 
                     // Load chunk, are these comments obvious enough
                     loader.world.getChunkAtAsync(cX, cZ, true, false)
-                                    .whenComplete((chunk, throwable) -> {
-                                        if (throwable != null) {
-                                            LOGGER.error("Error while loading chunk", throwable);
-                                            return;
-                                        }
+                            .whenComplete((chunk, throwable) -> {
+                                if (throwable != null) {
+                                    LOGGER.error("Error while loading chunk", throwable);
+                                    return;
+                                }
 
-                                        if (chunk == null) {
-                                            LOGGER.warn("Couldn't load chunk at [x={}, z={}]", cX, cZ);
-                                            return;
-                                        }
+                                if (chunk == null) {
+                                    LOGGER.warn(
+                                            "Couldn't load chunk at [x={}, z={}]",
+                                            cX, cZ
+                                    );
+                                    return;
+                                }
 
-                                        // Logging every chunk normally clutters the console
-                                        // So only do it if we're testing
-                                        if (VERBOSE) {
-                                            LOGGER.info("Loaded chunk [x={}, z={}]", cX, cZ);
-                                        }
+                                // Unload the chunk to make sure it doesn't stay in RAM
+                                // We're just generating the chunks beforehand, not
+                                // trying to overwhelm the server here
+                                if (!Bukkit.isPrimaryThread()) {
+                                    VanillaAccess.getServer()
+                                            .execute(() -> chunk.unload(true));
+                                } else {
+                                    chunk.unload(true);
+                                }
 
-                                        // Unload the chunk to make sure it doesn't stay in RAM
-                                        // We're just generating the chunks beforehand, not
-                                        // trying to overwhelm the server here
-                                        if (!Bukkit.isPrimaryThread()) {
-                                            VanillaAccess.getServer().execute(() -> chunk.unload(true));
-                                        } else {
-                                            chunk.unload(true);
-                                        }
-
-                                        //Update progress tracker and release the semaphore permit
-                                        loader.progress.onChunkLoaded();
-                                        SEMAPHORE.release();
-                                    });
+                                //Update progress tracker and release the semaphore permit
+                                loader.progress.onChunkLoaded();
+                                SEMAPHORE.release();
+                            });
                 }
             }
-
-            complete();
         }
 
         private void complete() {

@@ -1,9 +1,8 @@
 package net.forthecrown.core;
 
-import net.forthecrown.dungeons.Bosses;
-import net.forthecrown.events.MobHealthBar;
-import net.forthecrown.user.packet.PacketListeners;
-import net.forthecrown.utils.world.WorldLoader;
+import net.forthecrown.core.module.ModuleServices;
+import net.forthecrown.core.module.OnDisable;
+import net.forthecrown.core.module.OnSave;
 import net.kyori.adventure.key.Namespaced;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.spi.ExtendedLogger;
@@ -11,8 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import static net.forthecrown.utils.Util.runSafe;
 
 /**
  * Main class that does all the dirty internal stuff
@@ -49,13 +46,11 @@ public final class Main extends JavaPlugin implements Namespaced {
 
     @Override
     public void onDisable() {
-        Bukkit.getScheduler().cancelTasks(this);
-        AutoSave.get().run();
+        Bukkit.getScheduler()
+                .cancelTasks(this);
 
-        runSafe(MobHealthBar::shutdown);
-        runSafe(Bosses::shutdown);
-        runSafe(WorldLoader::shutdown);
-        runSafe(PacketListeners::removeAll);
+        ModuleServices.run(OnSave.class);
+        ModuleServices.run(OnDisable.class);
     }
 
     private void ensureLoggerExists() {

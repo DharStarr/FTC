@@ -82,7 +82,7 @@ public class CommandJails extends FtcCommand {
                                     }
 
                                     World w = user.getWorld();
-                                    Vector3d pos = Vectors.fromD(user.getLocation());
+                                    Vector3d pos = Vectors.doubleFrom(user.getLocation());
                                     Bounds3i cell = Bounds3i.of(region);
 
                                     if (!cell.contains(pos.toInt())) {

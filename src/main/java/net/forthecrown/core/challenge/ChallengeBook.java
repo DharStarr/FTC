@@ -12,15 +12,12 @@ import net.forthecrown.economy.TransactionType;
 import net.forthecrown.economy.Transactions;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.book.BookBuilder;
-import net.forthecrown.utils.book.TextInfo;
+import net.forthecrown.utils.text.TextInfo;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -35,20 +32,16 @@ public class ChallengeBook {
                             throw Exceptions.cannotAfford(PAY_COST);
                         }
 
-                        ChallengeManager.getInstance()
-                                .getChallengeRegistry()
-                                .get("daily/pay")
-                                .ifPresent(challenge -> {
-                                    user.removeBalance(PAY_COST);
+                        Challenges.apply("daily/pay", challenge -> {
+                            user.removeBalance(PAY_COST);
+                            challenge.trigger(user);
 
-                                    challenge.trigger(user);
-
-                                    Transactions.builder()
-                                            .type(TransactionType.PAY_CHALLENGE)
-                                            .sender(user.getUniqueId())
-                                            .amount(PAY_COST)
-                                            .log();
-                                });
+                            Transactions.builder()
+                                    .type(TransactionType.PAY_CHALLENGE)
+                                    .sender(user.getUniqueId())
+                                    .amount(PAY_COST)
+                                    .log();
+                        });
 
                         open(user);
                     })
@@ -86,7 +79,8 @@ public class ChallengeBook {
 
         // Left: Total
         // Right: Completed
-        Map<ResetInterval, IntIntPair> summary = new HashMap<>();
+        Map<ResetInterval, IntIntPair>
+                summary = new EnumMap<>(ResetInterval.class);
 
         for (var c: ChallengeManager.getInstance().getActiveChallenges()) {
             boolean completed = Challenges.hasCompleted(c, entry.getId());
@@ -162,21 +156,23 @@ public class ChallengeBook {
             var c = e.getKey();
             boolean isCompleted = e.getBooleanValue();
 
-            totalRequired += c.getGoal();
+            float progress = entry.getProgress()
+                    .getFloat(c);
 
-            if (!isCompleted) {
-                float progress = entry.getProgress().getFloat(c);
-                totalProgress += progress;
+            ++totalRequired;
+
+            if (isCompleted || progress >= c.getGoal()) {
+                ++totalProgress;
             } else {
-                totalProgress += c.getGoal();
+                totalProgress += (progress / c.getGoal());
             }
         }
 
-        if (totalRequired != 0.0F && totalProgress != 0.0F) {
+        if (totalRequired != 0.0F) {
             double progress = (totalProgress / totalRequired) * 100;
 
             builder.addCentered(
-                    Text.format("{0, number}% done.",
+                    Text.format("{0, number, #.#}% done.",
                             NamedTextColor.GRAY,
                             progress
                     )
@@ -222,15 +218,11 @@ public class ChallengeBook {
                         );
             }
 
-            if (!builder.canAddLines(3)) {
-                builder.newPage();
-            }
-
             builder
                     .addText(displayName)
 
                     .justifyRight(
-                            Text.format("{0, number, #.##}/{1, number}",
+                            Text.format("{0, number, #.}/{1, number}",
                                     isCompleted
                                             ? NamedTextColor.DARK_GREEN
                                             : NamedTextColor.GRAY,
@@ -243,8 +235,7 @@ public class ChallengeBook {
                                                     : "Uncompleted"
                                             )
                                     )
-                    )
-                    .addEmptyLine();
+                    );
         }
 
         builder.newPage();

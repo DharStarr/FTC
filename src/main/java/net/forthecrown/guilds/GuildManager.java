@@ -4,7 +4,11 @@ import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
-import net.forthecrown.core.*;
+import net.forthecrown.core.DynmapUtil;
+import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnDayChange;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.guilds.unlockables.UnlockableColor;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.io.PathUtil;
@@ -23,7 +27,7 @@ import static net.forthecrown.guilds.GuildRank.ID_LEADER;
 import static net.forthecrown.guilds.Guilds.NO_EXP;
 import static net.kyori.adventure.text.Component.text;
 
-public class GuildManager implements DayChangeListener {
+public class GuildManager {
 
     private static final GuildManager inst = new GuildManager();
 
@@ -47,16 +51,8 @@ public class GuildManager implements DayChangeListener {
         return inst;
     }
 
-    // Called reflectively in BootStrap
-    private static void init() {
-        inst.load();
-
-        AutoSave.get().addCallback(get()::save);
-        DayChange.get().addListener(get());
-    }
-
-    @Override
-    public void onDayChange(ZonedDateTime time) {
+    @OnDayChange
+    void onDayChange(ZonedDateTime time) {
         resetDailyExpEarnedAmounts();
     }
 
@@ -213,6 +209,7 @@ public class GuildManager implements DayChangeListener {
 
     /* ----------------------------- SERIALIZATION ------------------------------ */
 
+    @OnSave
     public void save() {
         for (Guild g: byId.values()) {
             storage.saveGuild(g);
@@ -220,6 +217,7 @@ public class GuildManager implements DayChangeListener {
         }
     }
 
+    @OnLoad
     public void load() {
         clear();
 

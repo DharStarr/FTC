@@ -33,11 +33,11 @@ class UsableBlockNode extends BukkitUsableNode<UsableBlock> {
                                 throw Exceptions.USABLE_INVALID_BLOCK;
                             }
 
-                            if (Usables.get().isUsableBlock(l.getBlock())) {
+                            if (Usables.getInstance().isUsableBlock(l.getBlock())) {
                                 throw Exceptions.ALREADY_USABLE_BLOCK;
                             }
 
-                            Usables.get().createBlock(l.getBlock());
+                            Usables.getInstance().createBlock(l.getBlock());
                             c.getSource().sendAdmin("Creating usable block");
                             return 0;
                         })
@@ -49,7 +49,7 @@ class UsableBlockNode extends BukkitUsableNode<UsableBlock> {
         command
                 .executes(c -> {
                     var holder = provider.get(c);
-                    Usables.get().deleteBlock(holder);
+                    Usables.getInstance().deleteBlock(holder);
 
                     c.getSource().sendAdmin(
                             Text.format("Removed usable block at {0, location, -clickable -world}",
@@ -68,7 +68,7 @@ class UsableBlockNode extends BukkitUsableNode<UsableBlock> {
     @Override
     protected UsableBlock get(String argumentName, CommandContext<CommandSource> context) throws CommandSyntaxException {
         var pos = PositionArgument.getLocation(context, argumentName);
-        var usables = Usables.get();
+        var usables = Usables.getInstance();
 
         if (!usables.isUsableBlock(pos.getBlock())) {
             throw Exceptions.BLOCK_NOT_USABLE;

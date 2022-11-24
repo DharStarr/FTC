@@ -3,6 +3,7 @@ package net.forthecrown.utils.book;
 import com.google.common.base.Preconditions;
 import net.forthecrown.core.FTC;
 import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.TextInfo;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -23,8 +24,9 @@ public class BookBuilder {
 
     private static final Style FILLER_STYLE = Style.style(NamedTextColor.WHITE);
 
-    public static final int PIXELS_PER_LINE = TextInfo.getPxWidth("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-    public static final int MAX_LINES = 13; // Can vary from 13 to 14, I don't know what it depends on
+    // https://minecraft.fandom.com/wiki/Book_and_Quill#Formatting_codes:~:text=No%20page%20may%20be%20longer%20than%2014%20lines%20and%20each%20line%20can%20have%20a%20width%20of%20114%20pixels
+    public static final int PIXELS_PER_LINE = 114;
+    public static final int MAX_LINES = 14;
 
     TextComponent.Builder currentPage = Component.text();
     boolean pageAdded = true;

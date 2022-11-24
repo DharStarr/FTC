@@ -46,22 +46,6 @@ public class ChallengeDataStorage {
             FTC.getPlugin().saveResource("challenges/challenges.json", false);
             LOGGER.debug("Created challenges.json");
         }
-
-        /*String[] scripts = {
-                "move_1k_blocks.js",
-                "on_join.js"
-        };
-
-        for (var s: scripts) {
-            String path = "scripts/challenges/" + s;
-
-            if (Files.exists(PathUtil.pluginPath(path))) {
-                continue;
-            }
-
-            FTC.getPlugin().saveResource(path, false);
-        }*/
-
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");
 

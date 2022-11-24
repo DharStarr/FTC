@@ -4,19 +4,31 @@ import com.google.common.base.Strings;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.experimental.UtilityClass;
 import net.forthecrown.commands.arguments.WaypointArgument;
+import net.forthecrown.commands.guild.GuildProvider;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.Messages;
 import net.forthecrown.core.admin.BannedWords;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.guilds.Guild;
+import net.forthecrown.guilds.GuildManager;
+import net.forthecrown.guilds.GuildMember;
+import net.forthecrown.guilds.GuildPermission;
 import net.forthecrown.structure.BlockStructure;
 import net.forthecrown.structure.FunctionInfo;
 import net.forthecrown.structure.StructurePlaceConfig;
 import net.forthecrown.structure.Structures;
 import net.forthecrown.user.User;
+import net.forthecrown.user.Users;
+import net.forthecrown.user.data.UserHomes;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.waypoint.type.PlayerWaypointType;
+import net.forthecrown.waypoint.type.WaypointType;
+import net.forthecrown.waypoint.type.WaypointTypes;
 import net.kyori.adventure.text.Component;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -24,6 +36,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.util.Objects;
@@ -55,6 +68,8 @@ public @UtilityClass class Waypoints {
             Material.GLOWSTONE,
             Material.SEA_LANTERN
     };
+
+    public static final int COLUMN_TOP = PLAYER_COLUMN.length - 1;
 
     /** Name of the Region pole {@link net.forthecrown.structure.BlockStructure} */
     public final String POLE_STRUCTURE = "region_pole";
@@ -332,5 +347,174 @@ public @UtilityClass class Waypoints {
             sign.line(2, text("Waypoint"));
             sign.update();
         }
+    }
+
+    public boolean isTopOfWaypoint(Block block) {
+        var t = block.getType();
+
+        return t == GUILD_COLUMN[COLUMN_TOP] || t == PLAYER_COLUMN[COLUMN_TOP];
+    }
+
+    public Waypoint tryCreate(CommandSource source)
+            throws CommandSyntaxException
+    {
+        return tryCreate(source, GuildProvider.SENDERS_GUILD);
+    }
+
+    public Waypoint tryCreate(CommandSource source, GuildProvider.Simple provider)
+            throws CommandSyntaxException
+    {
+        var player = source.asPlayer();
+
+        Block b = player.getTargetBlockExact(
+                5, FluidCollisionMode.NEVER
+        );
+
+        if (b == null) {
+            throw Exceptions.FACE_WAYPOINT_TOP;
+        }
+
+        if (WaypointConfig.isDisabledWorld(b.getWorld())) {
+            throw Exceptions.WAYPOINTS_WRONG_WORLD;
+        }
+
+        PlayerWaypointType type;
+        Vector3i pos = Vectors.from(b);
+
+        // If attempting to set guild waypoint
+        if (b.getType() == GUILD_COLUMN[COLUMN_TOP]) {
+            type = WaypointTypes.GUILD;
+
+            User user = Users.get(player);
+            Guild guild = provider.get(source);
+
+            // Can't make a waypoint for a guild, if you're
+            // not in a guild lol
+            if (guild == null) {
+                throw Exceptions.NOT_IN_GUILD;
+            }
+
+            // Ensure member has relocation permission
+            GuildMember member = guild.getMember(user.getUniqueId());
+            if (!member.hasPermission(GuildPermission.CAN_RELOCATE)) {
+                throw Exceptions.G_NO_PERM_WAYPOINT;
+            }
+
+            // Ensure there isn't already a waypoint
+            if (guild.getSettings().getWaypoint() != null) {
+                throw Exceptions.G_WAYPOINT_ALREADY_EXISTS;
+            }
+
+            // Ensure chunk is owned by the user's guild
+            Guild chunkOwner = GuildManager.get()
+                    .getOwner(Vectors.getChunk(pos));
+
+            if (!Objects.equals(guild, chunkOwner)) {
+                throw Exceptions.G_EXTERNAL_WAYPOINT;
+            }
+        } else if (b.getType() == PLAYER_COLUMN[COLUMN_TOP]) {
+            type = WaypointTypes.PLAYER;
+        } else {
+            throw Exceptions.invalidWaypointTop(b.getType());
+        }
+
+        pos = pos.sub(0, type.getColumn().length - 1, 0);
+
+        // Ensure the area is correct and validate the
+        // center block column to ensure it's a proper waypoint
+        Optional<CommandSyntaxException>
+                error = Waypoints.isValidWaypointArea(pos, type, b.getWorld(), true);
+
+        if (error.isPresent()) {
+            throw error.get();
+        }
+
+        Waypoint waypoint = makeWaypoint(type, pos, source);
+
+        if (type == WaypointTypes.GUILD) {
+            var user = Users.get(player);
+            var guild = provider.get(source);
+
+            setGuildWaypoint(guild, waypoint, user);
+        } else {
+            waypoint.set(
+                    WaypointProperties.OWNER,
+                    player.getUniqueId()
+            );
+
+            User user = Users.get(player);
+            UserHomes homes = user.getHomes();
+
+            var oldHome = homes.getHomeTeleport();
+
+            if (oldHome != null) {
+                oldHome.removeResident(user.getUniqueId());
+
+                if (oldHome.getResidents().isEmpty()) {
+                    WaypointManager.getInstance()
+                            .removeWaypoint(waypoint);
+                }
+            }
+
+            homes.setHomeWaypoint(waypoint);
+        }
+
+        return waypoint;
+    }
+
+    public void setGuildWaypoint(Guild guild, Waypoint waypoint, User user) {
+        guild.sendMessage(
+                Messages.guildSetCenter(waypoint.getPosition(), user)
+        );
+
+        guild.getSettings()
+                .setWaypoint(waypoint.getId());
+
+        waypoint.set(WaypointProperties.GUILD_OWNER, guild.getId());
+    }
+
+    public Waypoint makeWaypoint(WaypointType type,
+                                 @Nullable Vector3i pos,
+                                 CommandSource source
+    ) {
+        Vector3i position;
+
+        if (pos == null) {
+            position = Vectors.intFrom(source.getLocation());
+        } else {
+            position = pos;
+        }
+
+        Waypoint waypoint = new Waypoint();
+        waypoint.setType(type);
+        waypoint.setPosition(position, source.getWorld());
+
+        if (pos != null) {
+            source.sendMessage(
+                    Messages.createdWaypoint(position, type)
+            );
+        } else {
+            source.sendAdmin(
+                    Messages.createdWaypoint(position, type)
+            );
+        }
+
+        WaypointManager.getInstance()
+                .addWaypoint(waypoint);
+
+        return waypoint;
+    }
+
+    public void removeIfPossible(Waypoint waypoint) {
+        if (!waypoint.getResidents().isEmpty()
+                || waypoint.getType() != WaypointTypes.ADMIN
+                || waypoint.get(WaypointProperties.INVULNERABLE)
+                || !Strings.isNullOrEmpty(waypoint.get(WaypointProperties.NAME))
+        ) {
+            return;
+        }
+
+        WaypointManager.getInstance()
+                .removeWaypoint(waypoint);
     }
 }

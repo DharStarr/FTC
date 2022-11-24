@@ -38,7 +38,7 @@ public class DataStorage {
     public final DateTimeFormatter YEAR_MONTH_FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
             .appendLiteral("_")
-            .appendValue(ChronoField.MONTH_OF_YEAR)
+            .appendText(ChronoField.MONTH_OF_YEAR, TextStyle.FULL_STANDALONE)
             .toFormatter();
 
     private final Path directory;
@@ -49,10 +49,10 @@ public class DataStorage {
 
     /* ------------------------------ METHODS ------------------------------- */
 
-    public YearMonth findMinLog() {
+    public LocalDate findMinLog() {
         try {
             if (PathUtils.isEmptyDirectory(directory)) {
-                return YearMonth.now();
+                return LocalDate.now();
             }
 
             YearMonth minYear = YearMonth.now();
@@ -75,12 +75,12 @@ public class DataStorage {
             }
 
             stream.close();
-            return minYear;
+            return LocalDate.of(minYear.getYear(), minYear.getMonth(), 1);
         } catch (IOException exc) {
             LOGGER.error(exc);
         }
 
-        return YearMonth.now();
+        return LocalDate.now();
     }
 
     public Path getDirectory(ChronoLocalDate date) {

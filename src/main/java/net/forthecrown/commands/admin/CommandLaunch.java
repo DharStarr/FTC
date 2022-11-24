@@ -2,16 +2,14 @@ package net.forthecrown.commands.admin;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.commands.manager.Exceptions;
+import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.pos.Position;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
 import net.forthecrown.grenadier.types.selectors.EntityArgument;
-import net.minecraft.world.phys.Vec3;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -50,30 +48,49 @@ public class CommandLaunch extends FtcCommand {
                     Player player = c.getSource().asPlayer();
                     Vector dir = player.getLocation().getDirection();
 
-                    return launch(c, new Vec3(dir.getX(), dir.getY(), dir.getZ()));
+                    return launch(c, dir, false);
                 })
 
                 .then(argument("vec", PositionArgument.position())
-                        .executes(c -> {
-                            Position pos = c.getArgument("vec", Position.class);
+                        .executes(c -> launchVelocityGiven(c, false))
+                )
 
-                            if (pos.isXRelative() || pos.isYRelative() || pos.isZRelative()) {
-                                throw Exceptions.CANNOT_USE_RELATIVE_CORD;
-                            }
-
-                            return launch(c, new Vec3(pos.getX(), pos.getY(), pos.getZ()));
-                        })
+                .then(literal("add")
+                        .then(argument("vec", PositionArgument.position())
+                                .executes(c -> launchVelocityGiven(c, false))
+                        )
                 )
         );
     }
 
-    int launch(CommandContext<CommandSource> c, Vec3 velocity) throws CommandSyntaxException {
+    int launchVelocityGiven(CommandContext<CommandSource> c,
+                            boolean add
+    ) throws CommandSyntaxException {
+        Position pos = c.getArgument("vec", Position.class);
+
+        if (pos.isXRelative() || pos.isYRelative() || pos.isZRelative()) {
+            throw Exceptions.CANNOT_USE_RELATIVE_CORD;
+        }
+
+        return launch(
+                c,
+                new Vector(pos.getX(), pos.getY(), pos.getZ()),
+                add
+        );
+    }
+
+    int launch(CommandContext<CommandSource> c,
+               Vector velocity,
+               boolean add
+    ) throws CommandSyntaxException {
         Collection<Entity> entities = EntityArgument.getEntities(c, "entity");
 
         for (Entity e: entities) {
-            net.minecraft.world.entity.Entity nmsEnt = ((CraftEntity) e).getHandle();
-            nmsEnt.setDeltaMovement(velocity);
-            nmsEnt.hurtMarked = true;
+            if (add) {
+                e.setVelocity(e.getVelocity().add(velocity.clone()));
+            } else {
+                e.setVelocity(velocity.clone());
+            }
         }
 
         c.getSource().sendAdmin("Launched " + entities.size() + " entities");

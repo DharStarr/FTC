@@ -1,5 +1,6 @@
 package net.forthecrown.dungeons.enchantments;
 
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.utils.VanillaAccess;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -21,6 +22,7 @@ public class FtcEnchants {
     public static final PoisonCrit POISON_CRIT = new PoisonCrit();
     public static final StrongAim STRONG_AIM = new StrongAim();
 
+    @OnEnable
     private static void init() {
         try {
             Field f = Enchantment.class.getDeclaredField("acceptingNew");

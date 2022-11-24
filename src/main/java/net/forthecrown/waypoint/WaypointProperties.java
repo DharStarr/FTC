@@ -1,5 +1,6 @@
 package net.forthecrown.waypoint;
 
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.io.types.SerializerParsers;
@@ -64,6 +65,7 @@ public class WaypointProperties {
     public static final WaypointProperty<UUID>
             GUILD_OWNER = new WaypointProperty<>("guildOwner", SerializerParsers.UUID, null);
 
+    @OnEnable
     private static void init() {
         REGISTRY.freeze();
     }

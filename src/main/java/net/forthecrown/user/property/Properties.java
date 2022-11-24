@@ -1,5 +1,6 @@
 package net.forthecrown.user.property;
 
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.guilds.MemberSort;
@@ -235,6 +236,7 @@ public class Properties {
     };
 
     /** Empty initializer method to freeze property registry */
+    @OnEnable
     static void init() {
         USER_PROPERTIES.freeze();
     }

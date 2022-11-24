@@ -60,7 +60,7 @@ public class CommandWaypoints extends FtcCommand {
                                     var player = c.getSource().asPlayer();
                                     var loc = player.getLocation();
 
-                                    Vector3i pos = Vectors.fromI(loc);
+                                    Vector3i pos = Vectors.intFrom(loc);
 
                                     return move(c, pos, loc.getWorld());
                                 })
@@ -69,7 +69,7 @@ public class CommandWaypoints extends FtcCommand {
                                 .then(argument("pos", PositionArgument.blockPos())
                                         .executes(c -> {
                                             var loc = PositionArgument.getLocation(c, "pos");
-                                            Vector3i pos = Vectors.fromI(loc);
+                                            Vector3i pos = Vectors.intFrom(loc);
 
                                             return move(c, pos, loc.getWorld());
                                         })

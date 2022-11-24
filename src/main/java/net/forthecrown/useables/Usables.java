@@ -2,9 +2,11 @@ package net.forthecrown.useables;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
-import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Main;
+import net.forthecrown.core.module.OnEnable;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.useables.actions.UsageActions;
 import net.forthecrown.useables.command.CmdUsables;
@@ -58,12 +60,10 @@ public class Usables implements SerializableObject {
     @Getter
     private final CmdUsables<Warp> warps;
 
-    private static Usables inst;
+    @Getter
+    private static final Usables instance = new Usables();
 
     public Usables() {
-        UsageActions.init();
-        UsageTests.init();
-
         Path path = PathUtil.getPluginDirectory("usables");
 
         triggers = new GlobalTriggerManager(path.resolve("triggers.dat"));
@@ -83,19 +83,12 @@ public class Usables implements SerializableObject {
 
         kits = new CmdUsables<>(kitFile, Kit::new);
         warps = new CmdUsables<>(warpFile, Warp::new);
-
-        AutoSave.get()
-                .addCallback(this::save);
-
-        reload();
     }
 
-    public static Usables get() {
-        return inst;
-    }
-
+    @OnEnable
     private static void init() {
-        inst = new Usables();
+        UsageActions.init();
+        UsageTests.init();
     }
 
     /**
@@ -236,6 +229,7 @@ public class Usables implements SerializableObject {
      * Saves all loaded entities and loaded blocks
      * and triggers
      */
+    @OnSave
     public void save() {
         for (var v: loadedEntities.values()) {
             v.save();
@@ -254,6 +248,7 @@ public class Usables implements SerializableObject {
     /**
      * Loads all triggers, loaded entities and loaded blocks
      */
+    @OnLoad
     public void reload() {
         triggers.readFile();
 

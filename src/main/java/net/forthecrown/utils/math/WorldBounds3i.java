@@ -36,7 +36,11 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
     }
 
     public static WorldBounds3i of(World world, Region region) {
-        return of(world, region.getMinimumPoint(), region.getMaximumPoint());
+        return of(
+                world,
+                region.getMinimumPoint(),
+                region.getMaximumPoint()
+        );
     }
 
     public static WorldBounds3i of(Region region) {
@@ -58,11 +62,14 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements It
     }
 
     public static WorldBounds3i of(Location l1, Location l2) {
-        Validate.isTrue(l1.getWorld().equals(l2.getWorld()), "Locations cannot be in different worlds");
+        Validate.isTrue(
+                l1.getWorld().equals(l2.getWorld()),
+                "Locations cannot be in different worlds"
+        );
 
         // GenericMath.floor
-        Vector3d p1 = Vectors.fromD(l1);
-        Vector3d p2 = Vectors.fromD(l2);
+        Vector3d p1 = Vectors.doubleFrom(l1);
+        Vector3d p2 = Vectors.doubleFrom(l2);
 
         p1 = p1.min(p2);
         p2 = p1.max(p2).ceil();

@@ -8,7 +8,7 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import net.forthecrown.core.AutoSave;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.math.Bounds3i;
@@ -36,6 +36,7 @@ public final class Configs {
 
     /* ----------------------------- METHODS ------------------------------ */
 
+    @OnEnable
     private static void init() {
         ConfigManager manager = ConfigManager.get();
 
@@ -44,8 +45,6 @@ public final class Configs {
         manager.registerConfig(GeneralConfig.class);
         manager.registerConfig(JoinInfo.class);
         manager.registerConfig(ServerRules.class);
-
-        AutoSave.get().addCallback(ConfigManager.get()::save);
     }
 
     private static Gson createGson() {

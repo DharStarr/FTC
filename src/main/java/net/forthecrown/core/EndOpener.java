@@ -3,6 +3,7 @@ package net.forthecrown.core;
 import net.forthecrown.core.admin.StaffChat;
 import net.forthecrown.core.config.EndConfig;
 import net.forthecrown.core.config.JoinInfo;
+import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.VanillaAccess;
 import net.forthecrown.utils.world.WorldLoader;
@@ -39,20 +40,19 @@ import static net.forthecrown.core.config.EndConfig.*;
  * Hazelguard.
  * It should be kept open for the last 7 days of each week, aka, end week.
  */
-public class EndOpener implements DayChangeListener {
+public class EndOpener {
     private static final Logger LOGGER = FTC.getLogger();
     private static final EndOpener INSTANCE = new EndOpener();
 
-    public EndOpener() {
-        DayChange.get().addListener(this);
+    private EndOpener() {
     }
 
     public static EndOpener get() {
         return INSTANCE;
     }
 
-    @Override
-    public void onDayChange(ZonedDateTime time) {
+    @OnDayChange
+    void onDayChange(ZonedDateTime time) {
         // If we've disabled this, don't run
         if (!enabled) {
             return;

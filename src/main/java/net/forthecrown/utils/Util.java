@@ -22,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -84,7 +85,7 @@ public final class Util {
     }
 
     public static boolean isClearAbove(Location location) {
-        return isClearAbove0(Vectors.fromI(location), location.getWorld());
+        return isClearAbove0(Vectors.intFrom(location), location.getWorld());
     }
 
     private static boolean isClearAbove0(Vector3i pos, World world) {
@@ -102,14 +103,6 @@ public final class Util {
         }
 
         return true;
-    }
-
-    public static void runSafe(ThrowingRunnable runnable) {
-        try {
-            runnable.run();
-        } catch (Throwable e) {
-            FTC.getLogger().error("Error while running safeRunnable", e);
-        }
     }
 
     public static Region getSelectionSafe(com.sk89q.worldedit.entity.Player wePlayer)
@@ -149,6 +142,10 @@ public final class Util {
                                                int amount
     ) {
         Validate.isTrue(amount <= list.size());
+
+        if (amount == 0) {
+            return Collections.emptySet();
+        }
 
         if (amount == list.size()) {
             return new ObjectOpenHashSet<>(list);
@@ -197,5 +194,17 @@ public final class Util {
      */
     public static @FormatMethod IllegalArgumentException newException(@FormatString String format, Object... args) {
         return new IllegalArgumentException(String.format(format, args));
+    }
+
+    public static Set<Method> getAllMethods(Class c) {
+        Set<Method> methods = new ObjectOpenHashSet<>();
+        Class<?> type = c;
+
+        while (type != null) {
+            methods.addAll(Arrays.asList(type.getDeclaredMethods()));
+            type = type.getSuperclass();
+        }
+
+        return methods;
     }
 }

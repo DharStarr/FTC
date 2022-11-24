@@ -3,9 +3,10 @@ package net.forthecrown.user;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
-import net.forthecrown.core.AutoSave;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.config.GeneralConfig;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializableObject;
 import org.apache.logging.log4j.Logger;
@@ -96,13 +97,6 @@ public final class UserManager implements SerializableObject {
         return INSTANCE;
     }
 
-    // Called in BootStrap via reflection
-    private static void init() {
-        get().reload();
-        AutoSave.get()
-                .addCallback(get()::save);
-    }
-
     /**
      * Saves all the user data maps
      */
@@ -127,7 +121,7 @@ public final class UserManager implements SerializableObject {
      * Saves all users, user maps, the user cache
      * and user alt account list
      */
-    @Override
+    @Override @OnSave
     public void save() {
         saveMaps();
         userLookup.save();
@@ -140,7 +134,7 @@ public final class UserManager implements SerializableObject {
      * Reloads all users, user maps, the user cache
      * and alt account list
      */
-    @Override
+    @Override @OnLoad
     public void reload() {
         loadMaps();
         userLookup.reload();

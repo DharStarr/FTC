@@ -19,8 +19,12 @@ public final class SerializationHelper {
 
     private static final Logger LOGGER = FTC.getLogger();
 
-    public static final IoReader<CompoundTag> TAG_READER = file -> NbtIo.readCompressed(Files.newInputStream(file));
-    public static final IoReader<JsonObject> JSON_READER = JsonUtils::readFileObject;
+    public static final IoReader<CompoundTag>
+            TAG_READER = file -> NbtIo.readCompressed(Files.newInputStream(file));
+
+    public static final IoReader<JsonObject>
+            JSON_READER = JsonUtils::readFileObject;
+
 
     public static <T> DataResult<T> readFileObject(Path file, IoReader<T> reader) {
         if (!Files.exists(file)) {
@@ -35,9 +39,18 @@ public final class SerializationHelper {
         }
     }
 
-    public static <T> boolean readFile(Path file, IoReader<T> reader, Consumer<T> loadCallback) {
+    public static <T> boolean readFile(Path file,
+                                       IoReader<T> reader,
+                                       Consumer<T> loadCallback
+    ) {
         Optional<T> result = readFileObject(file, reader)
-                .resultOrPartial(LOGGER::error);
+                .resultOrPartial(s -> {
+                    if (s.contains("doesn't exist") && s.startsWith("File '")) {
+                        return;
+                    }
+
+                    LOGGER.error(s);
+                });
 
         if (result.isEmpty()) {
             return false;

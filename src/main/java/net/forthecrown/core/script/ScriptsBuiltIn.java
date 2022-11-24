@@ -24,12 +24,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
+import org.openjdk.nashorn.internal.runtime.ScriptFunction;
 import org.spongepowered.math.vector.Vector2d;
 import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
-import javax.script.ScriptEngine;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 
 @UtilityClass
 class ScriptsBuiltIn {
@@ -48,7 +52,7 @@ class ScriptsBuiltIn {
             TextDecoration.class,   ClickEvent.class,
     };
 
-    void populate(String name, ScriptEngine engine) {
+    void populate(String name, NashornScriptEngine engine) {
         for (var c: DEFAULT_CLASSES) {
             engine.put(c.getSimpleName(), StaticClass.forClass(c));
         }
@@ -59,5 +63,18 @@ class ScriptsBuiltIn {
         );
 
         engine.put("logger", logger);
+
+        try {
+            MethodHandle handle = MethodHandles.publicLookup()
+                    .findStatic(
+                            Util.class,
+                            "consoleCommand",
+                            MethodType.methodType(void.class, String.class, Object[].class)
+                    );
+
+            engine.put("command", handle);
+        } catch (NoSuchMethodException | IllegalAccessException exc) {
+            throw new RuntimeException(exc);
+        }
     }
 }

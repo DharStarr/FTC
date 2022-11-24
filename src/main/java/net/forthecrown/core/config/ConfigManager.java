@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import jdk.jfr.Timestamp;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.module.OnSave;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.commons.lang3.Validate;
@@ -51,12 +53,14 @@ public class ConfigManager {
         configs.add(new ConfigFileData(path, file));
     }
 
+    @OnSave
     public void save() {
         for (var f: configs) {
             saveConfig(f);
         }
     }
 
+    @OnLoad
     public void load() {
         for (var f: configs) {
             var path = f.filePath();

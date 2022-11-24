@@ -31,7 +31,7 @@ public class Script {
     private final NashornScriptEngine engine;
 
     /** 'this' represents script's self instance */
-    private final ScriptObjectMirror thisObject;
+    private final ScriptObjectMirror scriptHandle;
 
     /** Last result returned by script evaluation/invocation */
     private final Object lastResult;
@@ -45,8 +45,51 @@ public class Script {
         this(name, null, null, null, null);
     }
 
+    /* ------------------------ STATIC CONSTRUCTORS ------------------------- */
+
+    /**
+     * Creates an empty script object with the given name
+     * @param name The name of the script
+     * @return The created script
+     * @see #isEmpty()
+     */
     public static Script of(String name) {
         return new Script(name);
+    }
+
+    /**
+     * Reads the script file with the given name.
+     * <p>
+     * Script names are relative to the <code>plugins/ForTheCrown/scripts</code>
+     * directory, as an example, a script used by a challenge might be called,
+     * <code>challenges/on_challenge.js</code>. They must always include the
+     * '.js' file extension as well
+     *
+     * @param scriptFile The script's name
+     *
+     * @return The read script, if during reading or initial script evaluation,
+     *         an error occurs, the result will contain an error
+     */
+    public static Script read(String scriptFile) {
+        return of(scriptFile).load();
+    }
+
+    /**
+     * Reads the given script file and invokes the given function with
+     * the given arguments.
+     *
+     * @see #read(String)
+     *
+     * @param scriptFile The script's name
+     * @param function The name of the function to call
+     * @param args The argument to give to the function
+     *
+     * @return The read and created script. If an error occurs during reading or
+     *         during the initial script evaluation, then the method won't be
+     *         run and the resulting script object will contain an error
+     */
+    public static Script run(String scriptFile, String function, Object... args) {
+        return read(scriptFile).invoke(function, args);
     }
 
     /* ------------------------------ METHODS ------------------------------- */
@@ -79,7 +122,7 @@ public class Script {
         }
 
         try {
-            var result = engine.invokeMethod(thisObject, method, args);
+            var result = engine.invokeMethod(scriptHandle, method, args);
 
             return withLastResult(result)
                     .withLastError(null);
@@ -98,7 +141,7 @@ public class Script {
     }
 
     /**
-     * Loads this script's engine and {@link #thisObject} instance.
+     * Loads this script's engine and {@link #scriptHandle} instance.
      * <p>
      * If the script's file doesn't exist, then this method returns
      * an error script with {@link NoSuchFileException} if the script's
@@ -109,12 +152,12 @@ public class Script {
      * {@link IOException} or {@link ScriptException}.
      * <p>
      * If the script is loaded and then successfully evaluated, then
-     * a complete result with the engine, {@link #thisObject} instance
+     * a complete result with the engine, {@link #scriptHandle} instance
      * and 'returned result' is returned.
      * <p>
      * Note: The result returned by this will always be empty, meaning
      * it doesn't contain the current script instance's result, error
-     * or {@link #thisObject} instance
+     * or {@link #scriptHandle} instance
      *
      * @return The loaded script, or an error result if
      *         script failed to load or be evaluated.
@@ -132,12 +175,16 @@ public class Script {
         }
 
         try {
-            var engine = ScriptManager.getInstance().createEngine(name);
+            var engine = ScriptManager.getInstance()
+                    .createEngine(name);
+
             var reader = Files.newBufferedReader(path);
             var eval = engine.eval(reader);
 
             return result.withEngine(engine)
-                    .withThisObject((ScriptObjectMirror) engine.getBindings(ScriptContext.ENGINE_SCOPE))
+                    .withScriptHandle(
+                            (ScriptObjectMirror) engine.getBindings(ScriptContext.ENGINE_SCOPE)
+                    )
                     .withLastResult(eval);
         }
         catch (IOException exc) {
@@ -150,28 +197,65 @@ public class Script {
         }
     }
 
+    /**
+     * Tests if this script has the given method.
+     * <p>
+     * If this script has no {@link #scriptHandle} or {@link #isEmpty()} returns
+     * true, then will return false, as that means there's no script handle in
+     * place to query for the method.
+     *
+     * @param method The name of the method to look for
+     * @return True, if the script contains the given method, false otherwise
+     */
     public boolean hasMethod(String method) {
-        return engine()
-                .map(engine1 -> {
-                    var m = engine1.getBindings(ScriptContext.ENGINE_SCOPE)
-                            .get(method);
+        if (scriptHandle == null) {
+            return false;
+        }
 
-                    if (m == null) {
-                        return false;
-                    }
+        var m = scriptHandle.get(method);
 
-                    if (m instanceof ScriptObjectMirror mirror) {
-                        return mirror.isFunction();
-                    }
+        if (m == null) {
+            return false;
+        }
 
-                    return m instanceof ScriptFunction;
-                })
-                .orElse(false);
+        if (m instanceof ScriptObjectMirror mirror) {
+            return mirror.isFunction();
+        }
+
+        return m instanceof ScriptFunction;
     }
 
-    public Script logError() {
-        error().ifPresent(LOGGER::error);
-        return this;
+    /**
+     * Gets a method by its specified name.
+     * <p>
+     * This method will first call {@link #hasMethod(String)} to test if the
+     * method actually exists at all. If that returns false, an empty optional
+     * is returned, otherwise, an optional containing the function's wrapper
+     * object is returned.
+     *
+     * @param name The name of the function to get
+     *
+     * @return An optional with the function's wrapper, or an empty optional, if
+     *         a function with the given name does not exist
+     */
+    public Optional<ScriptObjectMirror> getMethod(String name) {
+        if (!hasMethod(name)) {
+            return Optional.empty();
+        }
+
+        return Optional.of((ScriptObjectMirror) scriptHandle.getMember(name));
+    }
+
+    /**
+     * Tests if this script is 'empty' or not.
+     * <p>
+     * A script instance will be empty if it hasn't loaded a script file and
+     * doesn't have an error.
+     * @return True, if both the {@link #engine} and {@link #lastError} are
+     *         unset, false otherwise
+     */
+    public boolean isEmpty() {
+        return engine == null && lastError == null;
     }
 
     public Optional<NashornScriptEngine> engine() {
@@ -223,12 +307,12 @@ public class Script {
         }
 
         return getName().equals(script.getName())
-                && Objects.equals(thisObject, script.thisObject)
+                && Objects.equals(scriptHandle, script.scriptHandle)
                 && Objects.equals(lastResult, script.lastResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), thisObject, lastResult);
+        return Objects.hash(getName(), scriptHandle, lastResult);
     }
 }

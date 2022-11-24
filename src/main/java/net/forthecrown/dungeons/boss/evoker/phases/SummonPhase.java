@@ -121,7 +121,7 @@ public class SummonPhase implements AttackPhase {
         spawned.add(e);
         TOTAL_SPAWNED.add(e);
 
-        EvokerEffects.summoningEffect(boss.getWorld(), Vectors.fromD(e.getLocation()), e.getHeight(), e.getWidth());
+        EvokerEffects.summoningEffect(boss.getWorld(), Vectors.doubleFrom(e.getLocation()), e.getHeight(), e.getWidth());
     }
 
     public static void killAllSpawned() {

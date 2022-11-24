@@ -142,9 +142,10 @@ public final class Permissions {
             WAYPOINTS_FLAGS         = registerPrefixed(WAYPOINTS, "flags"),
 
             CHALLENGES              = register("ftc.challenges"),
+            CHALLENGES_ADMIN        = registerPrefixed(CHALLENGES, "admin"),
 
             MARKETS                 = register("ftc.markets"),
-            MARKET_WARNING          = register("ftc.markets.warning"),
+            MARKET_WARNING          = registerPrefixed(MARKETS, "warning"),
 
             DEFAULT                 = register("ftc.default");
 

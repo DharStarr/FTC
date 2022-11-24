@@ -47,10 +47,7 @@ public interface WaypointParseResult {
         }
 
         if (!waypoint.getBounds().contains(player)) {
-            throw Exceptions.farFromWaypoint(
-                    waypoint.getPosition().x(),
-                    waypoint.getPosition().z()
-            );
+            throw Exceptions.farFromWaypoint(waypoint);
         }
 
         return waypoint;

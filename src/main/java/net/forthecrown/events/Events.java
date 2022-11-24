@@ -3,6 +3,7 @@ package net.forthecrown.events;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.events.economy.*;
 import net.forthecrown.events.player.*;
 import net.forthecrown.user.packet.PacketListeners;
@@ -24,6 +25,7 @@ public final class Events {
     /**
      * Initializes all FTC listeners
      */
+    @OnEnable
     private static void init() {
         register(new CoreListener());
         register(new ChatListener());
@@ -105,15 +107,24 @@ public final class Events {
      * @param executor The executor which may throw an exception
      * @param <E> The event type
      */
-    public static <E extends Event> void runSafe(@Nullable Audience sender, E event, ThrowingListener<E> executor) {
+    public static <E extends Event> void runSafe(@Nullable Audience sender,
+                                                 E event,
+                                                 ThrowingListener<E> executor
+    ) {
         try {
             executor.execute(event);
         } catch (CommandSyntaxException e) {
-            if(sender == null) return;
+            if (sender == null) {
+                return;
+            }
 
             Exceptions.handleSyntaxException(sender, e);
         } catch (Throwable e) {
-            FTC.getLogger().error("Error running listener for event " + event.getClass().getSimpleName(), e);
+            FTC.getLogger().error(
+                    "Error executing event {}",
+                    event.getEventName(),
+                    e
+            );
         }
     }
 }

@@ -1,5 +1,6 @@
 # User-specific stuff
 .idea/
+/test_server.properties
 
 *.iml
 *.ipr

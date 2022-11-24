@@ -128,7 +128,7 @@ public class CommandTeleport extends FtcCommand {
 
     private int teleportFacing(CommandContext<CommandSource> c, Location facing) throws CommandSyntaxException {
         Location location = PositionArgument.getLocation(c, "location_to");
-        Vector3d dif = Vectors.fromD(location.clone().subtract(facing));
+        Vector3d dif = Vectors.doubleFrom(location.clone().subtract(facing));
 
         location.setYaw((float) Vectors.getYaw(dif));
         location.setPitch((float) Vectors.getPitch(dif));
