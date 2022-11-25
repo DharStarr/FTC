@@ -222,7 +222,7 @@ public class ChallengeBook {
                     .addText(displayName)
 
                     .justifyRight(
-                            Text.format("{0, number, #.}/{1, number}",
+                            Text.format("{0, number}/{1, number}",
                                     isCompleted
                                             ? NamedTextColor.DARK_GREEN
                                             : NamedTextColor.GRAY,

@@ -30,6 +30,7 @@ public class GuildSettings {
             RANKS_KEY = "ranks",
             PRIMARY_COLOR_KEY = "primaryColor",
             SECONDARY_COLOR_KEY = "secondaryColor",
+            NAME_FORMAT_KEY = "nameFormat",
             BANNER_KEY = "banner",
             IS_PUBLIC_KEY = "isPublic",
             ALLOWS_VISIT_KEY = "allowsVisit";
@@ -46,6 +47,8 @@ public class GuildSettings {
     private GuildColor primaryColor = GuildColor.WHITE;
     @Getter
     private GuildColor secondaryColor = GuildColor.LIGHT_GRAY;
+    @Getter
+    private final GuildNameFormat nameFormat = GuildNameFormat.DEFAULT;
 
     @Getter
     private ItemStack banner = new ItemStack(Material.WHITE_BANNER);
@@ -115,22 +118,27 @@ public class GuildSettings {
 
         this.primaryColor = color;
 
-        if (!DynmapUtil.isInstalled()) {
+        // Update dynmap
+        if (DynmapUtil.isInstalled()) {
+            GuildDynmap.updateGuildChunks(getGuild());
+        }
+    }
+
+    public void setSecondaryColor(GuildColor color) {
+        if (color == this.secondaryColor) {
             return;
         }
 
+        this.secondaryColor = color;
+
         // Update dynmap
-        Tasks.runAsync(() -> {
-            Guild guild = getGuild();
-            LongSet guildChunks = GuildManager.get().getGuildChunks(guild);
+        if (DynmapUtil.isInstalled()) {
+            GuildDynmap.updateGuildChunks(getGuild());
+        }
+    }
 
-            guildChunks.forEach(c -> {
-                var cPos = Guilds.chunkFromPacked(c);
+    private static void updateDynmap() {
 
-                GuildDynmap.unrenderChunk(cPos);
-                GuildDynmap.renderChunk(cPos, guild);
-            });
-        });
     }
 
     public void setBanner(ItemStack item) {

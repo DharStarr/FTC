@@ -46,7 +46,7 @@ public enum UnlockableColor implements Unlockable {
 
     @Override
     public GuildPermission getPerm() {
-        return GuildPermission.CAN_CHANGE_GUILD_COLORS;
+        return GuildPermission.CAN_CHANGE_GUILD_COSMETICS;
     }
 
     @Override

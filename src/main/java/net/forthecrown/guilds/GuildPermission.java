@@ -22,12 +22,12 @@ public enum GuildPermission {
             "Permission to set the guild's visit location to Public or Private."
     ),
 
-    CAN_CHANGE_GUILD_COLORS(
-            "able to set guild colors",
-            "Colors",
-            "Allow changing the guild's colors.",
-            "Deny changing the guild's colors.",
-            "Permission to change the guild's colors."
+    CAN_CHANGE_GUILD_COSMETICS(
+            "able to set guild cosmetics",
+            "Cosmetics",
+            "Allow changing the guild's cosmetics.",
+            "Deny changing the guild's cosmetics.",
+            "Permission to change the guild's cosmetics."
     ),
 
     CAN_CHANGE_BANNER(

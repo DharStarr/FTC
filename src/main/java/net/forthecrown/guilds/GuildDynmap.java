@@ -1,7 +1,9 @@
 package net.forthecrown.guilds;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
 import lombok.experimental.UtilityClass;
 import net.forthecrown.core.FtcDynmap;
+import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.math.Vectors;
 import net.minecraft.world.level.ChunkPos;
 import org.dynmap.markers.AreaMarker;
@@ -43,19 +45,26 @@ public @UtilityClass class GuildDynmap {
                 true
         );
 
-        int color;
+        int pColor, sColor;
         try {
-            color = guild.getSettings()
+            pColor = guild.getSettings()
                     .getPrimaryColor()
                     .getTextColor()
                     .value();
         } catch (Exception ignored) {
-            color = marker.getFillColor();
+            pColor = marker.getFillColor();
+        }
+        try {
+            sColor = guild.getSettings()
+                    .getSecondaryColor()
+                    .getTextColor()
+                    .value();
+        } catch (Exception ignored) {
+            sColor = marker.getFillColor();
         }
 
-
-        marker.setFillStyle(0.5, color);
-        marker.setLineStyle(marker.getLineWeight(), 0.8, color);
+        marker.setFillStyle(0.5, pColor);
+        marker.setLineStyle(marker.getLineWeight(), 0.8, sColor);
     }
 
     public void unrenderChunk(ChunkPos chunkPos) {
@@ -80,5 +89,18 @@ public @UtilityClass class GuildDynmap {
                 xBlock,
                 xBlock + Vectors.CHUNK_SIZE
         };
+    }
+
+    public void updateGuildChunks(Guild guild) {
+        Tasks.runAsync(() -> {
+            LongSet guildChunks = GuildManager.get().getGuildChunks(guild);
+
+            guildChunks.forEach(c -> {
+                var cPos = Guilds.chunkFromPacked(c);
+
+                GuildDynmap.unrenderChunk(cPos);
+                GuildDynmap.renderChunk(cPos, guild);
+            });
+        });
     }
 }
