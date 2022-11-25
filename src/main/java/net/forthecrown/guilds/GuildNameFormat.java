@@ -1,15 +1,22 @@
 package net.forthecrown.guilds;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-@RequiredArgsConstructor
+import java.util.function.Supplier;
+
+import static net.kyori.adventure.text.Component.text;
+
+@Getter
+@Setter
+@AllArgsConstructor
 public class GuildNameFormat {
 
     // todo serialize/deserialize
@@ -18,30 +25,64 @@ public class GuildNameFormat {
             COLORS_KEY = "colors",
             STYLE_KEY = "style";
 
-    // ==? @RequiredArgsConstructor
-    GuildNameFormat(Bracket bracket, Color color, Stylee style) {
-        this.bracket = bracket;
-        this.color = color;
-        this.style = style;
-    }
+    public static final int
+            OPENING_BRACKET = 0,
+            GUILD_NAME = 1,
+            CLOSING_BRACKET = 2;
 
-    @Getter @Setter
+    // Jules:
+    // Hey, so I changed this file a bit, first of all, I inadvertently made
+    // Color the class that basically compiles the bracket, style and everything
+    // else into a single display name, you can get that display name using
+    // apply(Guild);
+    //
+    // I also removed the functional interface you made for the Color enum, and
+    // used an abstract method in its place which accepts more parameters, see
+    // below for java doc.
+    //
+    // I'm not confident in the gradients working as I haven't tested them, same
+    // with all the colors
+    //
+    // Otherwise though, thank you a lot, this is good :D
+    //   - Jules <3
+
     private Bracket bracket;
     @Getter @Setter
     private Color color;
     @Getter @Setter
     private Stylee style;
 
-    @Getter
-    public static final GuildNameFormat DEFAULT = new GuildNameFormat(Bracket.DEFAULT, Color.DEFAULT, Stylee.DEFAULT);
+    public static GuildNameFormat createDefault() {
+        return new GuildNameFormat(
+                Bracket.DEFAULT,
+                Color.DEFAULT,
+                Stylee.DEFAULT
+        );
+    }
 
+    public Component apply(Guild guild) {
+        String name = guild.getName();
+        TextColor primary = guild.getSettings()
+                .getPrimaryColor()
+                .getTextColor();
 
-    // Applies the format to the given guild name
-    public Component apply(String guildName) {
-        // todo: add colors somehow?
-        return Component.text(bracket.getOpening(), style.getBracketStyle())
-                .append(Component.text(guildName, style.getNameStyle()))
-                .append(Component.text(bracket.getClosing(), style.getBracketStyle()));
+        TextColor secondary = guild.getSettings()
+                .getSecondaryColor()
+                .getTextColor();
+
+        String[] completeName = {
+                bracket.getOpening(),
+                name,
+                bracket.getClosing()
+        };
+
+        return color.apply(
+                completeName,
+                primary,
+                secondary,
+                style.getBracketStyle(),
+                style.getNameStyle()
+        );
     }
 
     @RequiredArgsConstructor
@@ -62,7 +103,7 @@ public class GuildNameFormat {
         }
 
         public Component getOpeningBracket(Style style) {
-            return Component.text(opening, style);
+            return text(opening, style);
         }
 
         public Component getClosingBracket(TextColor color) {
@@ -70,73 +111,187 @@ public class GuildNameFormat {
         }
 
         public Component getClosingBracket(Style style) {
-            return Component.text(closing, style);
+            return text(closing, style);
         }
 
         // Default color, default style, preview brackets
         public Component getPreview(String guildName, TextColor primary, TextColor secondary) {
             return getOpeningBracket(secondary)
-                    .append(Component.text(guildName, primary))
+                    .append(text(guildName, primary))
                     .append(getClosingBracket(secondary));
         }
-    }
-
-
-    interface idkAname {
-        // String[] name = [openingBrackets, guildName, closingBrackets]
-        // todo: How to do better? Applying colors is weird, I'm sure you have a better way of doing that already
-        Component applyColor(String[] name, TextColor primary, TextColor secondary);
     }
 
     @RequiredArgsConstructor
     @Getter
     public enum Color {
-        DEFAULT("default", (name, primary, secondary) -> {
-            return Component.text(name[0], secondary)
-                    .append(Component.text(name[1], primary))
-                    .append(Component.text(name[2], secondary));
-        }),
-        ALTERNATE("alternate", (name, primary, secondary) -> {
-            TextComponent.Builder b = Component.text();
-            TextColor colorToUse = primary;
-
-            char[] fullName = String.join("", name).toCharArray();
-            for (char c : fullName) {
-                b.append(Component.text(c, colorToUse));
-                colorToUse = colorToUse == primary ? secondary : primary;
+        DEFAULT("default") {
+            @Override
+            public Component apply(String[] fullName,
+                                   TextColor primary,
+                                   TextColor secondary,
+                                   Style bracket,
+                                   Style text
+            ) {
+                return text()
+                        .append(text(
+                                fullName[OPENING_BRACKET],
+                                bracket.color(secondary)
+                        ))
+                        .append(text(
+                                fullName[GUILD_NAME],
+                                text.color(primary)
+                        ))
+                        .append(text(
+                                fullName[CLOSING_BRACKET],
+                                bracket.color(secondary)
+                        ))
+                        .build();
             }
+        },
 
-            return b.build();
-        }),
-        GRADIENT_2COLORS("gradient2", (name, primary, secondary) -> {
-            String text = String.join("", name);
-            // todo: return gradient boi from "text"
-            return Component.text("null");
-        }),
-        GRADIENT_3COLORS("gradient3", (name, primary, secondary) -> {
-            String text = String.join("", name);
-            // todo: return gradient boi from "text"
-            return Component.text("null");
-        }),
-        GRADIENT_4COLORS("gradient4", (name, primary, secondary) -> {
-            String text = String.join("", name);
-            // todo: return gradient boi from "text"
-            return Component.text("null");
-        }),
+        ALTERNATE("alternate") {
+            @Override
+            public Component apply(String[] fullName,
+                                   TextColor primary,
+                                   TextColor secondary,
+                                   Style bracket,
+                                   Style text
+            ) {
+                // Supplier that flips the color used everytime it's called
+                Supplier<TextColor> colorProvider = new Supplier<>() {
+                    boolean isPrimary = false;
+
+                    @Override
+                    public TextColor get() {
+                        isPrimary = !isPrimary;
+                        return isPrimary ? primary : secondary;
+                    }
+                };
+
+                var builder = text();
+
+                builder.append(text(
+                        fullName[OPENING_BRACKET],
+                        bracket.color(colorProvider.get())
+                ));
+
+                for (var c: fullName[GUILD_NAME].toCharArray()) {
+                    builder.append(text(
+                            c,
+                            text.color(colorProvider.get())
+                    ));
+                }
+
+                builder.append(text(
+                        fullName[CLOSING_BRACKET],
+                        bracket.color(colorProvider.get())
+                ));
+
+                return builder.build();
+            }
+        },
+
+        GRADIENT_2COLORS("gradient2") {
+            @Override
+            public Component apply(String[] fullName,
+                                   TextColor primary,
+                                   TextColor secondary,
+                                   Style bracket,
+                                   Style text
+            ) {
+                return Guilds.createNameGradient(
+                        1,
+                        fullName,
+                        primary,
+                        secondary,
+                        bracket,
+                        text
+                );
+            }
+        },
+        GRADIENT_3COLORS("gradient3") {
+            @Override
+            public Component apply(String[] fullName,
+                                   TextColor primary,
+                                   TextColor secondary,
+                                   Style bracket,
+                                   Style text
+            ) {
+                return Guilds.createNameGradient(
+                        2,
+                        fullName,
+                        primary,
+                        secondary,
+                        bracket,
+                        text
+                );
+            }
+        },
+        GRADIENT_4COLORS("gradient4") {
+            @Override
+            public Component apply(String[] fullName,
+                                   TextColor primary,
+                                   TextColor secondary,
+                                   Style bracket,
+                                   Style text
+            ) {
+                return Guilds.createNameGradient(
+                        3,
+                        fullName,
+                        primary,
+                        secondary,
+                        bracket,
+                        text
+                );
+            }
+        },
         ;
 
         @Getter
         private final String key;
-        private final idkAname applier;
 
         // Default brackets, default style, preview color
-        public Component getPreview(String guildName, TextColor primary, TextColor secondary) {
-            return applier.applyColor(
-                    new String[]{Bracket.DEFAULT.getOpening(), guildName, Bracket.DEFAULT.getClosing()},
+        public Component getPreview(String guildName,
+                                    TextColor primary,
+                                    TextColor secondary
+        ) {
+            return apply(
+                    new String[]{
+                            Bracket.DEFAULT.getOpening(),
+                            guildName,
+                            Bracket.DEFAULT.getClosing()
+                    },
+
                     primary,
-                    secondary
+                    secondary,
+                    Stylee.DEFAULT.getBracketStyle(),
+                    Stylee.DEFAULT.getNameStyle()
             );
         }
+
+        /**
+         * Formats a guild's display name
+         *
+         * @param fullName The full name array containing the opening bracket,
+         *                 the guild's name, and the closing bracket. Use the
+         *                 {@link #CLOSING_BRACKET}, {@link #GUILD_NAME} and
+         *                 {@link #OPENING_BRACKET} constants to access their
+         *                 respective values.
+         *
+         * @param primary The guild's primary color.
+         * @param secondary The guild's secondary color.
+         * @param bracket The style to use for the brackets
+         * @param text The style to use for the guild's name itself
+         *
+         * @return The formatted name
+         */
+        public abstract Component apply(String[] fullName,
+                                        TextColor primary,
+                                        TextColor secondary,
+                                        Style bracket,
+                                        Style text
+        );
     }
 
 
@@ -161,15 +316,15 @@ public class GuildNameFormat {
                 Style.style(TextDecoration.STRIKETHROUGH, TextDecoration.BOLD),
                 noStyle),
         ;
-        @Getter
+
         private final String key;
         private final Style bracketStyle, nameStyle;
 
         // Default brackets, default color, preview styles
         public Component getPreview(String guildName, TextColor primary, TextColor secondary) {
-            return Component.text(Bracket.DEFAULT.getOpening(), bracketStyle.color(secondary))
-                    .append(Component.text(guildName, nameStyle.color(primary)))
-                    .append(Component.text( Bracket.DEFAULT.getClosing(), bracketStyle.color(secondary)));
+            return text(Bracket.DEFAULT.getOpening(), bracketStyle.color(secondary))
+                    .append(text(guildName, nameStyle.color(primary)))
+                    .append(text( Bracket.DEFAULT.getClosing(), bracketStyle.color(secondary)));
         }
     }
 

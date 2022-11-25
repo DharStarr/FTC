@@ -22,12 +22,14 @@ import java.util.Arrays;
 public class UpgradesMenu extends MenuPage {
     private final GuildRanksMenu ranksMenu;
     private final ChunkUpgradesMenu chunkMenu;
+    private final CosmeticsMenu cosmeticsMenu;
 
     public UpgradesMenu(MenuPage parent) {
         super(parent);
 
         ranksMenu = new GuildRanksMenu(this);
         chunkMenu = new ChunkUpgradesMenu(this);
+        this.cosmeticsMenu = new CosmeticsMenu(this);
 
         initMenu(Menus.builder(Menus.MAX_INV_SIZE, "Guild Upgrades"), true);
     }
@@ -36,6 +38,7 @@ public class UpgradesMenu extends MenuPage {
     protected void createMenu(MenuBuilder builder) {
         builder.add(22, ranksMenu);
         builder.add(29, chunkMenu);
+        builder.add(24, cosmeticsMenu);
 
         addAll(UnlockableSetting.values(), builder);
         addAll(Upgradable.values(), builder);

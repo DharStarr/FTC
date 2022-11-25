@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import lombok.experimental.UtilityClass;
 import net.forthecrown.commands.manager.Exceptions;
@@ -15,10 +16,16 @@ import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.waypoint.Waypoint;
 import net.forthecrown.waypoint.WaypointManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.world.level.ChunkPos;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.Inventory;
+
+import static net.forthecrown.guilds.GuildNameFormat.GUILD_NAME;
+import static net.kyori.adventure.text.Component.text;
 
 public @UtilityClass class Guilds {
     /* ---------------------------- SERIAL KEYS ----------------------------- */
@@ -160,5 +167,55 @@ public @UtilityClass class Guilds {
         if (GuildManager.get().getGuild(name) != null) {
             throw Exceptions.format("Name '{0}' is already taken", name);
         }
+    }
+
+    /* ----------------------------- GRADIENT ------------------------------- */
+
+    public Component createNameGradient(int sections,
+                                        String[] fullName,
+                                        TextColor primary,
+                                        TextColor secondary,
+                                        Style bracket,
+                                        Style text
+    ) {
+        String complete = String.join("", fullName);
+        int length = complete.length();
+        var builder = text();
+
+        Pair<TextColor, TextColor> startEndColors = Pair.of(primary, secondary);
+        int sectionSize = length / sections;
+        int sectionIndex = 0;
+
+        // Iterate through each part of the full name
+        for (int i = 0; i < fullName.length; i++) {
+            Style style = i == GUILD_NAME ? text : bracket;
+            char[] chars = fullName[i].toCharArray();
+
+            // Iterate through each char in the current part of the name
+            for (char c : chars) {
+                // Increment section index and find color based off of
+                // that index
+                float progress = (float) sectionIndex / sectionSize;
+
+                ++sectionIndex;
+                sectionIndex %= sectionSize;
+
+                TextColor color = TextColor.lerp(
+                        progress,
+                        startEndColors.getFirst(),
+                        startEndColors.getSecond()
+                );
+
+                builder.append(text(c, style.color(color)));
+
+                // Section's ended, flip colors so gradient smoothly
+                // transitions from the last appended color to new one
+                if (sectionIndex == 0) {
+                    startEndColors = startEndColors.swap();
+                }
+            }
+        }
+
+        return builder.build();
     }
 }

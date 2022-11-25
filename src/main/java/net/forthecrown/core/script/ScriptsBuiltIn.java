@@ -72,7 +72,10 @@ class ScriptsBuiltIn {
                             MethodType.methodType(void.class, String.class, Object[].class)
                     );
 
-            engine.put("command", handle);
+            engine.put(
+                    "command",
+                    ScriptFunction.createBuiltin("command", handle)
+            );
         } catch (NoSuchMethodException | IllegalAccessException exc) {
             throw new RuntimeException(exc);
         }

@@ -14,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 public class GuildRank {
@@ -123,7 +124,15 @@ public class GuildRank {
             // If array: read permissions
             else if (perms.isJsonArray()) {
                 JsonUtils.stream(perms.getAsJsonArray())
-                        .map(element -> JsonUtils.readEnum(GuildPermission.class, element))
+                        .map(element -> {
+                            try {
+                                return JsonUtils.readEnum(GuildPermission.class, element);
+                            } catch (IllegalArgumentException exc) {
+                                FTC.getLogger().warn("Unknown permission: {}", element);
+                                return null;
+                            }
+                        })
+                        .filter(Objects::nonNull)
                         .forEach(rank.permissions::add);
             }
             // Invalid element, warn the console

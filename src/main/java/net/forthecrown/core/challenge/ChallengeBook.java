@@ -33,8 +33,20 @@ public class ChallengeBook {
                         }
 
                         Challenges.apply("daily/pay", challenge -> {
+                            if (!challenge.canComplete(user)) {
+                                return;
+                            }
+
                             user.removeBalance(PAY_COST);
                             challenge.trigger(user);
+
+                            user.sendMessage(
+                                    Text.format(
+                                            "Paid &e{0, rhines}&r to complete challenge!",
+                                            NamedTextColor.GRAY,
+                                            PAY_COST
+                                    )
+                            );
 
                             Transactions.builder()
                                     .type(TransactionType.PAY_CHALLENGE)
@@ -222,7 +234,7 @@ public class ChallengeBook {
                     .addText(displayName)
 
                     .justifyRight(
-                            Text.format("{0, number}/{1, number}",
+                            Text.format("{0, number, -floor}/{1, number}",
                                     isCompleted
                                             ? NamedTextColor.DARK_GREEN
                                             : NamedTextColor.GRAY,

@@ -48,7 +48,7 @@ public class GuildSettings {
     @Getter
     private GuildColor secondaryColor = GuildColor.LIGHT_GRAY;
     @Getter
-    private final GuildNameFormat nameFormat = GuildNameFormat.DEFAULT;
+    private final GuildNameFormat nameFormat = GuildNameFormat.createDefault();
 
     @Getter
     private ItemStack banner = new ItemStack(Material.WHITE_BANNER);
