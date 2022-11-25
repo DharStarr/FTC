@@ -27,7 +27,9 @@ public class GuildNameFormat {
 
     @Getter @Setter
     private Bracket bracket;
+    @Getter @Setter
     private Color color;
+    @Getter @Setter
     private Stylee style;
 
     @Getter

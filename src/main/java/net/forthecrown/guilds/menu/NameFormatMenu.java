@@ -4,16 +4,21 @@ import lombok.Getter;
 import net.forthecrown.guilds.unlockables.nameformat.UnlockableBrackets;
 import net.forthecrown.guilds.unlockables.nameformat.UnlockableColorType;
 import net.forthecrown.guilds.unlockables.nameformat.UnlockableStyle;
+import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.Menus;
+import net.forthecrown.utils.inventory.menu.context.InventoryContext;
 import net.forthecrown.utils.inventory.menu.page.MenuPage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 
 import static net.forthecrown.guilds.menu.GuildMenus.GUILD;
@@ -59,6 +64,14 @@ public class NameFormatMenu extends MenuPage {
         return ItemStacks.builder(Material.PAPER)
                 .setName(Component.text(name, NamedTextColor.YELLOW)
                         .decoration(TextDecoration.ITALIC, false))
+                .build();
+    }
+
+    @Override
+    public @Nullable ItemStack createItem(@NotNull User user, @NotNull InventoryContext context) {
+        return ItemStacks.builder(Material.LOOM)
+                .setFlags(ItemFlag.HIDE_ATTRIBUTES)
+                .setName("&eGuild Cosmetics")
                 .build();
     }
 }
