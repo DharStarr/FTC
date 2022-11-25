@@ -36,7 +36,7 @@ public class GuildColorMenu extends MenuPage {
 
     @Override
     public @Nullable ItemStack createItem(@NotNull User user, @NotNull InventoryContext context) {
-        return ItemStacks.builder(Material.BEACON)
+        return ItemStacks.builder(user.getGuild().getSettings().getPrimaryColor().toWool())
                 .setName("&e" + title)
                 .addLore("&7The " + title + " used in the guild's name format.")
                 .build();

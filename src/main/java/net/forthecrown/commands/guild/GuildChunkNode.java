@@ -238,7 +238,7 @@ class GuildChunkNode extends GuildCommandNode {
             Particles.drawBounds(
                     world,
                     bounds,
-                    (claim ? Particle.DRIPPING_HONEY : Particle.FALLING_LAVA)
+                    (claim ? Particle.END_ROD : Particle.FALLING_LAVA)
                             .builder()
             );
         }

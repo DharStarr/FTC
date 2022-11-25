@@ -968,7 +968,7 @@ public interface Exceptions {
     }
 
     static CommandSyntaxException cannotClaimMoreChunks(Guild guild, int max) {
-        return format("{0} Cannot claim more than {1, number} chunks", guild, max);
+        return format("{0} Cannot claim more than {1, number} chunks", guild.displayName(), max);
     }
 
     static CommandSyntaxException chunkAlreadyClaimed(Guild owner) {

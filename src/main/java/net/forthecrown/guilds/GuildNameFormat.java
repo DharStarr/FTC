@@ -33,7 +33,7 @@ public class GuildNameFormat {
     private Stylee style;
 
     @Getter
-    protected static final GuildNameFormat DEFAULT = new GuildNameFormat(Bracket.DEFAULT, Color.DEFAULT, Stylee.DEFAULT);
+    public static final GuildNameFormat DEFAULT = new GuildNameFormat(Bracket.DEFAULT, Color.DEFAULT, Stylee.DEFAULT);
 
 
     // Applies the format to the given guild name
@@ -70,7 +70,7 @@ public class GuildNameFormat {
         }
 
         public Component getClosingBracket(Style style) {
-            return Component.text(opening, style);
+            return Component.text(closing, style);
         }
 
         // Default color, default style, preview brackets

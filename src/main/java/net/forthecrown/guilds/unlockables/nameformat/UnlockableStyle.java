@@ -48,7 +48,7 @@ public enum UnlockableStyle implements Unlockable {
     @Override
     public Component getName() {
         // todo: guild name with the primary and secondary colors
-        return stylee.getPreview("guildname", NamedTextColor.AQUA, NamedTextColor.YELLOW);
+        return text("Name format style");
     }
 
     @Override
