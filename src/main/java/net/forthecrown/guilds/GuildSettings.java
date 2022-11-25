@@ -1,14 +1,12 @@
 package net.forthecrown.guilds;
 
 import com.google.gson.JsonObject;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.core.DynmapUtil;
 import net.forthecrown.utils.ArrayIterator;
-import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.waypoint.Waypoint;
@@ -174,6 +172,10 @@ public class GuildSettings {
         secondaryColor = json.getEnum(SECONDARY_COLOR_KEY, GuildColor.class);
         banner = json.getItem(BANNER_KEY);
         setWaypoint(json.getUUID(WAYPOINT_KEY));
+
+        if (json.has(NAME_FORMAT_KEY)) {
+            nameFormat.deserialize(json.get(NAME_FORMAT_KEY));
+        }
     }
 
     // Get Json from GuildSettings
@@ -202,6 +204,10 @@ public class GuildSettings {
         result.add(BANNER_KEY, JsonUtils.writeItem(this.banner));
         result.addProperty(IS_PUBLIC_KEY, this.isPublic);
         result.addProperty(ALLOWS_VISIT_KEY, this.allowsVisit);
+
+        if (!nameFormat.isDefault()) {
+            result.add(NAME_FORMAT_KEY, nameFormat.serialize());
+        }
 
         return result;
     }

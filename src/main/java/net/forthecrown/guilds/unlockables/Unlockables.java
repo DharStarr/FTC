@@ -25,7 +25,15 @@ public @UtilityClass class Unlockables {
 
     private static void registerAll(Unlockable[] unlockables) {
         for (var u: unlockables) {
-            REGISTRY.register(u.getKey(), u);
+            String key;
+
+            if (REGISTRY.contains(u.getKey())) {
+                key = u.getClass().getSimpleName() + "/" + u.getKey();
+            } else {
+                key = u.getKey();
+            }
+
+            REGISTRY.register(key, u);
         }
     }
 }

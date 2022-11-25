@@ -1,21 +1,18 @@
 package net.forthecrown.guilds.unlockables.nameformat;
 
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.events.PotionEffectListener;
 import net.forthecrown.guilds.Guild;
 import net.forthecrown.guilds.GuildNameFormat;
 import net.forthecrown.guilds.GuildPermission;
 import net.forthecrown.guilds.unlockables.Unlockable;
-import net.forthecrown.guilds.unlockables.Upgradable;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
-import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -77,8 +74,12 @@ public enum UnlockableBrackets implements Unlockable {
                     }
 
                     if (isUnlocked(guild)) {
+                        boolean active = guild.getSettings()
+                                .getNameFormat()
+                                .getBracket() == bracket;
+
                         // Add click-to-active or is-active line
-                        lore.add(guild.getSettings().getNameFormat().getBracket() == bracket
+                        lore.add(active
                                 ? text("Active")
                                         .color(NamedTextColor.YELLOW)
                                         .decoration(TextDecoration.ITALIC, false)
@@ -86,6 +87,14 @@ public enum UnlockableBrackets implements Unlockable {
                                         .color(NamedTextColor.GRAY)
                                         .decoration(TextDecoration.ITALIC, false)
                         );
+
+                        if (active) {
+                            meta.addEnchant(
+                                    Enchantment.BINDING_CURSE,
+                                    1,
+                                    true
+                            );
+                        }
                     } else {
                         var style = nonItalic(NamedTextColor.GRAY);
 

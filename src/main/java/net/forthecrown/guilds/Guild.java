@@ -144,9 +144,8 @@ public class Guild implements ForwardingAudience, InventoryHolder {
     public Component displayName() {
         return text()
                 .append(
-                        text("[", getSettings().getSecondaryColor().getTextColor()),
-                        text(getName(), getSettings().getPrimaryColor().getTextColor()),
-                        text("]", getSettings().getSecondaryColor().getTextColor())
+                       getSettings().getNameFormat()
+                               .apply(this)
                 )
 
                 .clickEvent(ClickEvent.runCommand("/g info " + getName()))

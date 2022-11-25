@@ -1,9 +1,14 @@
 package net.forthecrown.guilds;
 
+import com.google.gson.JsonElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.forthecrown.core.registry.FtcKeyed;
+import net.forthecrown.core.registry.Registries;
+import net.forthecrown.core.registry.Registry;
+import net.forthecrown.utils.io.JsonWrapper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
@@ -17,6 +22,9 @@ import static net.kyori.adventure.text.Component.text;
 @Setter
 @AllArgsConstructor
 public class GuildNameFormat {
+    static final Registry<Bracket> BRACKETS = Registries.ofEnum(Bracket.class);
+    static final Registry<Color> COLORS = Registries.ofEnum(Color.class);
+    static final Registry<Stylee> STYLEES = Registries.ofEnum(Stylee.class);
 
     // todo serialize/deserialize
     public static final String
@@ -84,9 +92,62 @@ public class GuildNameFormat {
         );
     }
 
+    public boolean isDefault() {
+        return bracket == Bracket.DEFAULT
+                && style == Stylee.DEFAULT
+                && color == Color.DEFAULT;
+    }
+
+    /* --------------------------- SERIALIZATION ---------------------------- */
+
+    public JsonElement serialize() {
+        var json = JsonWrapper.create();
+
+        if (bracket != Bracket.DEFAULT) {
+            json.add(BRACKETS_KEY,
+                     BRACKETS.writeJson(bracket).orElseThrow()
+            );
+        }
+
+        if (color != Color.DEFAULT) {
+            json.add(COLORS_KEY,
+                     COLORS.writeJson(color).orElseThrow()
+            );
+        }
+
+        if (style != Stylee.DEFAULT) {
+            json.add(STYLE_KEY,
+                     STYLEES.writeJson(style).orElseThrow()
+            );
+        }
+
+        return json.getSource();
+    }
+
+    public void deserialize(JsonElement element) {
+        var json = JsonWrapper.wrap(element.getAsJsonObject());
+
+        setBracket(
+                BRACKETS.readJson(json.get(BRACKETS_KEY))
+                        .orElse(Bracket.DEFAULT)
+        );
+
+        setColor(
+                COLORS.readJson(json.get(COLORS_KEY))
+                        .orElse(Color.DEFAULT)
+        );
+
+        setStyle(
+                STYLEES.readJson(json.get(STYLE_KEY))
+                        .orElse(Stylee.DEFAULT)
+        );
+    }
+
+    /* ---------------------------- SUB CLASSES ----------------------------- */
+
     @RequiredArgsConstructor
     @Getter
-    public enum Bracket {
+    public enum Bracket implements FtcKeyed {
         DEFAULT("default", "[", "]"),
         ROUND("round", "(", ")"),
         ANGLE("angle", "<", ">"),
@@ -123,7 +184,7 @@ public class GuildNameFormat {
 
     @RequiredArgsConstructor
     @Getter
-    public enum Color {
+    public enum Color implements FtcKeyed {
         DEFAULT("default") {
             @Override
             public Component apply(String[] fullName,
@@ -298,7 +359,7 @@ public class GuildNameFormat {
 
     @RequiredArgsConstructor
     @Getter
-    public enum Stylee {
+    public enum Stylee implements FtcKeyed {
         DEFAULT("default",
                 noStyle,
                 noStyle),

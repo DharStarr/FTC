@@ -12,6 +12,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -74,8 +75,12 @@ public enum UnlockableStyle implements Unlockable {
                     }
 
                     if (isUnlocked(guild)) {
+                        boolean active = guild.getSettings()
+                                .getNameFormat()
+                                .getStyle() == stylee;
+
                         // Add click-to-active or is-active line
-                        lore.add(guild.getSettings().getNameFormat().getStyle() == stylee
+                        lore.add(active
                                 ? text("Active")
                                 .color(NamedTextColor.YELLOW)
                                 .decoration(TextDecoration.ITALIC, false)
@@ -83,6 +88,14 @@ public enum UnlockableStyle implements Unlockable {
                                 .color(NamedTextColor.GRAY)
                                 .decoration(TextDecoration.ITALIC, false)
                         );
+
+                        if (active) {
+                            meta.addEnchant(
+                                    Enchantment.BINDING_CURSE,
+                                    1,
+                                    true
+                            );
+                        }
                     } else {
                         var style = nonItalic(NamedTextColor.GRAY);
 
