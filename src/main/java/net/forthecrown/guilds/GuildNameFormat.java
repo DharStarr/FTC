@@ -322,9 +322,11 @@ public class GuildNameFormat {
 
         // Default brackets, default color, preview styles
         public Component getPreview(String guildName, TextColor primary, TextColor secondary) {
-            return text(Bracket.DEFAULT.getOpening(), bracketStyle.color(secondary))
+            return text()
+                    .append(text(Bracket.DEFAULT.getOpening(), bracketStyle.color(secondary)))
                     .append(text(guildName, nameStyle.color(primary)))
-                    .append(text( Bracket.DEFAULT.getClosing(), bracketStyle.color(secondary)));
+                    .append(text( Bracket.DEFAULT.getClosing(), bracketStyle.color(secondary)))
+                    .build();
         }
     }
 

@@ -25,6 +25,7 @@ import static net.kyori.adventure.text.Component.text;
 @RequiredArgsConstructor
 @Getter
 public enum UnlockableColorType implements Unlockable {
+    DEFAULT(20, 0, GuildNameFormat.Color.DEFAULT),
     COLORS2(21, 500, GuildNameFormat.Color.ALTERNATE),
     COLORS3(22, 500, GuildNameFormat.Color.GRADIENT_2COLORS),
     COLORS4(23, 1000, GuildNameFormat.Color.GRADIENT_3COLORS),

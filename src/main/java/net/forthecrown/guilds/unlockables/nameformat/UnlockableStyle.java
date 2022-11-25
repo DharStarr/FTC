@@ -25,6 +25,7 @@ import static net.kyori.adventure.text.Component.text;
 @RequiredArgsConstructor
 @Getter
 public enum UnlockableStyle implements Unlockable {
+    DEFAULT(29, 0, GuildNameFormat.Stylee.DEFAULT),
     STYLE2(30, 500, GuildNameFormat.Stylee.FATB),
     STYLE3(31, 500, GuildNameFormat.Stylee.ITALIC),
     STYLE4(32, 1000, GuildNameFormat.Stylee.ITALIC_FATB),

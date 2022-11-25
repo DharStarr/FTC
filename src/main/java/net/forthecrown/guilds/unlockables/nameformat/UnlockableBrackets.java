@@ -29,6 +29,7 @@ import static net.kyori.adventure.text.Component.text;
 @RequiredArgsConstructor
 @Getter
 public enum UnlockableBrackets implements Unlockable {
+    DEFAULT(11, 0, GuildNameFormat.Bracket.DEFAULT),
     BRACKETS2(12, 500, GuildNameFormat.Bracket.ROUND),
     BRACKETS3(13, 500, GuildNameFormat.Bracket.ANGLE),
     BRACKETS4(14, 1000, GuildNameFormat.Bracket.SQUARE_SPECIAL1),
