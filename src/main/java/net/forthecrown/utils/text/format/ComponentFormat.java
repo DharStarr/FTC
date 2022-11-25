@@ -240,7 +240,10 @@ public class ComponentFormat implements ComponentLike {
          *
          * - If the style is '-roman', the returned component
          *   will be the given number translated into a roman
-         *   numeral
+         *   numeral.
+         *
+         * - If the style contains '-floor' the given argument
+         *   will be rounded down before being formatted
          *
          * - Otherwise, the given style will be treated as a
          *   {@link DecimalFormat} format and used to format the
@@ -259,6 +262,14 @@ public class ComponentFormat implements ComponentLike {
 
                 if (style.contains("-roman")) {
                     return text(RomanNumeral.arabicToRoman(number.longValue()));
+                }
+
+                if (style.contains("-floor")) {
+                    // Remove style argument, style may contain
+                    // a number format, or not, it just as to be empty lol
+                    style = style.replaceAll("-floor", "").trim();
+
+                    number = number.longValue();
                 }
 
                 return text(

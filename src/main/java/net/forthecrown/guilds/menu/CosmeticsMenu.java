@@ -31,7 +31,7 @@ public class CosmeticsMenu extends MenuPage {
         super(parent);
 
         primaryColor = new GuildColorMenu(this, "Primary Color");
-        secondaryColor = new GuildColorMenu(this, "Secondary Color"); // todo: won't work, see UnlockableColor
+        secondaryColor = new GuildColorMenu(this, "Secondary Color");
         nameFormat = new NameFormatMenu(this);
 
         initMenu(Menus.builder(45, "Guild cosmetics"), true);

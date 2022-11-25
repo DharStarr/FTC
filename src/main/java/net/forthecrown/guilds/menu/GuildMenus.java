@@ -9,8 +9,14 @@ import net.forthecrown.utils.inventory.menu.page.MenuPage;
 public class GuildMenus {
     public static final ContextSet SET = ContextSet.create();
 
-    public static final ContextOption<Guild> GUILD = SET.newOption();
-    public static final ContextOption<Integer> PAGE = SET.newOption(0);
+    public static final ContextOption<Guild>
+            GUILD = SET.newOption();
+
+    public static final ContextOption<Integer>
+            PAGE = SET.newOption(0);
+
+    public static final ContextOption<Boolean>
+            PRIMARY_COLOR = SET.newOption(true);
 
     public static final MainGuildMenu MAIN_MENU = new MainGuildMenu();
 

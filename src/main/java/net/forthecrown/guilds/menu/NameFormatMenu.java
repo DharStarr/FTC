@@ -53,7 +53,7 @@ public class NameFormatMenu extends MenuPage {
                     var guild = context.getOrThrow(GUILD);
 
                     return ItemStacks.builder(Material.PAPER)
-                            .setName(guild.getSettings().getNameFormat().apply(guild.getName())
+                            .setName(guild.getSettings().getNameFormat().apply(guild)
                                     .decoration(TextDecoration.ITALIC, false))
                             .build();
                 })
@@ -62,8 +62,7 @@ public class NameFormatMenu extends MenuPage {
 
     private static ItemStack getInfoPaper(String name) {
         return ItemStacks.builder(Material.PAPER)
-                .setName(Component.text(name, NamedTextColor.YELLOW)
-                        .decoration(TextDecoration.ITALIC, false))
+                .setName(Component.text(name, NamedTextColor.YELLOW))
                 .build();
     }
 

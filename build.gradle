@@ -137,6 +137,13 @@ test {
 
 /* ------------- Custom Task ------------- */
 
+// Builds the plugin jar, if a server directory is specified in test_server.properties
+// under the 'test_server_directory' key, then it will move the jar into that server's
+// plugins directory.
+//
+// If a 'launchFile' is also specified, then this task will also execute the launchFile
+// using a command prompt.
+//  - Jules
 task build_to_test_server(dependsOn: build) {
     group 'build'
     description 'Builds the server\'s jar and moves it to the test server in test_server.properties'

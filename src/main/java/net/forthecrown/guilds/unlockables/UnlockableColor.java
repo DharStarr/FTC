@@ -1,8 +1,10 @@
 package net.forthecrown.guilds.unlockables;
 
 import lombok.Getter;
+import net.forthecrown.guilds.Guild;
 import net.forthecrown.guilds.GuildColor;
 import net.forthecrown.guilds.GuildPermission;
+import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.text.Text;
@@ -12,6 +14,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
 import static net.forthecrown.guilds.menu.GuildMenus.GUILD;
+import static net.forthecrown.guilds.menu.GuildMenus.PRIMARY_COLOR;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
@@ -93,16 +96,36 @@ public enum UnlockableColor implements Unlockable {
                 .setRunnable((user, context, click) -> {
                     onClick(user, click, context, () -> {
                         var guild = context.getOrThrow(GUILD);
-                        guild.getSettings().setPrimaryColor(color);
-                        guild.sendMessage(
-                                Text.format("&f{0, user}&r has changed the guild's primary color to {1}.",
-                                        user,
-                                        text(color.toText(), color.getTextColor())
-                                )
+
+                        setColor(
+                                context.get(PRIMARY_COLOR),
+                                guild,
+                                user,
+                                color
                         );
                     });
                 })
 
                 .build();
+    }
+
+    private static void setColor(boolean primary,
+                                 Guild guild,
+                                 User user,
+                                 GuildColor color
+    ) {
+        if (primary) {
+            guild.getSettings().setPrimaryColor(color);
+        } else {
+            guild.getSettings().setSecondaryColor(color);
+        }
+
+        guild.sendMessage(
+                Text.format("&f{0, user}&r has changed the guild's {2} color to {1}.",
+                            user,
+                            text(color.toText(), color.getTextColor()),
+                            primary ? "primary" : "secondary"
+                )
+        );
     }
 }

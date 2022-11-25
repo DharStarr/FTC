@@ -374,6 +374,7 @@ public class Guild implements ForwardingAudience, InventoryHolder {
         g.settings.deserialize(json.getObject(SETTINGS_KEY));
 
         // Read inventory
+        g.refreshGuildChest();
         Guilds.readInventory(g.inventory, json.get(CHEST_KEY));
 
         return g;

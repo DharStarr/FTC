@@ -59,11 +59,15 @@ public interface Unlockable {
     }
 
     default Component getProgressComponent(Guild guild) {
-        return Text.format("Progress: {0, number}/{1, number}",
-                STYLE,
+        return getProgressComponent(getExpProgress(guild));
+    }
 
-                getExpProgress(guild),
-                getExpRequired()
+    default Component getProgressComponent( int progress) {
+        return Text.format("Progress: {0, number}/{1, number}",
+                           STYLE,
+
+                           progress,
+                           getExpRequired()
         );
     }
 
