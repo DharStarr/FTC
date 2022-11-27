@@ -6,9 +6,9 @@ import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public @UtilityClass class DataLogs {
     public static final Registry<LogSchema>
@@ -40,7 +40,7 @@ public @UtilityClass class DataLogs {
                 .log(schema, entry);
     }
 
-    public Stream<LogEntry> query(LogQuery query) {
+    public List<LogEntry> query(LogQuery query) {
         return DataManager.getInstance()
                 .queryLogs(query);
     }

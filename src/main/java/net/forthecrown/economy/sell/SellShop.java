@@ -3,12 +3,16 @@ package net.forthecrown.economy.sell;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.challenge.ChallengeManager;
+import net.forthecrown.core.challenge.Challenges;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
-import net.forthecrown.utils.io.JsonWrapper;
-import net.forthecrown.utils.io.SerializationHelper;
 import net.forthecrown.utils.inventory.menu.Menu;
 import net.forthecrown.utils.inventory.menu.Menus;
+import net.forthecrown.utils.inventory.menu.Slot;
+import net.forthecrown.utils.io.JsonWrapper;
+import net.forthecrown.utils.io.PathUtil;
+import net.forthecrown.utils.io.SerializationHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +40,7 @@ public class SellShop {
     private final ItemPriceMap priceMap = new ItemPriceMap();
 
     public void load() {
+        createDefaults();
         SerializationHelper.readJsonFile(getPath(), this::load);
     }
 
@@ -61,6 +66,18 @@ public class SellShop {
             menus.register(name, menu);
         }
 
+        var challengeMenu = ChallengeManager.getInstance()
+                .getItemChallengeMenu();
+
+        if (challengeMenu != null) {
+            builder.add(Slot.of(4, 2),
+                    Menus.createOpenNode(
+                            challengeMenu,
+                            Challenges.createMenuHeader()
+                    )
+            );
+        }
+
         this.mainMenu = builder.build();
     }
 
@@ -69,29 +86,18 @@ public class SellShop {
     }
 
     public void createDefaults() {
-        final String[] defaults = {
-                "shops.json",
-                "crops.shop",
-                "minerals.shop",
-                "mining.shop",
-                "drops.shop",
-        };
+        try (var stream = Files.newDirectoryStream(PathUtil.jarPath("economy"))) {
+            for (var p: stream) {
+                String path = p.toString();
 
-        for (var s: defaults) {
-            var input = FTC.getPlugin().getResource("sellshops/" + s);
-            Path path = directory.resolve(s);
-
-            try {
-                if (!Files.exists(directory)) {
-                    Files.createDirectories(directory);
+                if (Files.exists(PathUtil.pluginPath(path))) {
+                    continue;
                 }
 
-                var output = Files.newOutputStream(path);
-                output.write(input.readAllBytes());
-            } catch (IOException e) {
-                FTC.getLogger().error("Couldn't save sellshop file defaults", e);
+                FTC.getPlugin().saveResource(path, true);
             }
+        } catch (IOException exc) {
+            throw new IllegalArgumentException(exc);
         }
-
     }
 }

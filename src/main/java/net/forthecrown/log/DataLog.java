@@ -10,8 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
@@ -21,16 +19,8 @@ public class DataLog {
     private final LogSchema schema;
     private final List<LogEntry> entries = new ObjectArrayList<>();
 
-    public void performQuery(LogQuery query,
-                             Stream.Builder<LogEntry> builder,
-                             AtomicInteger found
-    ) {
-        entries.stream()
-                .filter(query)
-                .forEach(entry -> {
-                    found.incrementAndGet();
-                    builder.add(entry);
-                });
+    public void performQuery(QueryResultBuilder builder) {
+        entries.stream().filter(builder).forEach(builder);
     }
 
     public void add(LogEntry entry) {

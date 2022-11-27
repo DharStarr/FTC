@@ -79,13 +79,14 @@ public abstract class TextWriter implements ComponentLike {
      */
     public void write(ComponentLike text) {
         Objects.requireNonNull(text, "Text was null");
+        var component = text.asComponent();
 
-        if (text.equals(Component.newline())) {
+        if (component.equals(Component.newline())) {
             newLine();
             return;
         }
 
-        Iterator<Component> it = Text.split(NEW_LINE_PATTERN, text.asComponent())
+        Iterator<Component> it = Text.split(NEW_LINE_PATTERN, component)
                 .iterator();
 
         while (it.hasNext()) {

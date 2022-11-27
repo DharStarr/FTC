@@ -1,6 +1,8 @@
 package net.forthecrown.guilds.unlockables;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.registry.Registry;
 import net.forthecrown.guilds.Guild;
 import net.forthecrown.guilds.GuildColor;
 import net.forthecrown.guilds.GuildPermission;
@@ -9,17 +11,15 @@ import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
 import static net.forthecrown.guilds.menu.GuildMenus.GUILD;
-import static net.forthecrown.guilds.menu.GuildMenus.PRIMARY_COLOR;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 @Getter
-public enum UnlockableColor implements Unlockable {
+public enum UnlockableColor {
     WHITE(13, GuildColor.WHITE),
     BLACK(20, GuildColor.BLACK),
     GRAY(21, GuildColor.GRAY),
@@ -38,75 +38,47 @@ public enum UnlockableColor implements Unlockable {
     RED(42, GuildColor.RED),
     ;
 
+    @Getter
+    static final UnlockableOption[] primaries;
+
+    @Getter
+    static final UnlockableOption[] secondaries;
+
+    static {
+        var values = values();
+
+        primaries = new UnlockableOption[values.length];
+        secondaries = new UnlockableOption[values.length];
+
+        for (var v: values) {
+            primaries[v.ordinal()] = v.getPrimaryOption();
+            secondaries[v.ordinal()] = v.getSecondaryOption();
+        }
+    }
+
     private final int slot, expRequired;
     private final GuildColor color;
+
+    private final UnlockableOption primaryOption;
+    private final UnlockableOption secondaryOption;
 
     UnlockableColor(int slot, GuildColor color) {
         this.slot = slot;
         this.expRequired = 200;
         this.color = color;
+
+        this.primaryOption = new UnlockableOption(this, true);
+        this.secondaryOption = new UnlockableOption(this, false);
     }
 
-    @Override
-    public GuildPermission getPerm() {
-        return GuildPermission.CAN_CHANGE_GUILD_COSMETICS;
-    }
+    static void registerAll(Registry<Unlockable> unlockables) {
+        for (var v: values()) {
+            var p = v.getPrimaryOption();
+            var e = v.getSecondaryOption();
 
-    @Override
-    public String getKey() {
-        return "PC_" + color.name();
-    }
-
-    @Override
-    public Component getName() {
-        return Text.format("Primary color: {0}",
-                NamedTextColor.YELLOW,
-                getColor().toText()
-        );
-    }
-
-    @Override
-    public MenuNode toInvOption() {
-        return MenuNode.builder()
-                .setItem((user, context) -> {
-                    var builder = ItemStacks.builder(color.toWool())
-                            .setName(text(color.toText(), color.getTextColor()))
-                            .setFlags(ItemFlag.HIDE_ENCHANTS);
-
-                    var guild = context.getOrThrow(GUILD);
-
-                    if (isUnlocked(guild)) {
-                        if (guild.getSettings().getPrimaryColor() == color) {
-                            builder.addEnchant(Enchantment.BINDING_CURSE, 1);
-                            builder.addLore("&6Currently Selected");
-                        } else {
-                            builder.addLore("&7Click to select");
-                        }
-                    } else {
-                        builder
-                                .addLore(getProgressComponent(guild))
-                                .addLoreRaw(empty())
-                                .addLore(getClickComponent())
-                                .addLore(getShiftClickComponent());
-                    }
-
-                    return builder.build();
-                })
-
-                .setRunnable((user, context, click) -> {
-                    onClick(user, click, context, () -> {
-                        var guild = context.getOrThrow(GUILD);
-
-                        setColor(
-                                context.get(PRIMARY_COLOR),
-                                guild,
-                                user,
-                                color
-                        );
-                    });
-                })
-
-                .build();
+            unlockables.register(p.getKey(), p);
+            unlockables.register(e.getKey(), e);
+        }
     }
 
     private static void setColor(boolean primary,
@@ -127,5 +99,86 @@ public enum UnlockableColor implements Unlockable {
                             primary ? "primary" : "secondary"
                 )
         );
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    private static class UnlockableOption implements Unlockable {
+        private final UnlockableColor color;
+        private final boolean primary;
+
+        @Override
+        public GuildPermission getPerm() {
+            return GuildPermission.CAN_CHANGE_GUILD_COSMETICS;
+        }
+
+        @Override
+        public String getKey() {
+            return (primary ? "primary_color/" : "secondary_color/") + color.name();
+        }
+
+        @Override
+        public Component getName() {
+            return Text.format("{0} color: {1}",
+                    primary ? "Primary" : "Secondary",
+                    color.getColor().toText()
+            );
+        }
+
+        @Override
+        public int getSlot() {
+            return color.getSlot();
+        }
+
+        @Override
+        public int getExpRequired() {
+            return color.getExpRequired();
+        }
+
+        @Override
+        public MenuNode toInvOption() {
+            return MenuNode.builder()
+                    .setItem((user, context) -> {
+                        var color = this.color.color;
+
+                        var builder = ItemStacks.builder(color.toWool())
+                                .setName(text(color.toText(), color.getTextColor()))
+                                .setFlags(ItemFlag.HIDE_ENCHANTS);
+
+                        var guild = context.getOrThrow(GUILD);
+
+                        if (isUnlocked(guild)) {
+                            if (guild.getSettings().getPrimaryColor() == color) {
+                                builder.addEnchant(Enchantment.BINDING_CURSE, 1);
+                                builder.addLore("&6Currently Selected");
+                            } else {
+                                builder.addLore("&7Click to select");
+                            }
+                        } else {
+                            builder
+                                    .addLore(getProgressComponent(guild))
+                                    .addLoreRaw(empty())
+                                    .addLore(getClickComponent())
+                                    .addLore(getShiftClickComponent());
+                        }
+
+                        return builder.build();
+                    })
+
+                    .setRunnable((user, context, click) -> {
+                        onClick(user, click, context, () -> {
+                            var guild = context.getOrThrow(GUILD);
+
+                            setColor(
+                                    primary,
+                                    guild,
+                                    user,
+                                    color.color
+                            );
+                        });
+                    })
+
+                    .build();
+        }
     }
 }

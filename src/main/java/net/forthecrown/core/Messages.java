@@ -2405,8 +2405,8 @@ public interface Messages {
 
     Component HOME_WAYPOINT_SET = text(
             "Set home waypoint." +
-            "\nUse /home to come to this waypoint when near another waypoint." +
-            "\nUse /invite <player> to invite others there",
+            "\nUse /invite <player> to invite others " +
+            "\nUse /home to come to this waypoint when near another waypoint.",
             NamedTextColor.YELLOW
     );
 
@@ -2885,10 +2885,10 @@ public interface Messages {
 
     /* ---------------------------- CHALLENGES ----------------------------- */
 
-    static Component challengeCompleted(Challenge challenge) {
+    static Component challengeCompleted(Challenge challenge, User user) {
         return format("Completed challenge &e{0}&r.",
                 NamedTextColor.GRAY,
-                challenge.displayName()
+                challenge.displayName(user)
         );
     }
 

@@ -228,6 +228,10 @@ public interface Exceptions {
         return format("You can only do this every: {0, time}", millis);
     }
 
+    static CommandSyntaxException cooldownEndsIn(long millis) {
+        return format("You can do this again in {0, time}", millis);
+    }
+
     static CommandSyntaxException alreadySetCosmetic(Component cosmeticName, Component typeName) {
         return format("{0} is already your {1} effect",
                 cosmeticName, typeName
@@ -254,7 +258,7 @@ public interface Exceptions {
 
     static CommandSyntaxException nonActiveChallenge(Challenge challenge) {
         return format("Challenge {0} is not active!",
-                challenge.displayName()
+                challenge.displayName(null)
         );
     }
 

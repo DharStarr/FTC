@@ -27,7 +27,11 @@ public @UtilityClass class WaypointConfig {
      * removal and when it's actually deleted
      */
     public long
-            waypointDeletionDelay   = TimeUnit.DAYS.toMillis(7);
+            waypointDeletionDelay   = TimeUnit.DAYS.toMillis(7),
+            moveInCooldown          = TimeUnit.HOURS.toMillis(1);
+
+    public boolean
+            moveInHasCooldown       = false;
 
     public boolean isDisabledWorld(World w) {
         return ArrayUtils.contains(disabledPlayerWorlds, w.getName());

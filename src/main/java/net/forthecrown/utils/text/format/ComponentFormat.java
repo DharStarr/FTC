@@ -245,6 +245,9 @@ public class ComponentFormat implements ComponentLike {
          * - If the style contains '-floor' the given argument
          *   will be rounded down before being formatted
          *
+         * - If the style contains '-floor' then the input number
+         *   will be rounded down.
+         *
          * - Otherwise, the given style will be treated as a
          *   {@link DecimalFormat} format and used to format the
          *   given argument
@@ -270,6 +273,12 @@ public class ComponentFormat implements ComponentLike {
                     style = style.replaceAll("-floor", "").trim();
 
                     number = number.longValue();
+                }
+
+                if (style.contains("-floor")) {
+                    number = number.longValue();
+                    style = style.replaceAll("-floor", "")
+                            .trim();
                 }
 
                 return text(

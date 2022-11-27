@@ -57,7 +57,9 @@ public enum TimeField implements FtcKeyed {
     /**
      * The last time this user bought/abandoned a market
      */
-    MARKET_LAST_ACTION          ("market_lastAction",       true );
+    MARKET_LAST_ACTION          ("market_lastAction",       true ),
+
+    LAST_MOVEIN                 ("lastMoveIn",              true );
 
     /**
      * The serialized key of this timestamp, used in JSON

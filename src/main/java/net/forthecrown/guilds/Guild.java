@@ -70,11 +70,15 @@ public class Guild implements ForwardingAudience, InventoryHolder {
     @Getter
     private Inventory inventory;
 
-    private final ObjectSet<UnlockableChunkUpgrade> activeEffects = new ObjectOpenHashSet<>();
+    private final ObjectSet<UnlockableChunkUpgrade>
+            activeEffects = new ObjectOpenHashSet<>();
 
     @Getter
-    private final ObjectList<GuildMessage> msgBoardPosts = new ObjectArrayList<>();
-    private final ObjectList<GuildInvite> outgoingInvites = new ObjectArrayList<>();
+    private final ObjectList<GuildMessage>
+            msgBoardPosts = new ObjectArrayList<>();
+
+    private final ObjectList<GuildInvite>
+            outgoingInvites = new ObjectArrayList<>();
 
     public Guild(UUID id, long totalExp, long creationTimeStamp) {
         this.id = id;

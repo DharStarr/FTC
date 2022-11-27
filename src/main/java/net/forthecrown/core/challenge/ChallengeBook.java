@@ -95,6 +95,10 @@ public class ChallengeBook {
                 summary = new EnumMap<>(ResetInterval.class);
 
         for (var c: ChallengeManager.getInstance().getActiveChallenges()) {
+            if (c instanceof ItemChallenge) {
+                continue;
+            }
+
             boolean completed = Challenges.hasCompleted(c, entry.getId());
 
             IntIntPair pair = summary.computeIfAbsent(
@@ -117,7 +121,9 @@ public class ChallengeBook {
                 continue;
             }
 
-            builder.addField(
+            builder
+                    .addEmptyLine()
+                    .addField(
                     text(e.getKey().getDisplayName() + " Challenges"),
 
                     Text.format("{0, number}/{1, number}",
@@ -153,6 +159,10 @@ public class ChallengeBook {
                 completed = new Object2BooleanOpenHashMap<>();
 
         for (var c: activeList) {
+            if (c instanceof ItemChallenge) {
+                continue;
+            }
+
             boolean isCompleted = Challenges.hasCompleted(c, entry.getId());
             completed.put(c, isCompleted);
         }
@@ -208,7 +218,7 @@ public class ChallengeBook {
                 progress = c.getGoal();
             }
 
-            Component displayName = c.displayName()
+            Component displayName = c.displayName(entry.getUser())
                     .color(null);
 
             if (Objects.equals(payChallenge, c) && !isCompleted) {

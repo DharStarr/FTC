@@ -65,7 +65,7 @@ public @UtilityClass class Transactions {
         T_EXTRA  = builder.add("extra",  Codec.STRING);
 
         T_AMOUNT = builder.add("amount", Codec.INT);
-        T_TIME = builder.add("timestamp", FtcCodecs.TIMESTAMP_CODEC);
+        T_TIME = builder.add("timestamp", Codec.LONG);
 
         T_TYPE = builder.add(
                 "type",

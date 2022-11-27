@@ -71,6 +71,9 @@ public class ModuleService implements Runnable {
             Object module = pair.getFirst();
 
             Object instance;
+            String name = module == null
+                    ? callback.getDeclaringClass().getSimpleName()
+                    : module.getClass().getSimpleName();
 
             if (Modifier.isStatic(callback.getModifiers())) {
                 instance = null;
@@ -80,7 +83,7 @@ public class ModuleService implements Runnable {
                 if (instance == null) {
                     LOGGER.error("Cannot run {} in {}! Not static",
                             callback.getName(),
-                            callback.getDeclaringClass().getName()
+                            name
                     );
 
                     return;
@@ -91,9 +94,10 @@ public class ModuleService implements Runnable {
                 invoke(instance, callback);
                 ++ran;
 
-                LOGGER.debug("Ran {} on {}",
+                LOGGER.debug(
+                        "Ran {} on {}",
                         annotationType.getSimpleName(),
-                        callback.getDeclaringClass().getSimpleName()
+                        name
                 );
             } catch (Throwable t) {
                 if (t instanceof InvocationTargetException exc) {
@@ -103,7 +107,7 @@ public class ModuleService implements Runnable {
                 LOGGER.error(
                         "Couldn't invoke method '{}' in '{}'",
                         callback.getName(),
-                        callback.getDeclaringClass().getName(),
+                        name,
                         t
                 );
             }

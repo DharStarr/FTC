@@ -25,6 +25,17 @@ public final class SerializationHelper {
     public static final IoReader<JsonObject>
             JSON_READER = JsonUtils::readFileObject;
 
+    public static void ensureParentExists(Path file) throws IOException {
+        if (Files.exists(file)) {
+            return;
+        }
+
+        var parent = file.getParent();
+
+        if (!Files.exists(parent)) {
+            Files.createDirectories(parent);
+        }
+    }
 
     public static <T> DataResult<T> readFileObject(Path file, IoReader<T> reader) {
         if (!Files.exists(file)) {
@@ -78,14 +89,7 @@ public final class SerializationHelper {
 
     public static void writeFile(Path file, IoWriter writer) {
         try {
-            if (!Files.exists(file)) {
-                var parent = file.getParent();
-
-                if (!Files.exists(parent)) {
-                    Files.createDirectories(parent);
-                }
-            }
-
+            ensureParentExists(file);
             writer.apply(file);
         } catch (IOException e) {
             LOGGER.error("Error writing file: '" + file + "'", e);

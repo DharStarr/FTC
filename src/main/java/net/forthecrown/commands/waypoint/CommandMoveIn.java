@@ -41,6 +41,8 @@ public class CommandMoveIn extends FtcCommand {
                     User user = getUserSender(c);
                     Waypoint waypoint = Waypoints.getNearest(user);
 
+                    Waypoints.validateMoveInCooldown(user);
+
                     if (waypoint == null
                             || !waypoint.getBounds().contains(user.getPlayer())
                     ) {

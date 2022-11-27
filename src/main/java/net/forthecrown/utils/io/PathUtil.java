@@ -7,14 +7,53 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public final class PathUtil {
     private PathUtil() {}
+
+    /** The ZIP file system of the plugin jar */
+    public static final FileSystem JAR_FILE_SYSTEM;
+
+    static {
+        try {
+            URI jarUri = PathUtil.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI();
+
+            URI uri = new URI("jar", jarUri.toString(), null);
+
+            Map<String, String> env = new HashMap<>();
+            env.put("create", "true");
+
+            try {
+                JAR_FILE_SYSTEM = FileSystems.newFileSystem(
+                        uri,
+                        env,
+                        PathUtil.class.getClassLoader()
+                );
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (URISyntaxException exc) {
+            throw new RuntimeException(exc);
+        }
+    }
+
+    public static Path jarPath(String s, String... others) {
+        return JAR_FILE_SYSTEM.getPath(s, others);
+    }
 
     public static Path getPluginDirectory() {
         return FTC.getPlugin().getDataFolder().toPath();

@@ -76,8 +76,15 @@ public class GuildManager {
         var unlockables = guild.getUnlockables();
 
         // Add defaults as unlocked
-        unlockables.setExpProgress(UnlockableColor.WHITE, UnlockableColor.WHITE.getExpRequired());
-        unlockables.setExpProgress(UnlockableColor.LIGHT_GRAY, UnlockableColor.LIGHT_GRAY.getExpRequired());
+        unlockables.setExpProgress(
+                UnlockableColor.WHITE.getPrimaryOption(),
+                UnlockableColor.WHITE.getExpRequired()
+        );
+
+        unlockables.setExpProgress(
+                UnlockableColor.LIGHT_GRAY.getSecondaryOption(),
+                UnlockableColor.LIGHT_GRAY.getExpRequired()
+        );
 
         user.setGuild(guild);
         addGuild(guild, LongSets.emptySet());

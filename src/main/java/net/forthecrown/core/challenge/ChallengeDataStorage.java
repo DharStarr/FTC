@@ -1,10 +1,12 @@
 package net.forthecrown.core.challenge;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.io.JsonWrapper;
@@ -13,12 +15,12 @@ import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
 @Getter
 public class ChallengeDataStorage {
@@ -28,6 +30,7 @@ public class ChallengeDataStorage {
     private final Path itemDataDirectory;
 
     private final Path challengesFile;
+    private final Path itemChallengesFile;
     private final Path userDataFile;
 
     public ChallengeDataStorage(Path directory) {
@@ -38,6 +41,7 @@ public class ChallengeDataStorage {
 
         // Files
         this.challengesFile = directory.resolve("challenges.json");
+        itemChallengesFile = directory.resolve("item_challenges.json");
         this.userDataFile = directory.resolve("user_data.json");
     }
 
@@ -46,40 +50,50 @@ public class ChallengeDataStorage {
             FTC.getPlugin().saveResource("challenges/challenges.json", false);
             LOGGER.debug("Created challenges.json");
         }
-        Map<String, String> env = new HashMap<>();
-        env.put("create", "true");
 
-        try {
-            URI jarUri = getClass()
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI();
+        if (!Files.exists(itemChallengesFile)) {
+            FTC.getPlugin().saveResource("challenges/item_challenges.json", false);
+            LOGGER.debug("Created item_challenges.json");
+        }
 
-            URI uri = new URI("jar", jarUri.toString(), null);
+        try (var stream = Files.newDirectoryStream(
+                PathUtil.jarPath("scripts", "challenges")
+        )) {
+            for (var p: stream) {
+                String name = p.toString();
 
-            try (var system = FileSystems.newFileSystem(uri, env, getClass().getClassLoader())) {
-                var path = system.getPath("scripts", "challenges");
-
-                try (var stream = Files.newDirectoryStream(path)) {
-                    for (var p: stream) {
-                        String name = p.toString();
-
-                        if (Files.exists(PathUtil.pluginPath(name))) {
-                            continue;
-                        }
-
-                        FTC.getPlugin().saveResource(name, false);
-                    }
+                if (Files.exists(PathUtil.pluginPath(name))) {
+                    continue;
                 }
+
+                FTC.getPlugin().saveResource(name, false);
             }
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException exc) {
+            LOGGER.error("Error saving default challenge scripts", exc);
         }
     }
 
     public void loadChallenges(Registry<Challenge> target) {
-        SerializationHelper.readJsonFile(getChallengesFile(), json -> {
+        _loadChallenges(
+                target,
+                getChallengesFile(),
+                ChallengeParser::parse
+        );
+    }
+
+    public void loadItemChallenges(Registry<Challenge> registry) {
+        _loadChallenges(
+                registry,
+                getItemChallengesFile(),
+                ItemChallengeParser::parse
+        );
+    }
+
+    private void _loadChallenges(Registry<Challenge> registry,
+                                 Path path,
+                                 Function<JsonObject, DataResult<? extends Challenge>> parser
+    ) {
+        SerializationHelper.readJsonFile(path, json -> {
             int loaded = 0;
 
             for (var e: json.entrySet()) {
@@ -96,17 +110,16 @@ public class ChallengeDataStorage {
                     continue;
                 }
 
-                target.register(
+                registry.register(
                         e.getKey(),
 
-                        ChallengeParser.parse(e.getValue().getAsJsonObject())
+                        parser.apply(e.getValue().getAsJsonObject())
                                 .mapError(s -> e.getKey() + ": " + s)
-                                .getOrThrow(false, LOGGER::error)
+                                .getOrThrow(true, s -> {})
                 );
-                ++loaded;
             }
 
-            LOGGER.debug("Loaded {} challenges", loaded);
+            LOGGER.debug("Loaded {} item challenges", loaded);
         });
     }
 
@@ -190,5 +203,35 @@ public class ChallengeDataStorage {
 
             LOGGER.debug("Saved {} challenge entries", wrapper.size());
         });
+    }
+
+    /* ----------------------------- ITEM DATA ------------------------------ */
+
+    public Path getItemFile(String holder) {
+        return itemDataDirectory.resolve(holder + ".dat");
+    }
+
+    public ChallengeItemContainer loadContainer(Holder<Challenge> holder) {
+        ChallengeItemContainer
+                container = new ChallengeItemContainer(holder.getKey());
+
+        SerializationHelper.readTagFile(
+                getItemFile(container.getChallengeKey()),
+                container::load
+        );
+
+        return container;
+    }
+
+    public void saveContainer(ChallengeItemContainer container) {
+        if (container.isEmpty()) {
+            PathUtil.safeDelete(getItemFile(container.getChallengeKey()));
+            return;
+        }
+
+        SerializationHelper.writeTagFile(
+                getItemFile(container.getChallengeKey()),
+                container::save
+        );
     }
 }

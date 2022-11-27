@@ -20,6 +20,29 @@ Specifies data of rewards given to a user when they complete the challenge, acce
 - `rhines`: Rhine reward given to the player.
 - `gems`: Gem reward given to the player.
 - `item`: Item given to the player upon completion.
+- `claimScript`: The script called when a player claims the reward, the system will call the `onRewardClaim` method with the user as the parameter
+  
+Of these rewards, the first 3 accept 3 different types of input and will behave
+differently depending on said input. Accepted inputs are:  
+**Fixed value**
+```json
+"rhines": 200
+```
+**Scalar-based value**  
+Which calculates the reward value like so: `reward = base * (streak * scalar)`.
+Normally, a player's streak begins at 0, however, to ensure this value stays 
+functional, if the given streak is 0, it is incremented to 1.
+```json
+"rhines": { "base": 200, "scalar": 0.5 }
+```
+**Array-based value**
+
+These will get the value by treating a user's streak as an index to an array of rewards, if a user's streak is higher than the array size,
+the index is clamped and the final reward is used. In the following example, a streak of 0 days would return 200, a streak of 1 day
+would return 400 and so on
+```json
+"rhines": [ 200, 300, 400, 600, 1200 ]
+```
 
 If no value is set for this, then no reward will be given.
   

@@ -21,9 +21,9 @@ import org.bukkit.inventory.ItemStack;
 @Getter
 public class ClickContext {
     /**
-     * Default cooldown length, 5 ticks
+     * Default cooldown length, 10 ticks
      */
-    public static final byte DEFAULT_COOLDOWN = 5;
+    public static final byte DEFAULT_COOLDOWN = 10;
 
     /** The inventory being clicked */
     private final MenuInventory inventory;

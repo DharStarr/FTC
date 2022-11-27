@@ -11,35 +11,33 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 @Getter
 public class SkullItemBuilder extends BaseItemBuilder<SkullItemBuilder> {
-    private PlayerProfile profile;
-
     public SkullItemBuilder(int amount) {
         super(Material.PLAYER_HEAD, amount);
     }
 
+    public SkullItemBuilder(ItemStack stack, ItemMeta baseMeta) {
+        super(stack, baseMeta);
+    }
+
+    private SkullMeta meta() {
+        return (SkullMeta) baseMeta;
+    }
+
     public SkullItemBuilder setProfile(PlayerProfile profile) {
-        this.profile = profile;
+        meta().setPlayerProfile(profile);
         return this;
     }
 
     public SkullItemBuilder setProfile(User profile) {
-        this.profile = profile.getProfile();
-        return this;
+        return setProfile(profile.getProfile());
     }
 
     public SkullItemBuilder setProfile(OfflinePlayer profile) {
-        this.profile = (PlayerProfile) profile.getPlayerProfile();
-        return this;
+        return setProfile((PlayerProfile) profile.getPlayerProfile());
     }
 
     @Override
     protected SkullItemBuilder getThis() {
         return this;
-    }
-
-    @Override
-    protected void onBuild(ItemStack item, ItemMeta meta) {
-        var skullMeta = (SkullMeta) meta;
-        skullMeta.setPlayerProfile(profile);
     }
 }

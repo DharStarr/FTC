@@ -40,13 +40,9 @@ public class ChallengeEntry {
         }
     }
 
-    public void addProgress(Challenge challenge, float value) {
+    public void addProgress(Holder<Challenge> holder, float value) {
+        var challenge = holder.getValue();
         float current = progress.getFloat(challenge);
-
-        Holder<Challenge> holder = ChallengeManager.getInstance()
-                .getChallengeRegistry()
-                .getHolderByValue(challenge)
-                .orElseThrow();
 
         if (Challenges.hasCompleted(holder, id)) {
             return;
@@ -65,7 +61,7 @@ public class ChallengeEntry {
             }
 
             user.sendMessage(
-                    Messages.challengeCompleted(challenge)
+                    Messages.challengeCompleted(challenge, user)
             );
 
             Challenges.logCompletion(holder, id);

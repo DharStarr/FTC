@@ -20,7 +20,9 @@ import net.forthecrown.structure.StructurePlaceConfig;
 import net.forthecrown.structure.Structures;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
+import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserHomes;
+import net.forthecrown.utils.Time;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.text.Text;
@@ -43,6 +45,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static net.forthecrown.user.data.UserTimeTracker.UNSET;
 import static net.kyori.adventure.text.Component.text;
 
 public @UtilityClass class Waypoints {
@@ -414,6 +417,7 @@ public @UtilityClass class Waypoints {
             }
         } else if (b.getType() == PLAYER_COLUMN[COLUMN_TOP]) {
             type = WaypointTypes.PLAYER;
+            validateMoveInCooldown(Users.get(source.asPlayer()));
         } else {
             throw Exceptions.invalidWaypointTop(b.getType());
         }
@@ -460,6 +464,24 @@ public @UtilityClass class Waypoints {
         }
 
         return waypoint;
+    }
+
+    public void validateMoveInCooldown(User user)
+            throws CommandSyntaxException
+    {
+        long lastMoveIn = user.getTime(TimeField.LAST_MOVEIN);
+
+        if (lastMoveIn == UNSET || !WaypointConfig.moveInHasCooldown) {
+            return;
+        }
+
+        long remainingCooldown = Time.timeUntil(
+                lastMoveIn + WaypointConfig.moveInCooldown
+        );
+
+        if (remainingCooldown > 0) {
+            throw Exceptions.cooldownEndsIn(remainingCooldown);
+        }
     }
 
     public void setGuildWaypoint(Guild guild, Waypoint waypoint, User user) {

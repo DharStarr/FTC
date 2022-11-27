@@ -169,9 +169,8 @@ public class SignShopSession {
                     .add(s -> s.contains(customer.getUniqueId().toString()));
 
             // Great variable name
-            boolean hasBoughtFromMarketBefore = DataLogs.query(query.build())
-                    .findAny()
-                    .isPresent();
+            boolean hasBoughtFromMarketBefore = !DataLogs.query(query.build())
+                    .isEmpty();
 
             if (!hasBoughtFromMarketBefore) {
                 challenge.trigger(customer);

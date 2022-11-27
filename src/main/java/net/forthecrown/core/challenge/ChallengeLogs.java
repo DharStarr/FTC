@@ -7,6 +7,7 @@ import net.forthecrown.core.registry.Holder;
 import net.forthecrown.log.LogSchema;
 import net.forthecrown.log.SchemaField;
 import net.forthecrown.utils.io.FtcCodecs;
+import net.minecraft.core.UUIDUtil;
 
 import java.util.UUID;
 
@@ -22,8 +23,8 @@ public @UtilityClass class ChallengeLogs {
     static {
         var builder = LogSchema.builder("challenges/completed");
 
-        TIME = builder.add("time", FtcCodecs.TIMESTAMP_CODEC);
-        PLAYER = builder.add("player", FtcCodecs.UUID_CODEC);
+        TIME = builder.add("time", Codec.LONG);
+        PLAYER = builder.add("player", UUIDUtil.CODEC);
         COMPLETED_CHALLENGE = builder.add("challenge", FtcCodecs.KEY_CODEC);
 
         COMPLETED = builder.register();
@@ -44,7 +45,7 @@ public @UtilityClass class ChallengeLogs {
         A_CHALLENGE = builder.add("challenge", Codec.STRING);
         A_EXTRA     = builder.add("extra", Codec.STRING);
         A_TYPE      = builder.add("type", FtcCodecs.enumCodec(ResetInterval.class));
-        A_TIME      = builder.add("time", FtcCodecs.TIMESTAMP_CODEC);
+        A_TIME      = builder.add("time", Codec.LONG);
 
         ACTIVE = builder.register();
     }

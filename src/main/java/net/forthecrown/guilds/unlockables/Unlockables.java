@@ -13,8 +13,9 @@ public @UtilityClass class Unlockables {
 
     @OnEnable
     private static void init() {
+        UnlockableColor.registerAll(REGISTRY);
+
         registerAll(UnlockableChunkUpgrade.values());
-        registerAll(UnlockableColor.values());
         registerAll(UnlockableRankSlot.values());
         registerAll(Upgradable.values());
         registerAll(UnlockableSetting.values());

@@ -1,23 +1,18 @@
 package net.forthecrown.utils.inventory;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import lombok.Getter;
-import net.forthecrown.dungeons.enchantments.FtcEnchant;
-import net.forthecrown.dungeons.enchantments.FtcEnchants;
-import net.forthecrown.utils.Util;
-import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_19_R1.persistence.CraftPersistentDataContainer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
@@ -26,10 +21,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -43,49 +39,166 @@ import java.util.stream.StreamSupport;
  * @see DefaultItemBuilder For the default implementation of this class
  */
 @Getter
-public abstract class BaseItemBuilder<T extends BaseItemBuilder<T>> implements Cloneable {
+public abstract class BaseItemBuilder<T extends BaseItemBuilder<T>>
+        implements Cloneable
+{
+    protected final ItemStack stack;
+    protected ItemMeta baseMeta;
 
-    private final Material material;
-    private Component name = null;
+    private boolean ignoreEnchantRestrictions;
 
-    private int amount = 1;
-
-    private ItemFlag[] flags = new ItemFlag[0];
-
-    private boolean ignoreEnchantRestrictions = true;
-    private boolean unbreakable = false;
-
-    private Collection<Component> lores = new ObjectArrayList<>();
-
-    private final Object2IntMap<Enchantment> enchants = new Object2IntOpenHashMap<>();
-    private final CraftPersistentDataContainer persistentData = TagUtil.newContainer();
-    private final Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-
-    private Integer customModelData = null;
-
-    public BaseItemBuilder(Material material, int amount) {
-        this.material = material;
+    BaseItemBuilder(Material material, int amount) {
+        this.stack = new ItemStack(material);
         setAmount(amount);
+
+        baseMeta = Bukkit.getItemFactory()
+                .getItemMeta(material);
     }
 
-    /**
-     * Returns this class. Because I couldn't be arsed writing <code>(T) this</code> a lot
-     * @return This
-     */
+    BaseItemBuilder(ItemStack stack, ItemMeta baseMeta) {
+        this.stack = stack;
+        this.baseMeta = baseMeta;
+    }
+
     protected abstract T getThis();
-
-    public <X, Z> T addData(@NotNull NamespacedKey key, @NotNull PersistentDataType<X, Z> type, @NotNull Z value) {
-        persistentData.set(key, type, value);
-        return getThis();
-    }
 
     public T setAmount(int amount) {
         Validate.isTrue(
-                amount >= 0 && amount <= material.getMaxStackSize(),
+                amount >= 0 && amount <= stack.getType().getMaxStackSize(),
                 "Invalid stack size: %s", amount
         );
 
-        this.amount = amount;
+        stack.setAmount(amount);
+        return getThis();
+    }
+
+    /* -------------------------------- LORE -------------------------------- */
+
+    public T addLore(String lore) {
+        return addLoreRaw(Text.stringToItemText(lore));
+    }
+
+    public T addLore(Component lore) {
+        return addLoreRaw(Text.wrapForItems(lore));
+    }
+
+    public T addLore(Iterable<Component> lore) {
+        return addLoreRaw(Iterables.transform(lore, Text::wrapForItems));
+    }
+
+    public T setLore(Iterable<Component> lores) {
+        return setLore(StreamSupport.stream(lores.spliterator(), false));
+    }
+
+    public T setLore(Stream<Component> stream) {
+        return setLoreRaw(stream.map(Text::wrapForItems));
+    }
+
+    public T addLoreRaw(Component lore) {
+        return addLoreRaw(ObjectLists.singleton(lore));
+    }
+
+    public T addLoreRaw(Iterable<Component> lore) {
+        if (lore instanceof List<Component> list) {
+            return addLoreRaw(list);
+        }
+
+        return addLoreRaw(Lists.newArrayList(lore));
+    }
+
+    public T addLoreRaw(List<Component> lore) {
+        var existing = baseMeta.lore();
+
+        if (existing == null) {
+            baseMeta.lore(lore);
+        } else {
+            existing.addAll(lore);
+            baseMeta.lore(existing);
+        }
+
+        return getThis();
+    }
+
+    public T setLoreRaw(Iterable<Component> lores) {
+        return setLoreRaw(
+                StreamSupport.stream(lores.spliterator(), false)
+        );
+    }
+
+    public T setLoreRaw(Stream<Component> stream) {
+        var list = stream.toList();
+        baseMeta.lore(list);
+
+        return getThis();
+    }
+
+    public T clearLore() {
+        return setLoreRaw(Stream.empty());
+    }
+
+    /* ------------------------------- NAMES -------------------------------- */
+
+    public T setNameRaw(Component name) {
+        baseMeta.displayName(name);
+        return getThis();
+    }
+
+    public T setName(Component name) {
+        return setNameRaw(Text.wrapForItems(name));
+    }
+
+    public T setName(String name) {
+        return setName(Text.stringToItemText(name));
+    }
+
+    /* ------------------------------- FLAGS -------------------------------- */
+
+    public T setFlags(ItemFlag... flags) {
+        // Clear existing
+        baseMeta.getItemFlags().forEach(flag -> {
+            baseMeta.removeItemFlags(flag);
+        });
+
+        return addFlags(flags);
+    }
+
+    public T addFlags(ItemFlag... flags) {
+        baseMeta.addItemFlags(flags);
+        return getThis();
+    }
+
+    /* ----------------------------- ENCHANTS ------------------------------- */
+
+    public T addEnchant(Enchantment enchantment, int level){
+        return addEnchants(Object2IntMaps.singleton(enchantment, level));
+    }
+
+    public T addEnchants(Map<Enchantment, Integer> enchantMap) {
+        for (var e: enchantMap.entrySet()) {
+            baseMeta.addEnchant(
+                    e.getKey(),
+                    e.getValue(),
+                    ignoreEnchantRestrictions
+            );
+        }
+
+        return getThis();
+    }
+
+    public T ignoreEnchantRestrictions(boolean ignoreEnchantRestrictions) {
+        this.ignoreEnchantRestrictions = ignoreEnchantRestrictions;
+        return getThis();
+    }
+
+    /* ----------------------------- MISC ------------------------------ */
+
+    public <X, Z> T addData(@NotNull NamespacedKey key,
+                            @NotNull PersistentDataType<X, Z> type,
+                            @NotNull Z value
+    ) {
+        baseMeta.getPersistentDataContainer()
+                .set(key, type, value);
+
         return getThis();
     }
 
@@ -95,129 +208,53 @@ public abstract class BaseItemBuilder<T extends BaseItemBuilder<T>> implements C
                          AttributeModifier.Operation operation,
                          EquipmentSlot slot
     ) {
-        return addModifier(attribute, new AttributeModifier(UUID.randomUUID(), name, amount, operation, slot));
+        return addModifier(
+                attribute,
+
+                new AttributeModifier(
+                        UUID.randomUUID(),
+                        name,
+                        amount,
+                        operation,
+                        slot
+                )
+        );
     }
 
     public T addModifier(Attribute attribute, AttributeModifier modifier) {
-        this.modifiers.put(attribute, modifier);
+        baseMeta.addAttributeModifier(attribute, modifier);
         return getThis();
     }
 
-    public T addLore(String lore) {
-        return addLoreRaw(Text.stringToItemText(lore));
-    }
-
-    public T addLoreRaw(Component lore) {
-        lores.add(lore);
-        return getThis();
-    }
-
-    public T addLore(Component lore) {
-        return addLoreRaw(Text.wrapForItems(lore));
-    }
-
-    public T addLoreRaw(Iterable<Component> lore) {
-        for (Component c: lore) {
-            lores.add(c);
-        }
-
-        return getThis();
-    }
-
-    public T setLore(Iterable<Component> lores) {
-        this.lores = StreamSupport.stream(lores.spliterator(), false)
-                .map(component -> Text.wrapForItems(component))
-                .collect(Collectors.toList());
-
-        return getThis();
-    }
-
-    public T setNameRaw(Component name) {
-        this.name = name;
-        return getThis();
-    }
-
-    public T setName(Component name) {
-        return setNameRaw(Text.wrapForItems(name));
-    }
-
-    public T setName(String name) {
-        this.name = Text.stringToItemText(name);
-        return getThis();
-    }
-
-    public T setFlags(ItemFlag... flags) {
-        this.flags = flags;
-        return getThis();
-    }
-
-    public T addEnchant(Enchantment enchantment, int level){
-        this.enchants.put(enchantment, level);
-        return getThis();
-    }
-
-    public T ignoreEnchantRestrictions(boolean ignoreEnchantRestrictions) {
-        this.ignoreEnchantRestrictions = ignoreEnchantRestrictions;
-        return getThis();
-    }
-
-    public T setUnbreakable(boolean unbreakable){
-        this.unbreakable = unbreakable;
+    public T setUnbreakable(boolean unbreakable) {
+        baseMeta.setUnbreakable(unbreakable);
         return getThis();
     }
 
     public T setModelData(Integer customModelData) {
-        this.customModelData = customModelData;
+        baseMeta.setCustomModelData(customModelData);
+        return getThis();
+    }
+
+    public T editMeta(Consumer<ItemMeta> consumer) {
+        return editMeta(ItemMeta.class, consumer);
+    }
+
+    public <M extends ItemMeta> T editMeta(Class<M> metaClass,
+                                           Consumer<M> consumer
+    ) {
+        if (metaClass.isAssignableFrom(baseMeta.getClass())) {
+            consumer.accept((M) baseMeta);
+        }
+
         return getThis();
     }
 
     public ItemStack build() {
-        ItemStack result = new ItemStack(material, amount);
-        ItemMeta meta = result.getItemMeta();
-
-        meta.setCustomModelData(customModelData);
-        meta.addItemFlags(flags);
-
-        if (name != null) {
-            meta.displayName(name);
-        }
-
-        if (!Util.isNullOrEmpty(lores)) {
-            meta.lore(new ArrayList<>(lores));
-        }
-
-        if (!enchants.isEmpty()) {
-            for (var e: enchants.object2IntEntrySet()) {
-                var ench = e.getKey();
-                var level = e.getIntValue();
-
-                if (ench instanceof FtcEnchant ftcEnchant) {
-                    FtcEnchants.addEnchant(meta, ftcEnchant, level);
-                    continue;
-                }
-
-                meta.addEnchant(ench, level, ignoreEnchantRestrictions);
-            }
-        }
-
-        if (!modifiers.isEmpty()) {
-            meta.setAttributeModifiers(modifiers);
-        }
-
-        if (!persistentData.isEmpty()) {
-           var container = (CraftPersistentDataContainer) meta.getPersistentDataContainer();
-           container.putAll(persistentData.getRaw());
-        }
-
-        meta.setUnbreakable(unbreakable);
-
-        onBuild(result, meta);
-
-        result.setItemMeta(meta);
+        ItemStack result = stack.clone();
+        result.setItemMeta(baseMeta.clone());
         return result;
     }
-
-    protected abstract void onBuild(ItemStack item, ItemMeta meta);
 
     @Override
     protected T clone() {

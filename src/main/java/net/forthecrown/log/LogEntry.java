@@ -1,10 +1,12 @@
 package net.forthecrown.log;
 
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.registry.Holder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@EqualsAndHashCode
 @RequiredArgsConstructor
 public class LogEntry {
     final Object[] values;

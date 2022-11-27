@@ -70,9 +70,15 @@ final class BootStrap {
         init(WaypointManager::getInstance);
         init(WaypointProperties.class);
 
+        // Structures
+        // Should be loaded before dungeons, as dungeons
+        // might potentially need to access the structures
+        init(Structures::get);
+
         // Dungeons
         init(FtcEnchants.class);
         init(Bosses.class);
+        init(LevelManager::get);
 
         // Bunch of miscellaneous modules
         init(ChatEmotes.class);
@@ -81,8 +87,6 @@ final class BootStrap {
         init(Usables::getInstance);
         init(ResourceWorldTracker::get);
         init(ServerHolidays::get);
-        init(Structures::get);
-        init(LevelManager::get);
         init(Announcer::get);
         init(Economy::get);
         init(Configs.class);

@@ -1,6 +1,7 @@
 package net.forthecrown.events.player;
 
 import io.papermc.paper.chat.ChatRenderer;
+import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.forthecrown.core.AfkKicker;
@@ -32,6 +33,11 @@ public class ChatListener implements Listener {
                         event.player(), Text.toString(event.originalMessage())
                 )
         );
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onAsyncChatCommandDecorate(AsyncChatCommandDecorateEvent event) {
+        onAsyncChatDecorate(event);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)

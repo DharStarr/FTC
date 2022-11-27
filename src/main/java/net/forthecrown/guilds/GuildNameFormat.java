@@ -22,10 +22,6 @@ import static net.kyori.adventure.text.Component.text;
 @Setter
 @AllArgsConstructor
 public class GuildNameFormat {
-    static final Registry<Bracket> BRACKETS = Registries.ofEnum(Bracket.class);
-    static final Registry<Color> COLORS = Registries.ofEnum(Color.class);
-    static final Registry<Stylee> STYLEES = Registries.ofEnum(Stylee.class);
-
     // todo serialize/deserialize
     public static final String
             BRACKETS_KEY = "brackets",
@@ -105,19 +101,19 @@ public class GuildNameFormat {
 
         if (bracket != Bracket.DEFAULT) {
             json.add(BRACKETS_KEY,
-                     BRACKETS.writeJson(bracket).orElseThrow()
+                     Bracket.REGISTRY.writeJson(bracket).orElseThrow()
             );
         }
 
         if (color != Color.DEFAULT) {
             json.add(COLORS_KEY,
-                     COLORS.writeJson(color).orElseThrow()
+                    Color.REGISTRY.writeJson(color).orElseThrow()
             );
         }
 
         if (style != Stylee.DEFAULT) {
             json.add(STYLE_KEY,
-                     STYLEES.writeJson(style).orElseThrow()
+                    Stylee.REGISTRY.writeJson(style).orElseThrow()
             );
         }
 
@@ -128,17 +124,17 @@ public class GuildNameFormat {
         var json = JsonWrapper.wrap(element.getAsJsonObject());
 
         setBracket(
-                BRACKETS.readJson(json.get(BRACKETS_KEY))
+                Bracket.REGISTRY.readJson(json.get(BRACKETS_KEY))
                         .orElse(Bracket.DEFAULT)
         );
 
         setColor(
-                COLORS.readJson(json.get(COLORS_KEY))
+                Color.REGISTRY.readJson(json.get(COLORS_KEY))
                         .orElse(Color.DEFAULT)
         );
 
         setStyle(
-                STYLEES.readJson(json.get(STYLE_KEY))
+                Stylee.REGISTRY.readJson(json.get(STYLE_KEY))
                         .orElse(Stylee.DEFAULT)
         );
     }
@@ -151,9 +147,12 @@ public class GuildNameFormat {
         DEFAULT("default", "[", "]"),
         ROUND("round", "(", ")"),
         ANGLE("angle", "<", ">"),
-        SQUARE_SPECIAL1("specialSquare", "|[", "]|"),
-        SQUARE_SPECIAL2("specialSquare", "=[", "]="),
+        SQUARE_SPECIAL1("specialSquare_0", "|[", "]|"),
+        SQUARE_SPECIAL2("specialSquare_1", "=[", "]="),
         ;
+
+        static final Registry<Bracket>
+                REGISTRY = Registries.ofEnum(Bracket.class);
 
         @Getter
         private final String key, opening, closing;
@@ -308,6 +307,9 @@ public class GuildNameFormat {
         },
         ;
 
+        static final Registry<Color>
+                REGISTRY = Registries.ofEnum(Color.class);
+
         @Getter
         private final String key;
 
@@ -376,6 +378,9 @@ public class GuildNameFormat {
                 Style.style(TextDecoration.STRIKETHROUGH, TextDecoration.BOLD),
                 noStyle),
         ;
+
+        static final Registry<Stylee>
+                REGISTRY = Registries.ofEnum(Stylee.class);
 
         private final String key;
         private final Style bracketStyle, nameStyle;

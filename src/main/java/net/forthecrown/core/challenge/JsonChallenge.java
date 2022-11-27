@@ -8,11 +8,7 @@ import lombok.experimental.Accessors;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.script.Script;
 import net.forthecrown.user.User;
-import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -23,8 +19,6 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static net.forthecrown.core.challenge.Challenges.*;
-import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.text;
 
 @Getter
 public class JsonChallenge implements Challenge {
@@ -38,7 +32,7 @@ public class JsonChallenge implements Challenge {
 
     private final ResetInterval resetInterval;
 
-    private final JsonReward reward;
+    private final Reward reward;
 
     ScriptEventListener listener;
     boolean listenerRegistered = false;
@@ -64,36 +58,8 @@ public class JsonChallenge implements Challenge {
 
     /* ------------------------------ METHODS ------------------------------- */
 
-    public Component displayName() {
-        TextComponent.Builder hoverBuilder = text();
-        var it = description.iterator();
-
-        while (it.hasNext()) {
-            hoverBuilder.append(it.next());
-
-            if (it.hasNext()) {
-                hoverBuilder.append(newline());
-            }
-        }
-
-        if (!reward.isEmpty()) {
-            var writer = TextWriters.wrap(hoverBuilder);
-            writer.newLine();
-            writer.newLine();
-
-            writer.setFieldStyle(Style.style(NamedTextColor.GRAY));
-            writer.setFieldValueStyle(Style.style(NamedTextColor.GRAY));
-
-            reward.write(writer);
-        }
-
-        return name
-                .color(NamedTextColor.YELLOW)
-                .hoverEvent(hoverBuilder.build());
-    }
-
     @Override
-    public String activate() {
+    public String activate(boolean reset) {
         registerListener();
 
         if (getListener().getScript() != null) {
@@ -182,15 +148,12 @@ public class JsonChallenge implements Challenge {
                     .invoke(METHOD_ON_COMPLETE, user);
         }
 
-        if (!reward.isEmpty()) {
-            reward.give(user);
-        }
+        Challenge.super.onComplete(user);
     }
 
     @Override
     public void trigger(Object input) {
-        if (input instanceof Player
-                && eventClass == null
+        if (eventClass == null
                 && Strings.isNullOrEmpty(script)
         ) {
             listener.getHandle().givePoint(input);
@@ -290,7 +253,7 @@ public class JsonChallenge implements Challenge {
         private Class<Event> eventClass;
         private String script;
 
-        private JsonReward reward = JsonReward.EMPTY;
+        private Reward reward = Reward.EMPTY;
         private ResetInterval resetInterval = ResetInterval.DAILY;
 
         private float goal = 1;

@@ -23,11 +23,6 @@ public class ChallengeParser {
             KEY_RESET_INTERVAL = "type",
 
             KEY_REWARD = "reward",
-            KEY_R_RHINES = "rhines",
-            KEY_R_GEMS = "gems",
-            KEY_R_ITEM = "item",
-            KEY_R_GUILD = "guildExp",
-
             KEY_GOAL = "goal",
 
             EVENT_CUSTOM = "custom";
@@ -103,15 +98,8 @@ public class ChallengeParser {
         }
 
         if (json.has(KEY_REWARD)) {
-            var rewards = json.getWrapped(KEY_REWARD);
-
             builder.reward(
-                    JsonReward.builder()
-                            .gems(rewards.getInt(KEY_R_GEMS, 0))
-                            .rhines(rewards.getInt(KEY_R_RHINES, 0))
-                            .guildExp(rewards.getInt(KEY_R_GUILD, 0))
-                            .item(rewards.getItem(KEY_R_ITEM, null))
-                            .build()
+                    Reward.deserialize(json.get(KEY_REWARD))
             );
         }
 

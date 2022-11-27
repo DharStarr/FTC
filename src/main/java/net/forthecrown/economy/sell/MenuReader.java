@@ -1,5 +1,6 @@
 package net.forthecrown.economy.sell;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +85,10 @@ public class MenuReader {
 
     private Slot readSlot() {
         var slotElement = json.get(KEY_SLOT);
+        return readSlot(slotElement);
+    }
 
+    public static Slot readSlot(JsonElement slotElement) {
         // If we were given a raw integer as an index
         if (slotElement.isJsonPrimitive()) {
             return Slot.of(slotElement.getAsInt());

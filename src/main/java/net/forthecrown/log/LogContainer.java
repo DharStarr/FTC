@@ -5,6 +5,8 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.RecordBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
+import lombok.AccessLevel;
+import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Keys;
@@ -15,26 +17,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 public class LogContainer {
     private static final Logger LOGGER = FTC.getLogger();
 
+    @Getter(AccessLevel.PACKAGE)
     private DataLog[] logs = DataLogs.EMPTY_LOG_ARR;
-
-    void performQuery(LogQuery query,
-                      Stream.Builder<LogEntry> builder,
-                      AtomicInteger found
-    ) {
-        DataLog log = getLog(query.getSchema());
-
-        if (log == null || log.isEmpty()) {
-            return;
-        }
-
-        log.performQuery(query, builder, found);
-    }
 
     public void log(LogSchema schema, LogEntry entry) {
         DataLogs.SCHEMAS

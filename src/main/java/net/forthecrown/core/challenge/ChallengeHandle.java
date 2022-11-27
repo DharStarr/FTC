@@ -28,12 +28,10 @@ public class ChallengeHandle {
         var player = getPlayer(playerObject);
         var manager = ChallengeManager.getInstance();
 
-        if (!manager.getActiveChallenges().contains(challenge)) {
-            return;
-        }
-
-        manager.getOrCreateEntry(player.getUniqueId())
-                .addProgress(challenge, (float) score);
+        Challenges.apply(challenge, holder -> {
+            manager.getOrCreateEntry(player.getUniqueId())
+                    .addProgress(holder, (float) score);
+        });
     }
 
     public boolean hasCompleted(Object playerObject) {

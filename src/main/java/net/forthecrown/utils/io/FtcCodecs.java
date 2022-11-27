@@ -1,6 +1,5 @@
 package net.forthecrown.utils.io;
 
-import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import lombok.experimental.UtilityClass;
@@ -10,34 +9,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.text.ParseException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 
 public @UtilityClass class FtcCodecs {
-    public final Codec<UUID> UUID_CODEC = Codec.STRING.comapFlatMap(s -> {
-        try {
-            return DataResult.success(UUID.fromString(s));
-        } catch (IllegalArgumentException exc) {
-            return DataResult.error(exc.getMessage());
-        }
-    }, UUID::toString);
-
-    /* ----------------------------------------------------------- */
-
-    public final Codec<Long> TIMESTAMP_CODEC = Codec.STRING.comapFlatMap(s -> {
-        try {
-            return DataResult.success(JsonUtils.DATE_FORMAT.parse(s).getTime());
-        } catch (ParseException exc) {
-            return DataResult.error(exc.getMessage());
-        }
-    }, aLong -> {
-        Date date = new Date(aLong);
-        return JsonUtils.DATE_FORMAT.format(date);
-    });
 
     /* ----------------------------------------------------------- */
 
@@ -48,42 +24,6 @@ public @UtilityClass class FtcCodecs {
 
         return DataResult.success(s);
     }, Function.identity());
-
-    /* ----------------------------------------------------------- */
-
-    public final Codec<JsonElement> JSON_CODEC = Codec.of(new Encoder<>() {
-        @Override
-        public <T> DataResult<T> encode(JsonElement input,
-                                        DynamicOps<T> ops,
-                                        T prefix
-        ) {
-            if (ops instanceof JsonOps) {
-                return DataResult.success((T) input);
-            }
-
-            return DataResult.success(
-                    JsonOps.INSTANCE.convertTo(ops, input)
-            );
-        }
-    }, new Decoder<>() {
-        @Override
-        public <T> DataResult<Pair<JsonElement, T>> decode(DynamicOps<T> ops,
-                                                           T input
-        ) {
-            if (ops instanceof JsonOps) {
-                return DataResult.success(
-                        (Pair<JsonElement, T>) Pair.of(input, input)
-                );
-            }
-
-            return DataResult.success(
-                    Pair.of(
-                            ops.convertTo(JsonOps.INSTANCE, input),
-                            input
-                    )
-            );
-        }
-    });
 
     /* ----------------------------------------------------------- */
 
