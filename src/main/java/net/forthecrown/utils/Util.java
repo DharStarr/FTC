@@ -93,11 +93,7 @@ public final class Util {
             pos = pos.withY(i);
             var block = Vectors.getBlock(pos, world);
 
-            if (block.isEmpty() || block.isPassable()) {
-                continue;
-            }
-
-            if (block.isSolid()) {
+            if (block.isCollidable() || block.isSolid()) {
                 return false;
             }
         }

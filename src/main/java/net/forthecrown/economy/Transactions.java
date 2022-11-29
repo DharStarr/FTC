@@ -51,9 +51,6 @@ public @UtilityClass class Transactions {
      */
     public final SchemaField<Integer>           T_AMOUNT;
 
-    /** The timestamp of when the transaction occurred */
-    public final SchemaField<Long>              T_TIME;
-
     /** The transaction's type */
     public final SchemaField<TransactionType>   T_TYPE;
 
@@ -65,7 +62,6 @@ public @UtilityClass class Transactions {
         T_EXTRA  = builder.add("extra",  Codec.STRING);
 
         T_AMOUNT = builder.add("amount", Codec.INT);
-        T_TIME = builder.add("timestamp", Codec.LONG);
 
         T_TYPE = builder.add(
                 "type",
@@ -115,7 +111,6 @@ public @UtilityClass class Transactions {
             Objects.requireNonNull(type, "Type not given");
 
             LogEntry entry = LogEntry.of(TRANSACTION_SCHEMA)
-                    .set(T_TIME, time)
                     .set(T_TYPE, type)
                     .set(T_AMOUNT, amount);
 

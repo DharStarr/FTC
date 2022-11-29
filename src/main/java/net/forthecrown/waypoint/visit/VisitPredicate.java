@@ -33,7 +33,6 @@ public interface VisitPredicate {
             if (nearest == null) {
                 throw Exceptions.FAR_FROM_WAYPOINT;
             } else {
-                var pos = nearest.getPosition();
                 throw Exceptions.farFromWaypoint(nearest);
             }
         } else {

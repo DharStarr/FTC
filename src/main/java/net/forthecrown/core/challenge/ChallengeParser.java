@@ -36,8 +36,12 @@ public class ChallengeParser {
 
         JsonChallenge.Builder builder = JsonChallenge.builder()
                 .name(json.getComponent(KEY_NAME))
-                .goal(json.getFloat(KEY_GOAL, 1))
                 .script(json.getString(KEY_SCRIPT, ""))
+
+                .goal(StreakBasedValue.read(
+                        json.get(KEY_GOAL),
+                        StreakBasedValue.ONE
+                ))
 
                 .resetInterval(json.getEnum(
                         KEY_RESET_INTERVAL,

@@ -19,9 +19,9 @@ public class RegionPoleType extends PlayerWaypointType {
     }
 
     @Override
-    public void onMove(Waypoint waypoint,
-                       Vector3i newPosition,
-                       World newWorld
+    public void onPreMove(Waypoint waypoint,
+                          Vector3i newPosition,
+                          World newWorld
     ) {
         clearPole(waypoint);
     }

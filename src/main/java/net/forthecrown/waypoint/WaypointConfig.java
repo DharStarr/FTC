@@ -30,6 +30,7 @@ public @UtilityClass class WaypointConfig {
             waypointDeletionDelay   = TimeUnit.DAYS.toMillis(7),
             moveInCooldown          = TimeUnit.HOURS.toMillis(1);
 
+    /** Determines whether /movein enforces a cooldown */
     public boolean
             moveInHasCooldown       = false;
 

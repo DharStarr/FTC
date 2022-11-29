@@ -270,12 +270,6 @@ public class Script {
         return Optional.ofNullable(lastError);
     }
 
-    public boolean errorIsMissingMethod() {
-        return error()
-                .map(throwable -> throwable instanceof NoSuchMethodException)
-                .orElse(false);
-    }
-
     public Optional<Boolean> resultAsBoolean() {
         return result().map(o -> {
             if (o instanceof Boolean b) {

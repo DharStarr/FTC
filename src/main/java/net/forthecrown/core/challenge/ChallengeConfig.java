@@ -7,7 +7,8 @@ import net.forthecrown.core.config.ConfigData;
 public @UtilityClass class ChallengeConfig {
     public int
             maxDailyChallenges          = 5,
-            maxWeeklyChallenges         = 10;
+            maxWeeklyChallenges         = 10,
+            maxStreak                   = 366;
 
     public boolean
             allowRepeatingChallenges    = false;

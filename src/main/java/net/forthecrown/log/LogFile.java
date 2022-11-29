@@ -87,6 +87,7 @@ public class LogFile {
                 }
 
                 JsonElement serialized = json.get();
+                dataOutput.writeLong(entry.getDate());
                 BinaryJson.write(serialized, dataOutput);
             }
         }
@@ -148,6 +149,7 @@ public class LogFile {
         int size = input.readInt();
 
         for (int i = 0; i < size; i++) {
+            long date = input.readLong();
             JsonElement element = BinaryJson.read(input);
             var entryOpt = schema
                     .deserialize(
@@ -159,12 +161,13 @@ public class LogFile {
                 continue;
             }
 
-            var entry = entryOpt.get();
+            var entry = entryOpt.get()
+                    .setDate(date);
 
             if (builder.getQuery().test(entry)) {
                 builder.accept(entry);
 
-                if (builder.getFound() >= builder.getQuery().getMaxResults()) {
+                if (builder.hasFoundEnough()) {
                     return;
                 }
             }
@@ -191,6 +194,7 @@ public class LogFile {
             DataLog log = new DataLog(schema.getValue());
 
             for (int j = 0; j < size; j++) {
+                long date = input.readLong();
                 JsonElement element = BinaryJson.read(input);
                 var entryOpt = schema.getValue()
                         .deserialize(new Dynamic<>(JsonOps.INSTANCE, element))
@@ -200,7 +204,7 @@ public class LogFile {
                     continue;
                 }
 
-                log.add(entryOpt.get());
+                log.add(entryOpt.get().setDate(date));
             }
 
             container.setLog(schema, log);

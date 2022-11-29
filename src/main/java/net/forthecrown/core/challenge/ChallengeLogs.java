@@ -36,7 +36,6 @@ public @UtilityClass class ChallengeLogs {
 
     public final SchemaField<String> A_CHALLENGE;
     public final SchemaField<ResetInterval> A_TYPE;
-    public final SchemaField<Long> A_TIME;
     public final SchemaField<String> A_EXTRA;
 
     static {
@@ -45,9 +44,27 @@ public @UtilityClass class ChallengeLogs {
         A_CHALLENGE = builder.add("challenge", Codec.STRING);
         A_EXTRA     = builder.add("extra", Codec.STRING);
         A_TYPE      = builder.add("type", FtcCodecs.enumCodec(ResetInterval.class));
-        A_TIME      = builder.add("time", Codec.LONG);
 
         ACTIVE = builder.register();
+    }
+
+    /* ------------------------------ STREAKS ------------------------------- */
+
+    public final Holder<LogSchema> STREAK_SCHEMA;
+
+    public final SchemaField<UUID> S_PLAYER;
+    public final SchemaField<StreakCategory> S_CATEGORY;
+
+    static {
+        var builder = LogSchema.builder("challenges/streaks");
+
+        S_PLAYER = builder.add("player", UUIDUtil.CODEC);
+        S_CATEGORY = builder.add(
+                "category",
+                FtcCodecs.enumCodec(StreakCategory.class)
+        );
+
+        STREAK_SCHEMA = builder.register();
     }
 
     @OnEnable

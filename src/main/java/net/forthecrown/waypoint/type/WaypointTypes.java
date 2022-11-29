@@ -9,10 +9,17 @@ import net.forthecrown.waypoint.Waypoints;
 public @UtilityClass class WaypointTypes {
     public final Registry<WaypointType> REGISTRY = Registries.newFreezable();
 
-    public final RegionPoleType REGION_POLE = register("region_pole", new RegionPoleType());
-    public final AdminWaypoint ADMIN = register("admin", new AdminWaypoint());
-    public final PlayerWaypointType GUILD = register("guild", new PlayerWaypointType("Guild Waypoint", Waypoints.GUILD_COLUMN));
-    public final PlayerWaypointType PLAYER = register("player", new PlayerWaypointType("Player-Made", Waypoints.PLAYER_COLUMN));
+    public final AdminWaypoint
+            ADMIN       = register("admin", new AdminWaypoint());
+
+    public final PlayerWaypointType
+            GUILD       = register("guild", new PlayerWaypointType("Guild Waypoint", Waypoints.GUILD_COLUMN));
+
+    public final PlayerWaypointType
+            PLAYER      = register("player", new PlayerWaypointType("Player-Made", Waypoints.PLAYER_COLUMN));
+
+    public final RegionPoleType
+            REGION_POLE = register("region_pole", new RegionPoleType());
 
     // Called reflectively by BootStrap
     @OnEnable

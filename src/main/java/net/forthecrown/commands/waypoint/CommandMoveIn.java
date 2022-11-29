@@ -48,10 +48,12 @@ public class CommandMoveIn extends FtcCommand {
                     ) {
                         var target = user.getPlayer().getTargetBlock(5);
 
-                        if (target != null
-                                && Waypoints.isTopOfWaypoint(target)
-                        ) {
+                        if (target != null && Waypoints.isTopOfWaypoint(target)) {
                             Waypoints.tryCreate(c.getSource());
+
+                            c.getSource().sendMessage(
+                                    Messages.HOME_WAYPOINT_SET
+                            );
                             return 0;
                         }
 

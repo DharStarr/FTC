@@ -2,6 +2,7 @@ package net.forthecrown.commands.waypoint;
 
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.waypoint.Waypoint;
@@ -11,6 +12,9 @@ public class CommandHomeWaypoint extends FtcCommand {
 
     public CommandHomeWaypoint() {
         super("HomeWaypoint");
+
+        setPermission(Permissions.WAYPOINTS);
+        setAliases("homepole", "homepost");
 
         register();
     }

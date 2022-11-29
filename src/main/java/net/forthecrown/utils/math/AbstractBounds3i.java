@@ -1,6 +1,8 @@
 package net.forthecrown.utils.math;
 
 import com.google.gson.JsonObject;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import net.forthecrown.utils.JsonSerializable;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.Tag;
@@ -14,6 +16,8 @@ import org.spongepowered.math.vector.Vector3i;
 import static org.spongepowered.math.GenericMath.clamp;
 
 public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements JsonSerializable {
+    @Getter
+    @Accessors(fluent = true)
     protected final int
         minX, minY, minZ,
         maxX, maxY, maxZ;
@@ -194,74 +198,52 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
         return overlaps(o.minX(), o.minY(), o.minZ(), o.maxX(), o.maxY(), o.maxZ());
     }
 
-    public boolean overlaps(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        return this.maxX >= minX && this.minX <= maxX
-                && this.maxZ >= minZ && this.minZ <= maxZ
-                && this.maxY >= minY && this.minY <= maxY;
+    public boolean overlaps(int minX, int minY, int minZ,
+                            int maxX, int maxY, int maxZ
+    ) {
+        return this.minX <= maxX && this.maxX >= minX
+            && this.minY <= maxY && this.maxY >= minY
+            && this.minZ <= maxZ && this.maxZ >= minZ;
     }
 
-    public boolean overlaps(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+    public boolean overlaps(double minX, double minY, double minZ,
+                            double maxX, double maxY, double maxZ
+    ) {
+        System.out.println(
+                ("boolean testOverlap() {\n    return this.maxX > minX && this.minX < maxX" +
+                        "\n        " + "&& this.maxZ > minZ && this.minZ < maxZ" +
+                        "\n        " + "&& this.maxY > minY && this.minY < maxY;\n}")
+
+                        .replaceAll("this.maxX", "" + this.maxX)
+                        .replaceAll("this.maxY", "" + this.maxY)
+                        .replaceAll("this.maxZ", "" + this.maxZ)
+                        .replaceAll("this.minX", "" + this.minX)
+                        .replaceAll("this.minY", "" + this.minY)
+                        .replaceAll("this.minZ", "" + this.minZ)
+
+                        .replaceAll("maxX", "" + maxX)
+                        .replaceAll("maxY", "" + maxY)
+                        .replaceAll("maxZ", "" + maxZ)
+                        .replaceAll("minX", "" + minX)
+                        .replaceAll("minY", "" + minY)
+                        .replaceAll("minZ", "" + minZ)
+        );
+
         return this.maxX > minX && this.minX < maxX
-                && this.maxZ > minZ && this.minZ < maxZ
-                && this.maxY > minY && this.minY < maxY;
+            && this.maxZ > minZ && this.minZ < maxZ
+            && this.maxY > minY && this.minY < maxY;
     }
 
     public boolean contains(AbstractBounds3i o) {
         return contains(o.minX(), o.minY(), o.minZ(), o.maxX(), o.maxY(), o.maxZ());
     }
 
-    public boolean contains(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+    public boolean contains(int minX, int minY, int minZ,
+                            int maxX, int maxY, int maxZ
+    ) {
         return this.minX <= minX && this.maxX >= maxX
                 && this.minY <= minY && this.maxY >= maxY
                 && this.minZ <= minZ && this.maxZ >= maxZ;
-    }
-
-    public int minX() {
-        return minX;
-    }
-
-    public T setMinX(int minX) {
-        return set(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    public int minY() {
-        return minY;
-    }
-
-    public T setMinY(int minY) {
-        return set(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    public int minZ() {
-        return minZ;
-    }
-
-    public T setMinZ(int minZ) {
-        return set(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    public int maxX() {
-        return maxX;
-    }
-
-    public T setMaxX(int maxX) {
-        return set(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    public int maxY() {
-        return maxY;
-    }
-
-    public T setMaxY(int maxY) {
-        return set(minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    public int maxZ() {
-        return maxZ;
-    }
-
-    public T setMaxZ(int maxZ) {
-        return set(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     public org.bukkit.util.BoundingBox toBukkit() {
@@ -270,9 +252,9 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
                 minY,
                 minZ,
 
-                maxX + 1,
-                maxY + 1,
-                maxZ + 1
+                maxX,
+                maxY,
+                maxZ
         );
     }
 

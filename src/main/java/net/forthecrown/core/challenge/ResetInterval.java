@@ -3,46 +3,27 @@ package net.forthecrown.core.challenge;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoField;
-
+/** Interval at which challenges are reset */
 @Getter
 @RequiredArgsConstructor
 public enum ResetInterval {
+    /** Reset everytime the date changes */
     DAILY ("Daily") {
         @Override
         public int getMax() {
             return ChallengeConfig.maxDailyChallenges;
         }
-
-        @Override
-        public boolean areNeighbouring(LocalDate earlier,
-                                       LocalDate later
-        ) {
-            var matchTest = later.minusDays(1);
-            return matchTest.getDayOfYear() == earlier.getDayOfYear();
-        }
     },
 
+    /** Reset on every monday */
     WEEKLY ("Weekly") {
         @Override
         public int getMax() {
             return ChallengeConfig.maxWeeklyChallenges;
         }
-
-        @Override
-        public boolean areNeighbouring(LocalDate earlier,
-                                       LocalDate later
-        ) {
-            var matchTest = later.minusWeeks(1);
-
-            int week1 = matchTest.get(ChronoField.ALIGNED_WEEK_OF_YEAR);
-            int week2 = earlier.get(ChronoField.ALIGNED_WEEK_OF_YEAR);
-
-            return week2 == week1;
-        }
     },
 
+    /** Never automatically reset */
     MANUAL ("") {
         @Override
         public int getMax() {
@@ -51,13 +32,6 @@ public enum ResetInterval {
 
         @Override
         public boolean shouldRefill() {
-            return false;
-        }
-
-        @Override
-        public boolean areNeighbouring(LocalDate d1,
-                                       LocalDate d2
-        ) {
             return false;
         }
     };
@@ -69,8 +43,4 @@ public enum ResetInterval {
     public boolean shouldRefill() {
         return true;
     }
-
-    public abstract boolean areNeighbouring(LocalDate earlier,
-                                            LocalDate later
-    );
 }

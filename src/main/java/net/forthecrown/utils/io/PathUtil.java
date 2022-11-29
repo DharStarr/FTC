@@ -3,8 +3,11 @@ package net.forthecrown.utils.io;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,6 +22,8 @@ import java.util.zip.ZipOutputStream;
 
 public final class PathUtil {
     private PathUtil() {}
+
+    private static final Logger LOGGER = FTC.getLogger();
 
     /** The ZIP file system of the plugin jar */
     public static final FileSystem JAR_FILE_SYSTEM;
@@ -51,16 +56,61 @@ public final class PathUtil {
         }
     }
 
+    /** Gets a path to a file inside the plugin jar */
     public static Path jarPath(String s, String... others) {
         return JAR_FILE_SYSTEM.getPath(s, others);
     }
 
+    /** Gets the plugin's data folder */
     public static Path getPluginDirectory() {
         return FTC.getPlugin().getDataFolder().toPath();
     }
 
+    /** Creates a path inside the plugin's data folder */
     public static Path pluginPath(String first, String... others) {
         return getPluginDirectory().resolve(Paths.get(first, others));
+    }
+
+    /* ----------------------------- DEFAULTS ------------------------------- */
+
+    public static void saveJarPath(String sourceDir, boolean overwrite)
+            throws IOException
+    {
+        saveJarPath(
+                sourceDir,
+                pluginPath(sourceDir),
+                overwrite
+        );
+    }
+
+    public static void saveJarPath(String sourceDir,
+                                   Path destDir,
+                                   boolean overwrite
+    ) throws IOException {
+        Path jarDir = jarPath(sourceDir);
+
+        if (!Files.exists(jarDir)) {
+            LOGGER.warn("Cannot save plugin path {}! Doesn't exist", jarDir);
+            return;
+        }
+
+        if (Files.isDirectory(jarDir)) {
+            DirectoryCopyWalker walker = new DirectoryCopyWalker(
+                    jarDir, destDir, overwrite
+            );
+
+            Files.walkFileTree(jarDir, walker);
+            return;
+        }
+
+        if (Files.exists(destDir) && !overwrite) {
+            return;
+        }
+
+        var input = Files.newInputStream(jarDir);
+        var output = Files.newOutputStream(destDir);
+
+        IOUtils.copy(input, output);
     }
 
     /**
@@ -394,6 +444,44 @@ public final class PathUtil {
             }
 
             return fileName.substring(0, dotIndex);
+        }
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    private static class DirectoryCopyWalker extends SimpleFileVisitor<Path> {
+        private final Path source;
+        private final Path dest;
+        private final boolean overwrite;
+
+        private Path resolveRelativeAsString(final Path directory) {
+            return dest.resolve(source.relativize(directory).toString());
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir,
+                                                 BasicFileAttributes attrs
+        ) throws IOException {
+            var destDir = resolveRelativeAsString(dir);
+            if (Files.notExists(destDir)) {
+                Files.createDirectories(destDir);
+            }
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                throws IOException
+        {
+            var destDir = resolveRelativeAsString(file);
+
+            if (Files.exists(destDir) && !overwrite) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            Files.copy(file, destDir);
+            return FileVisitResult.CONTINUE;
         }
     }
 }

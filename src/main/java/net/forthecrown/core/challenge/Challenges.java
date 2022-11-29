@@ -37,8 +37,7 @@ public @UtilityClass class Challenges {
     public void logActivation(Holder<Challenge> challenge, String extra) {
         LogEntry entry = LogEntry.of(ChallengeLogs.ACTIVE)
                 .set(ChallengeLogs.A_CHALLENGE, challenge.getKey())
-                .set(ChallengeLogs.A_TYPE, challenge.getValue().getResetInterval())
-                .set(ChallengeLogs.A_TIME, System.currentTimeMillis());
+                .set(ChallengeLogs.A_TYPE, challenge.getValue().getResetInterval());
 
         if (!Strings.isNullOrEmpty(extra)) {
             entry.set(ChallengeLogs.A_EXTRA, extra);
@@ -166,34 +165,21 @@ public @UtilityClass class Challenges {
     }
 
     public OptionalInt queryStreak(Challenge challenge, User viewer) {
-        if (viewer == null) {
-            return OptionalInt.empty();
-        }
-
-        return ChallengeManager.getInstance()
-                .getChallengeRegistry()
-                .getHolderByValue(challenge)
-                .map(holder -> {
-                    return queryStreak(holder, viewer);
-                })
-                .orElseGet(OptionalInt::empty);
-    }
-
-    private OptionalInt queryStreak(Holder<Challenge> holder, User viewer) {
         if (viewer == null
-                || holder.getValue().getResetInterval() == ResetInterval.MANUAL
+                || challenge.getResetInterval() == ResetInterval.MANUAL
         ) {
             return OptionalInt.empty();
         }
 
         LocalDate queryStart = LocalDate.MIN;
 
-        var query = LogQuery.builder(ChallengeLogs.COMPLETED)
+        var query = LogQuery.builder(ChallengeLogs.STREAK_SCHEMA)
                 .queryRange(Range.between(queryStart, LocalDate.now()))
+                .maxResults(ChallengeConfig.maxStreak)
 
-                .field(ChallengeLogs.COMPLETED_CHALLENGE)
+                .field(ChallengeLogs.S_CATEGORY)
                 .add(Objects::nonNull)
-                .add(s -> holder.getKey().equals(s))
+                .add(s -> challenge.getStreakCategory() == s)
 
                 .field(ChallengeLogs.PLAYER)
                 .add(Objects::nonNull)
@@ -208,7 +194,7 @@ public @UtilityClass class Challenges {
         }
 
         int streak = 0;
-        var interval = holder.getValue().getResetInterval();
+        var category = challenge.getStreakCategory();
         LocalDate lastDate = LocalDate.now();
 
         for (int i = results.size() - 1; i >= 0; i--) {
@@ -217,14 +203,26 @@ public @UtilityClass class Challenges {
             LocalDate eDate = Time.localTime(entry.get(ChallengeLogs.TIME))
                     .toLocalDate();
 
-            if (!interval.areNeighbouring(lastDate, eDate)) {
+            if (!category.areNeighboring(lastDate, eDate)) {
                 break;
             }
 
             streak++;
+            lastDate = eDate;
         }
 
-        return OptionalInt.of(streak);
+        return streak == 0
+                ? OptionalInt.empty()
+                : OptionalInt.of(streak);
     }
 
+    public void logStreak(StreakCategory category, UUID uuid) {
+        DataLogs.log(
+                ChallengeLogs.STREAK_SCHEMA,
+
+                LogEntry.of(ChallengeLogs.STREAK_SCHEMA)
+                        .set(ChallengeLogs.S_CATEGORY, category)
+                        .set(ChallengeLogs.S_PLAYER, uuid)
+        );
+    }
 }

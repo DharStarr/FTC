@@ -48,13 +48,14 @@ public class ChallengeEntry {
             return;
         }
 
+        User user = getUser();
+
         float newVal = Math.min(
                 value + current,
-                challenge.getGoal()
+                challenge.getGoal(user)
         );
 
-        if (newVal >= challenge.getGoal()) {
-            User user = getUser();
+        if (newVal >= challenge.getGoal(user)) {
 
             if (!challenge.canComplete(user)) {
                 return;
@@ -66,8 +67,30 @@ public class ChallengeEntry {
 
             Challenges.logCompletion(holder, id);
             challenge.onComplete(user);
+
+            potentiallyAddStreak(challenge.getStreakCategory());
         }
 
         progress.put(challenge, newVal);
+    }
+
+    private void potentiallyAddStreak(StreakCategory category) {
+        var manager = ChallengeManager.getInstance();
+
+        for (var c: manager.getActiveChallenges()) {
+            if (c.getStreakCategory() != category) {
+                continue;
+            }
+
+            if (!Challenges.hasCompleted(c, getId())) {
+                return;
+            }
+        }
+
+        getUser().sendMessage(
+                Messages.challengeCategoryFinished(category)
+        );
+
+        Challenges.logStreak(category, id);
     }
 }

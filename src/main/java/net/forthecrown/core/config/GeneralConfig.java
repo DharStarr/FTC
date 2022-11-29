@@ -46,6 +46,7 @@ public @UtilityClass class GeneralConfig {
             useAsyncTpForPlayers        = false,
             staffLogEnabled             = false,
             announcePunishments         = false,
+            allowMaxPlayerRandomization = true,
 
             /**
              * Determines whether chunk loader runs in parallel or in series.

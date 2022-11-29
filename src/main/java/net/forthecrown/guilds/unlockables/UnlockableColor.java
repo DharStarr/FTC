@@ -11,6 +11,7 @@ import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
@@ -93,10 +94,11 @@ public enum UnlockableColor {
         }
 
         guild.sendMessage(
-                Text.format("&f{0, user}&r has changed the guild's {2} color to {1}.",
-                            user,
-                            text(color.toText(), color.getTextColor()),
-                            primary ? "primary" : "secondary"
+                Text.format("&6{0, user}&r has changed the guild's &6{2}&r color to {1}.",
+                        NamedTextColor.YELLOW,
+                        user,
+                        text(color.toText(), color.getTextColor()),
+                        primary ? "primary" : "secondary"
                 )
         );
     }
@@ -148,7 +150,11 @@ public enum UnlockableColor {
                         var guild = context.getOrThrow(GUILD);
 
                         if (isUnlocked(guild)) {
-                            if (guild.getSettings().getPrimaryColor() == color) {
+                            boolean active = primary
+                                    ? guild.getSettings().getPrimaryColor() == color
+                                    : guild.getSettings().getSecondaryColor() == color;
+
+                            if (active) {
                                 builder.addEnchant(Enchantment.BINDING_CURSE, 1);
                                 builder.addLore("&6Currently Selected");
                             } else {
@@ -168,6 +174,7 @@ public enum UnlockableColor {
                     .setRunnable((user, context, click) -> {
                         onClick(user, click, context, () -> {
                             var guild = context.getOrThrow(GUILD);
+                            click.shouldReloadMenu(true);
 
                             setColor(
                                     primary,

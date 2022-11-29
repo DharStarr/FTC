@@ -57,7 +57,7 @@ public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vec
     public static Bounds3i of(Region region) {
         return of(
                 Vectors.from(region.getMinimumPoint()),
-                Vectors.from(region.getMaximumPoint().add(1, 1, 1))
+                Vectors.from(region.getMaximumPoint())
         );
     }
 

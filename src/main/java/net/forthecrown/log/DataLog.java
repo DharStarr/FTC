@@ -8,12 +8,17 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor
 public class DataLog {
+    private static final Comparator<LogEntry>
+            TIME_COMPARATOR = Comparator.comparingLong(LogEntry::getDate);
+
     private static final Logger LOGGER = FTC.getLogger();
 
     private final LogSchema schema;
@@ -24,7 +29,22 @@ public class DataLog {
     }
 
     public void add(LogEntry entry) {
-        entries.add(entry);
+        if (entries.isEmpty()) {
+            entries.add(entry);
+            return;
+        }
+
+        int insertIndex = Collections.binarySearch(
+                entries,
+                entry,
+                TIME_COMPARATOR
+        );
+
+        if (insertIndex < 0) {
+            insertIndex = -insertIndex - 1;
+        }
+
+        entries.add(insertIndex, entry);
     }
 
     public int size() {

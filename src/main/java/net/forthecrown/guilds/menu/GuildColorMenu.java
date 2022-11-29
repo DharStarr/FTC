@@ -12,6 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static net.forthecrown.guilds.menu.GuildMenus.GUILD;
+
 public class GuildColorMenu extends MenuPage {
 
     private final String title;
@@ -43,7 +45,12 @@ public class GuildColorMenu extends MenuPage {
 
     @Override
     public @Nullable ItemStack createItem(@NotNull User user, @NotNull InventoryContext context) {
-        return ItemStacks.builder(user.getGuild().getSettings().getPrimaryColor().toWool())
+        var guild = context.getOrThrow(GUILD);
+        var color = primary
+                ? guild.getSettings().getPrimaryColor()
+                : guild.getSettings().getSecondaryColor();
+
+        return ItemStacks.builder(color.toWool())
                 .setName("&e" + title)
                 .addLore("&7The " + title + " used in the guild's name format.")
                 .build();

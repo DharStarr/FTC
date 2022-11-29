@@ -11,8 +11,10 @@ import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.Slot;
 import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -72,10 +74,22 @@ public class ItemChallenge implements Challenge {
     }
 
     @Override
-    public float getGoal() {
+    public StreakBasedValue getGoal() {
+        return getTargetItem()
+                .map(stack -> StreakBasedValue.fixed(stack.getAmount()))
+                .orElse(StreakBasedValue.ONE);
+    }
+
+    @Override
+    public float getGoal(User user) {
         return getTargetItem()
                 .map(ItemStack::getAmount)
                 .orElse(1);
+    }
+
+    @Override
+    public StreakCategory getStreakCategory() {
+        return StreakCategory.ITEMS;
     }
 
     @Override
@@ -152,7 +166,7 @@ public class ItemChallenge implements Challenge {
                     }
 
                     var builder = ItemStacks.toBuilder(baseItem)
-                            .setName(displayName(user))
+                            .setName(getName())
                             .clearLore()
                             .setFlags(
                                     ItemFlag.HIDE_ENCHANTS,
@@ -180,6 +194,25 @@ public class ItemChallenge implements Challenge {
                                             .color(NamedTextColor.DARK_GRAY)
                             );
                         }
+                    }
+
+                    int streak = Challenges.queryStreak(this, user)
+                            .orElse(0);
+
+                    if (!getReward().isEmpty(streak)) {
+                        var writer = TextWriters.loreWriter();
+                        writer.newLine();
+                        writer.newLine();
+
+                        writer.setFieldStyle(
+                                Style.style(NamedTextColor.GRAY)
+                        );
+                        writer.setFieldValueStyle(
+                                Style.style(NamedTextColor.GRAY)
+                        );
+
+                        getReward().write(writer, streak);
+                        builder.addLore(writer.getLore());
                     }
 
                     return builder.build();

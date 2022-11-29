@@ -3,11 +3,13 @@ package net.forthecrown.core;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.io.PathUtil;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.util.CachedServerIcon;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Month;
 import java.time.ZonedDateTime;
 
@@ -35,8 +37,13 @@ public class ServerIcons {
         var dir = folder();
 
         if (!dir.exists()) {
-            LOGGER.warn("Server icon directory doesn't exist, cannot load");
-            return;
+            try {
+                // Path of icons... slay queen
+                PathUtil.saveJarPath("icons", dir.toPath(), false);
+            } catch (IOException exc) {
+                LOGGER.error("Couldn't save default server icons!", exc);
+                return;
+            }
         }
 
         for (File f: dir.listFiles()) {

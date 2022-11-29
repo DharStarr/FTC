@@ -12,6 +12,7 @@ import net.forthecrown.core.module.OnSave;
 import net.forthecrown.guilds.unlockables.UnlockableColor;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.io.PathUtil;
+import net.forthecrown.waypoint.Waypoints;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -129,6 +130,12 @@ public class GuildManager {
 
         if (!Strings.isNullOrEmpty(name)) {
             byName.put(name.toLowerCase(), guild);
+
+        }
+
+        var waypoint = guild.getSettings().getWaypoint();
+        if (waypoint != null) {
+            Waypoints.updateDynmap(waypoint);
         }
     }
 
@@ -188,7 +195,11 @@ public class GuildManager {
         byChunk.put(pos.toLong(), guild);
 
         if (DynmapUtil.isInstalled()) {
-            GuildDynmap.renderChunk(pos, guild);
+            if (guild == null) {
+                GuildDynmap.unrenderChunk(pos);
+            } else {
+                GuildDynmap.renderChunk(pos, guild);
+            }
         }
     }
 

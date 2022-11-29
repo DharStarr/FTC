@@ -3,6 +3,7 @@ package net.forthecrown.events.player;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.challenge.Challenges;
+import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -100,7 +101,7 @@ public class PlaytimeChallengeListener implements Listener {
                 ++minutesPassed;
                 challenge.trigger(player);
 
-                if (minutesPassed >= challenge.getGoal()) {
+                if (minutesPassed >= challenge.getGoal(Users.get(player))) {
                     TASKS.remove(player.getUniqueId());
                     Tasks.cancel(task);
                 }

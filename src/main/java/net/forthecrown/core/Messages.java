@@ -4,6 +4,7 @@ import net.forthecrown.commands.ToggleCommand;
 import net.forthecrown.core.admin.Mute;
 import net.forthecrown.core.challenge.Challenge;
 import net.forthecrown.core.challenge.ResetInterval;
+import net.forthecrown.core.challenge.StreakCategory;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.cosmetics.Cosmetic;
 import net.forthecrown.economy.market.MarketConfig;
@@ -2900,6 +2901,13 @@ public interface Messages {
         return format("&6{0}&r challenges have been reset!",
                 NamedTextColor.YELLOW,
                 interval.getDisplayName()
+        );
+    }
+
+    static Component challengeCategoryFinished(StreakCategory category) {
+        return format("All &6{0}&r challenges complete!",
+                NamedTextColor.YELLOW,
+                category.getDisplayName()
         );
     }
 }

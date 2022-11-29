@@ -2,7 +2,6 @@ package net.forthecrown.economy.sell;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.FTC;
 import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.core.challenge.Challenges;
 import net.forthecrown.core.registry.Registries;
@@ -15,7 +14,6 @@ import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 @RequiredArgsConstructor
@@ -86,16 +84,8 @@ public class SellShop {
     }
 
     public void createDefaults() {
-        try (var stream = Files.newDirectoryStream(PathUtil.jarPath("economy"))) {
-            for (var p: stream) {
-                String path = p.toString();
-
-                if (Files.exists(PathUtil.pluginPath(path))) {
-                    continue;
-                }
-
-                FTC.getPlugin().saveResource(path, true);
-            }
+        try {
+            PathUtil.saveJarPath("economy", false);
         } catch (IOException exc) {
             throw new IllegalArgumentException(exc);
         }

@@ -2,14 +2,18 @@ package net.forthecrown.guilds;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import lombok.experimental.UtilityClass;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.FtcDynmap;
 import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.math.Vectors;
 import net.minecraft.world.level.ChunkPos;
+import org.apache.logging.log4j.Logger;
 import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerSet;
 
 public @UtilityClass class GuildDynmap {
+    private static final Logger LOGGER = FTC.getLogger();
+
     private static final String
             MARKER_SET_ID = "chunk_markers",
             MARKER_LABEL = "Guild Areas";
@@ -35,6 +39,9 @@ public @UtilityClass class GuildDynmap {
 
         double[] xCorners = getCorners(chunkPos.x);
         double[] zCorners = getCorners(chunkPos.z);
+
+        LOGGER.debug("xCorners={}", xCorners);
+        LOGGER.debug("zCorners={}", zCorners);
 
         AreaMarker marker = set.createAreaMarker(
                 markerId,
@@ -65,6 +72,10 @@ public @UtilityClass class GuildDynmap {
 
         marker.setFillStyle(0.5, pColor);
         marker.setLineStyle(marker.getLineWeight(), 0.8, sColor);
+
+        LOGGER.debug("Created chunk marker at {} for {}",
+                chunkPos, guild.getName()
+        );
     }
 
     public void unrenderChunk(ChunkPos chunkPos) {
@@ -75,6 +86,7 @@ public @UtilityClass class GuildDynmap {
 
         if (marker != null) {
             marker.deleteMarker();
+            LOGGER.debug("Deleted marker for chunk {}", chunkPos);
         }
     }
 

@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -28,7 +29,16 @@ public class ScriptManager {
 
     public ScriptManager() {
         this.directory = PathUtil.getPluginDirectory("scripts");
+
+        //Set the language to ECMA Script 6 mode
         System.setProperty("nashorn.args.prepend", "--language=es6");
+
+        // Save default scripts
+        try {
+            PathUtil.saveJarPath("scripts", directory, false);
+        } catch (IOException exc) {
+            LOGGER.error("Couldn't save default scripts! {}", exc);
+        }
     }
 
     public boolean isExistingScript(String script) {

@@ -15,7 +15,6 @@ import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -46,30 +45,11 @@ public class ChallengeDataStorage {
     }
 
     void ensureDefaultsExist() {
-        if (!Files.exists(challengesFile)) {
-            FTC.getPlugin().saveResource("challenges/challenges.json", false);
-            LOGGER.debug("Created challenges.json");
-        }
-
-        if (!Files.exists(itemChallengesFile)) {
-            FTC.getPlugin().saveResource("challenges/item_challenges.json", false);
-            LOGGER.debug("Created item_challenges.json");
-        }
-
-        try (var stream = Files.newDirectoryStream(
-                PathUtil.jarPath("scripts", "challenges")
-        )) {
-            for (var p: stream) {
-                String name = p.toString();
-
-                if (Files.exists(PathUtil.pluginPath(name))) {
-                    continue;
-                }
-
-                FTC.getPlugin().saveResource(name, false);
-            }
+        try {
+            PathUtil.saveJarPath("challenges", false);
+            // Default scripts are saved by ScriptManager
         } catch (IOException exc) {
-            LOGGER.error("Error saving default challenge scripts", exc);
+            LOGGER.error("Error trying to save challenge defaults!", exc);
         }
     }
 

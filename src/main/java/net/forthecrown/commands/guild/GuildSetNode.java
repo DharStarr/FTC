@@ -166,7 +166,7 @@ class GuildSetNode extends GuildCommandNode {
                 user,
                 guild,
                 GuildPermission.CAN_RELOCATE,
-                Exceptions.NO_PERMISSION
+                Exceptions.G_NO_PERM_WAYPOINT
         );
 
         Waypoint nearest = Waypoints.getNearest(user);
@@ -179,7 +179,7 @@ class GuildSetNode extends GuildCommandNode {
         }
 
         if (nearest.getType() != WaypointTypes.PLAYER
-                || nearest.getType() != WaypointTypes.GUILD
+                && nearest.getType() != WaypointTypes.GUILD
         ) {
             throw Exceptions.format(
                     "Cannot set {0} waypoint as guild home!",

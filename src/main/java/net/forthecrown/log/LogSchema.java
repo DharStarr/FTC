@@ -7,6 +7,9 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectMaps;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
@@ -27,8 +30,16 @@ public class LogSchema {
     private final Map<String, SchemaField>
             byName = new Object2ObjectOpenHashMap<>();
 
-    public LogSchema(SchemaField[] fields) {
+    private final short version;
+    private final Short2ObjectMap<List<LogDataFixer>> updaters;
+
+    public LogSchema(SchemaField[] fields,
+                     short version,
+                     Short2ObjectMap<List<LogDataFixer>> updaters
+    ) {
         this.fields = fields;
+        this.version = version;
+        this.updaters = Short2ObjectMaps.unmodifiable(updaters);
 
         for (var f: Validate.noNullElements(fields)) {
             byName.put(f.name(), f);
@@ -36,7 +47,11 @@ public class LogSchema {
     }
 
     public static Builder builder(String name) {
-        return new Builder(name);
+        return builder(name, (short) 1);
+    }
+
+    public static Builder builder(String name, short version) {
+        return new Builder(name, version);
     }
 
     public <S> DataResult<S> serialize(DynamicOps<S> ops, LogEntry entry) {
@@ -110,6 +125,11 @@ public class LogSchema {
         private final String name;
         private final List<SchemaField> fields = new ObjectArrayList<>();
 
+        private final Short2ObjectMap<List<LogDataFixer>>
+                updaters = new Short2ObjectOpenHashMap<>();
+
+        private final short version;
+
         public <T> SchemaField<T> add(String name, Codec<T> codec) {
             SchemaField<T> field = new SchemaField<>(
                     name, fields.size(), codec
@@ -124,8 +144,22 @@ public class LogSchema {
             return this;
         }
 
+        public Builder addUpdate(int version, LogDataFixer fixer) {
+            var list = updaters.computeIfAbsent(
+                    (short) version,
+                    s -> new ObjectArrayList<>()
+            );
+
+            list.add(fixer);
+            return this;
+        }
+
         public LogSchema build() {
-            return new LogSchema(fields.toArray(SchemaField[]::new));
+            return new LogSchema(
+                    fields.toArray(SchemaField[]::new),
+                    version,
+                    updaters
+            );
         }
 
         public Holder<LogSchema> register() {

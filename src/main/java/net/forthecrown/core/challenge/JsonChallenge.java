@@ -28,7 +28,7 @@ public class JsonChallenge implements Challenge {
     private final Class<Event> eventClass;
     private final String script;
 
-    private final float goal;
+    private final StreakBasedValue goal;
 
     private final ResetInterval resetInterval;
 
@@ -256,7 +256,7 @@ public class JsonChallenge implements Challenge {
         private Reward reward = Reward.EMPTY;
         private ResetInterval resetInterval = ResetInterval.DAILY;
 
-        private float goal = 1;
+        private StreakBasedValue goal = StreakBasedValue.ONE;
 
         public Builder addDesc(Component text) {
             description.add(text);

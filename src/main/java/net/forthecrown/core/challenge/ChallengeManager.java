@@ -250,9 +250,6 @@ public class ChallengeManager {
                         LogQuery.builder(ChallengeLogs.ACTIVE)
                                 .queryRange(getQueryRange())
 
-                                .field(ChallengeLogs.A_TIME)
-                                .add(Objects::nonNull)
-
                                 .field(ChallengeLogs.A_TYPE)
                                 .add(Objects::nonNull)
 
@@ -263,7 +260,7 @@ public class ChallengeManager {
                                         return true;
                                     }
 
-                                    var time = entry.get(ChallengeLogs.A_TIME);
+                                    var time = entry.getDate();
 
                                     var local = Time.localTime(time);
                                     var now = LocalDate.now();

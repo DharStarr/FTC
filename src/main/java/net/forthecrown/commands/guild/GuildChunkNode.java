@@ -240,6 +240,7 @@ class GuildChunkNode extends GuildCommandNode {
                     bounds,
                     (claim ? Particle.END_ROD : Particle.FALLING_LAVA)
                             .builder()
+                            .extra(0F)
             );
         }
     }

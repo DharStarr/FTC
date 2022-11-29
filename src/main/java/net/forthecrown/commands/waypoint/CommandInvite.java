@@ -4,6 +4,7 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.royalgrenadier.types.selector.EntityArgumentImpl;
 import net.forthecrown.user.User;
@@ -16,6 +17,8 @@ public class CommandInvite extends FtcCommand {
         super("Invite");
 
         setDescription("Invites a user to your waypoint");
+        setPermission(Permissions.WAYPOINTS);
+
         register();
     }
 

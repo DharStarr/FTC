@@ -23,8 +23,10 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 
 public class ChallengeBook {
+    /** Pay challenge cost */
     public static final int PAY_COST = 10_000;
 
+    /** Clickable text node used to run the pay challenge logic */
     public static final ClickableTextNode PAY_NODE = ClickableTexts.register(
             new ClickableTextNode("challenge_pay")
                     .setExecutor(user -> {
@@ -94,7 +96,9 @@ public class ChallengeBook {
         Map<ResetInterval, IntIntPair>
                 summary = new EnumMap<>(ResetInterval.class);
 
+        // Count completed challenges by their category
         for (var c: ChallengeManager.getInstance().getActiveChallenges()) {
+            // Item challenges are only shown in /shop
             if (c instanceof ItemChallenge) {
                 continue;
             }
@@ -117,6 +121,7 @@ public class ChallengeBook {
             int total = e.getValue().leftInt();
             int completed = e.getValue().rightInt();
 
+            // If there's no challenges for this type
             if (total <= 0) {
                 continue;
             }
@@ -124,7 +129,7 @@ public class ChallengeBook {
             builder
                     .addEmptyLine()
                     .addField(
-                    text(e.getKey().getDisplayName() + " Challenges"),
+                    text(e.getKey().getDisplayName() + " challenges"),
 
                     Text.format("{0, number}/{1, number}",
                             completed >= total
@@ -149,20 +154,22 @@ public class ChallengeBook {
                         .getActiveChallenges()
         );
 
-        activeList.removeIf(challenge -> challenge.getResetInterval() != interval);
+        // Remove challenges that don't match this category
+        activeList.removeIf(challenge -> {
+            return challenge.getResetInterval() != interval
+                    || challenge instanceof ItemChallenge;
+        });
 
+        // If there's nothing to display now lol
         if (activeList.isEmpty()) {
             return;
         }
 
+        // Challenge 2 isCompleted map
         Object2BooleanMap<Challenge>
                 completed = new Object2BooleanOpenHashMap<>();
 
         for (var c: activeList) {
-            if (c instanceof ItemChallenge) {
-                continue;
-            }
-
             boolean isCompleted = Challenges.hasCompleted(c, entry.getId());
             completed.put(c, isCompleted);
         }
@@ -181,15 +188,23 @@ public class ChallengeBook {
             float progress = entry.getProgress()
                     .getFloat(c);
 
+            float goal = c.getGoal(entry.getUser());
+
             ++totalRequired;
 
-            if (isCompleted || progress >= c.getGoal()) {
+            // Since just adding the total goal and progress of each challenge
+            // together produces wrong results for the percentage count at the
+            // top of the page, the percentage value is calculated as a sum of
+            // the percentage of each challenge's completion rate
+            if (isCompleted || progress >= goal) {
                 ++totalProgress;
             } else {
-                totalProgress += (progress / c.getGoal());
+                totalProgress += (progress / goal);
             }
         }
 
+        // I don't think this will happen, as it could only
+        // happen if each challenge had a goal of 0 lol
         if (totalRequired != 0.0F) {
             double progress = (totalProgress / totalRequired) * 100;
 
@@ -214,13 +229,18 @@ public class ChallengeBook {
             float progress = entry.getProgress()
                     .getFloat(c);
 
+            float goal = c.getGoal(entry.getUser());
+
+            // Ensure that if the challenge is completed, it always
+            // shows the goal, not more, not less
             if (isCompleted) {
-                progress = c.getGoal();
+                progress = goal;
             }
 
             Component displayName = c.displayName(entry.getUser())
                     .color(null);
 
+            // Hard coded exception for the pay challenge
             if (Objects.equals(payChallenge, c) && !isCompleted) {
                 displayName = displayName.append(space())
                         .append(PAY_NODE.prompt(entry.getUser()));
@@ -249,7 +269,7 @@ public class ChallengeBook {
                                             ? NamedTextColor.DARK_GREEN
                                             : NamedTextColor.GRAY,
 
-                                    progress, c.getGoal()
+                                    progress, goal
                             )
                                     .hoverEvent(
                                             text(isCompleted

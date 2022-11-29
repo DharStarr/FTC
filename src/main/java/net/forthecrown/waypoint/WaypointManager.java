@@ -11,7 +11,6 @@ import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.guilds.Guild;
 import net.forthecrown.guilds.GuildManager;
-import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.WorldChunkMap;
@@ -166,6 +165,15 @@ public class WaypointManager extends SerializableObject.NbtDat {
         chunkMap.add(waypoint.getWorld(), waypoint);
     }
 
+    /**
+     * Fully removes the waypoint.
+     * <p>
+     * This will remove the waypoint from all lookup maps, remove its dynmap
+     * marker, unset all the residents' home waypoint and unset the waypoint
+     * of any guild assigned to this waypoint.
+     *
+     * @param waypoint The waypoint to remove
+     */
     public void removeWaypoint(Waypoint waypoint) {
         waypoint.getType().onDelete(waypoint);
 
@@ -173,15 +181,20 @@ public class WaypointManager extends SerializableObject.NbtDat {
         byId.remove(waypoint.getId());
         chunkMap.remove(waypoint.getWorld(), waypoint);
 
+        // If has name, remove from name lookup map
         var name = waypoint.get(WaypointProperties.NAME);
         if (!Strings.isNullOrEmpty(name)) {
             byName.remove(name.toLowerCase());
+            Waypoints.setNameSign(waypoint, null);
         }
 
+        // If dynmap installed, remove marker
         if (DynmapUtil.isInstalled()) {
             WaypointDynmap.removeMarker(waypoint);
         }
 
+        // If waypoint has residents, loop through them and
+        // remove them from the waypoint
         if (!waypoint.getResidents().isEmpty()) {
             waypoint.getResidents()
                     .keySet()
@@ -193,8 +206,8 @@ public class WaypointManager extends SerializableObject.NbtDat {
                     });
         }
 
+        // Unset guild's waypoint if there's a set guild owner
         UUID guildOwner = waypoint.get(WaypointProperties.GUILD_OWNER);
-
         if (guildOwner != null) {
             Guild guild = GuildManager.get()
                     .getGuild(guildOwner);
@@ -203,13 +216,8 @@ public class WaypointManager extends SerializableObject.NbtDat {
                 guild.getSettings()
                         .setWaypoint(null);
             }
-        }
 
-        UUID owner = waypoint.get(WaypointProperties.OWNER);
-        if (owner != null) {
-            User user = Users.get(owner);
-            user.getHomes().setHomeWaypoint(null);
-            user.unloadIfOffline();
+            Waypoints.setNameSign(waypoint, null);
         }
     }
 
@@ -222,6 +230,8 @@ public class WaypointManager extends SerializableObject.NbtDat {
     }
 
     public Stream<String> getNames() {
+        // Don't return the keySet directly, as it contains
+        // lowerCase versions of the name for ease of lookup
         return byName.values()
                 .stream()
                 .map(waypoint -> waypoint.get(WaypointProperties.NAME));

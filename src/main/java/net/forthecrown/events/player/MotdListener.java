@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.ServerIcons;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
@@ -22,10 +23,12 @@ import java.util.Iterator;
 public class MotdListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPaperServerListPing(PaperServerListPingEvent event) {
-        int max = Bukkit.getMaxPlayers();
-        int newMax = Util.RANDOM.nextInt(max, max + max / 2);
+        if (GeneralConfig.allowMaxPlayerRandomization) {
+            int max = Bukkit.getMaxPlayers();
+            int newMax = Util.RANDOM.nextInt(max, max + max / 2);
 
-        event.setMaxPlayers(newMax);
+            event.setMaxPlayers(newMax);
+        }
 
         event.motd(motd());
         event.setServerIcon(ServerIcons.getCurrent());
