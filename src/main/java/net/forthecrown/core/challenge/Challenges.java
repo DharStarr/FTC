@@ -25,6 +25,7 @@ import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+/** Utility class for challenge-related functions */
 public @UtilityClass class Challenges {
     public final String
             METHOD_ON_RESET     = "onReset",
@@ -32,7 +33,9 @@ public @UtilityClass class Challenges {
             METHOD_CAN_COMPLETE = "canComplete",
             METHOD_ON_COMPLETE  = "onComplete",
             METHOD_GET_PLAYER   = "getPlayer",
-            METHOD_ON_EVENT     = "onEvent";
+            METHOD_ON_EVENT     = "onEvent",
+
+            METHOD_STREAK_INCREASE = "onStreakIncrease";
 
     public void logActivation(Holder<Challenge> challenge, String extra) {
         LogEntry entry = LogEntry.of(ChallengeLogs.ACTIVE)
@@ -48,9 +51,8 @@ public @UtilityClass class Challenges {
 
     public void logCompletion(Holder<Challenge> challenge, UUID uuid) {
         LogEntry entry = LogEntry.of(ChallengeLogs.COMPLETED)
-                .set(ChallengeLogs.TIME, System.currentTimeMillis())
-                .set(ChallengeLogs.PLAYER, uuid)
-                .set(ChallengeLogs.COMPLETED_CHALLENGE, challenge.getKey());
+                .set(ChallengeLogs.C_PLAYER, uuid)
+                .set(ChallengeLogs.C_CHALLENGE, challenge.getKey());
 
         DataLogs.log(ChallengeLogs.COMPLETED, entry);
     }
@@ -79,10 +81,10 @@ public @UtilityClass class Challenges {
                         .maxResults(1)
                         .queryRange(Range.between(start, LocalDate.now()))
 
-                        .field(ChallengeLogs.PLAYER)
+                        .field(ChallengeLogs.C_PLAYER)
                         .add(uuid1 -> Objects.equals(uuid1, uuid))
 
-                        .field(ChallengeLogs.COMPLETED_CHALLENGE)
+                        .field(ChallengeLogs.C_CHALLENGE)
                         .add(s -> Objects.equals(s, challenge.getKey()))
 
                         .build()
@@ -164,13 +166,17 @@ public @UtilityClass class Challenges {
                 .build();
     }
 
-    public OptionalInt queryStreak(Challenge challenge, User viewer) {
-        if (viewer == null
+    public OptionalInt queryStreak(Challenge challenge, User user) {
+        if (user == null
                 || challenge.getResetInterval() == ResetInterval.MANUAL
         ) {
             return OptionalInt.empty();
         }
 
+        return queryStreak(challenge.getStreakCategory(), user);
+    }
+
+    public OptionalInt queryStreak(StreakCategory category, User viewer) {
         LocalDate queryStart = LocalDate.MIN;
 
         var query = LogQuery.builder(ChallengeLogs.STREAK_SCHEMA)
@@ -179,9 +185,9 @@ public @UtilityClass class Challenges {
 
                 .field(ChallengeLogs.S_CATEGORY)
                 .add(Objects::nonNull)
-                .add(s -> challenge.getStreakCategory() == s)
+                .add(s -> category == s)
 
-                .field(ChallengeLogs.PLAYER)
+                .field(ChallengeLogs.S_PLAYER)
                 .add(Objects::nonNull)
                 .add(uuid -> viewer.getUniqueId().equals(uuid))
 
@@ -194,13 +200,12 @@ public @UtilityClass class Challenges {
         }
 
         int streak = 0;
-        var category = challenge.getStreakCategory();
         LocalDate lastDate = LocalDate.now();
 
         for (int i = results.size() - 1; i >= 0; i--) {
             var entry = results.get(i);
 
-            LocalDate eDate = Time.localTime(entry.get(ChallengeLogs.TIME))
+            LocalDate eDate = Time.localTime(entry.getDate())
                     .toLocalDate();
 
             if (!category.areNeighboring(lastDate, eDate)) {

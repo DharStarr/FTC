@@ -2,6 +2,7 @@ package net.forthecrown.utils.math;
 
 import org.bukkit.util.BoundingBox;
 import org.junit.jupiter.api.Test;
+import org.spongepowered.math.GenericMath;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -13,8 +14,8 @@ class AbstractBounds3iTest {
     static final float PLR_WIDTH = 0.6F / 2;
 
     static final Bounds3i bounds3i = Bounds3i.of(
-            Vector3i.from(190, 69, 228),
-            Vector3i.from(185, 64, 223)
+            Vector3i.from(186, 64, 224),
+            Vector3i.from(190, 69, 228)
     );
 
     @Test
@@ -65,6 +66,8 @@ class AbstractBounds3iTest {
 
     @Test
     void doesNotOverlap() {
+        var bounds3i = AbstractBounds3iTest.bounds3i.clone();
+
         double[][] notOverlapping = {
                 { 185.700, 65, 223.700 },
                 { 191.300, 65, 223.700 },
@@ -95,8 +98,12 @@ class AbstractBounds3iTest {
 
     static BoundingBox bound(Vector3d pos) {
         return new BoundingBox(
-                pos.x() - PLR_WIDTH, pos.y(),              pos.z() - PLR_WIDTH,
-                pos.x() + PLR_WIDTH, pos.y() + PLR_HEIGHT, pos.z() + PLR_WIDTH
+                rnd(pos.x() - PLR_WIDTH), rnd(pos.y()             ),  rnd(pos.z() - PLR_WIDTH),
+                rnd(pos.x() + PLR_WIDTH), rnd(pos.y() + PLR_HEIGHT), rnd(pos.z() + PLR_WIDTH)
         );
+    }
+
+    private static double rnd(double v) {
+        return GenericMath.round(v, 5);
     }
 }

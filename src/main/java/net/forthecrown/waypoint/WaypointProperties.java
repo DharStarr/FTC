@@ -56,7 +56,9 @@ public class WaypointProperties {
                                   @Nullable Boolean oldValue,
                                   @Nullable Boolean value
         ) {
-            if (waypoint.getType() == WaypointTypes.REGION_POLE) {
+            if (waypoint.getType() == WaypointTypes.REGION_POLE
+                    && waypoint.get(INVULNERABLE)
+            ) {
                 Waypoints.placePole(waypoint);
             }
         }

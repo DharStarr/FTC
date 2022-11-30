@@ -33,22 +33,6 @@ public class GuildNameFormat {
             GUILD_NAME = 1,
             CLOSING_BRACKET = 2;
 
-    // Jules:
-    // Hey, so I changed this file a bit, first of all, I inadvertently made
-    // Color the class that basically compiles the bracket, style and everything
-    // else into a single display name, you can get that display name using
-    // apply(Guild);
-    //
-    // I also removed the functional interface you made for the Color enum, and
-    // used an abstract method in its place which accepts more parameters, see
-    // below for java doc.
-    //
-    // I'm not confident in the gradients working as I haven't tested them, same
-    // with all the colors
-    //
-    // Otherwise though, thank you a lot, this is good :D
-    //   - Jules <3
-
     private Bracket bracket;
     @Getter @Setter
     private Color color;

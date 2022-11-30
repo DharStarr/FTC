@@ -234,7 +234,7 @@ public final class ItemStacks {
         return save(item).toString();
     }
 
-    public static ItemStack ofNbtString(String nbt) throws CommandSyntaxException {
+    public static ItemStack fromNbtString(String nbt) throws CommandSyntaxException {
         return load(TagParser.parseTag(nbt));
     }
 

@@ -67,8 +67,8 @@ final class BootStrap {
 
         // Waypoints
         init(WaypointTypes.class);
-        init(WaypointManager::getInstance);
         init(WaypointProperties.class);
+        init(WaypointManager::getInstance);
 
         // Structures
         // Should be loaded before dungeons, as dungeons
@@ -96,10 +96,6 @@ final class BootStrap {
         init(PacketListeners.class);
         init(Punishments::get);
 
-        // Commands and events
-        init(Commands.class);
-        init(Events.class);
-
         // The following 2 classes must be loaded
         // before the data manager, they register
         // the data log schemas required.
@@ -116,6 +112,10 @@ final class BootStrap {
         init(ResourceWorld::get);
         init(EndOpener::get);
         init(Economy.get()::getMarkets);
+
+        // Commands and events
+        init(Commands.class);
+        init(Events.class);
 
         // Save and load the banner words list
         FTC.getPlugin().saveResource("banned_words.json", true);

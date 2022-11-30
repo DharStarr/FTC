@@ -1,14 +1,17 @@
 package net.forthecrown.core.challenge;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registry;
+import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -31,6 +35,7 @@ public class ChallengeDataStorage {
     private final Path challengesFile;
     private final Path itemChallengesFile;
     private final Path userDataFile;
+    private final Path streakScriptFile;
 
     public ChallengeDataStorage(Path directory) {
         this.directory = directory;
@@ -40,8 +45,9 @@ public class ChallengeDataStorage {
 
         // Files
         this.challengesFile = directory.resolve("challenges.json");
-        itemChallengesFile = directory.resolve("item_challenges.json");
+        this.itemChallengesFile = directory.resolve("item_challenges.json");
         this.userDataFile = directory.resolve("user_data.json");
+        this.streakScriptFile = directory.resolve("streak_scripts.json");
     }
 
     void ensureDefaultsExist() {
@@ -51,6 +57,32 @@ public class ChallengeDataStorage {
         } catch (IOException exc) {
             LOGGER.error("Error trying to save challenge defaults!", exc);
         }
+    }
+
+    /**
+     * Gets all callback scripts for a streak category, these scripts are
+     * intended to be called when a user increments their streak progress
+     * to give them rewards.
+     */
+    public Set<String> getScripts(StreakCategory category) {
+        Set<String> result = new ObjectOpenHashSet<>();
+
+        SerializationHelper.readJsonFile(streakScriptFile, json -> {
+            var element = json.get(category.name().toLowerCase());
+
+            // If a single script
+            if (element.isJsonPrimitive()) {
+                result.add(element.getAsString());
+                return;
+            }
+
+            // If an array of scripts is declared
+            JsonUtils.stream(element.getAsJsonArray())
+                    .map(JsonElement::getAsString)
+                    .forEach(result::add);
+        });
+
+        return result;
     }
 
     public void loadChallenges(Registry<Challenge> target) {
@@ -99,7 +131,7 @@ public class ChallengeDataStorage {
                 );
             }
 
-            LOGGER.debug("Loaded {} item challenges", loaded);
+            LOGGER.debug("Loaded {} challenges from {}", loaded, path);
         });
     }
 

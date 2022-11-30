@@ -85,15 +85,13 @@ public final class Util {
     }
 
     public static boolean isClearAbove(Location location) {
-        return isClearAbove0(Vectors.intFrom(location), location.getWorld());
-    }
+        Vector3i pos = Vectors.intFrom(location);
 
-    private static boolean isClearAbove0(Vector3i pos, World world) {
-        for (int i = pos.y(); i < MAX_Y; i++) {
+        for (int i = pos.y(); i <= MAX_Y; i++) {
             pos = pos.withY(i);
-            var block = Vectors.getBlock(pos, world);
+            var block = Vectors.getBlock(pos, location.getWorld());
 
-            if (block.isCollidable() || block.isSolid()) {
+            if (block.isCollidable()) {
                 return false;
             }
         }

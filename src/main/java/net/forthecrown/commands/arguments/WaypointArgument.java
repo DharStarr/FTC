@@ -33,9 +33,9 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
 
         // By flags
         if (name.equalsIgnoreCase(FLAG_CURRENT)) {
-            return WaypointParseResult.CURRENT;
+            return WaypointResults.CURRENT;
         } else if (name.equalsIgnoreCase(FLAG_NEAREST)) {
-            return WaypointParseResult.NEAREST;
+            return WaypointResults.NEAREST;
         }
 
         // By username
@@ -44,13 +44,13 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
                 .get(name);
 
         if (lookup != null) {
-            return new WaypointParseResult.UserResult(lookup);
+            return new WaypointResults.UserResult(lookup);
         }
 
         // By guild name
         Guild guild = GuildManager.get().getGuild(name);
         if (guild != null) {
-            return new WaypointParseResult.GuildResult(guild);
+            return new WaypointResults.GuildResult(guild);
         }
 
         // By waypoint name
@@ -60,7 +60,7 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
             throw Exceptions.unknownRegion(reader, start);
         }
 
-        return new WaypointParseResult.DirectResult(waypoint);
+        return new WaypointResults.DirectResult(waypoint);
     }
 
     @Override

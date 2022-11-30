@@ -1,17 +1,19 @@
 package net.forthecrown.log;
 
-import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.ObjectLongPair;
+import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.utils.ArrayIterator;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * A log file is a binary representation of the log data of a single day.
@@ -32,6 +34,8 @@ import java.nio.file.Path;
 public class LogFile {
     private static final Logger LOGGER = FTC.getLogger();
 
+    public static final short FILE_VERSION = 1;
+
     private final DataLog[] logs;
 
     /** Array of section keys, Contains {@link #count} number of entries */
@@ -40,13 +44,20 @@ public class LogFile {
     /** Array of section data, Contains {@link #count} number of entries */
     private final ByteArrayOutputStream[] logData;
 
+    /**
+     * Versions of each written section, Contains
+     * {@link #count} number of entries
+     */
+    private final short[] versions;
+
     /** The amount of written logs written to the {@link #logData} array */
     private int count;
 
-    public LogFile(DataLog[] logs) {
+    LogFile(DataLog[] logs) {
         this.logs = logs;
         this.keys = new String[logs.length];
         this.logData = new ByteArrayOutputStream[logs.length];
+        this.versions = new short[logs.length];
     }
 
     public void fillArrays() throws IOException {
@@ -61,7 +72,7 @@ public class LogFile {
                 continue;
             }
 
-            var keyOptional = DataLogs.SCHEMAS.getKey(log.getSchema());
+            var keyOptional = DataLogs.SCHEMAS.getHolderByValue(log.getSchema());
 
             if (keyOptional.isEmpty()) {
                 LOGGER.warn("Unregisterd schema found! Cannot serialize");
@@ -71,8 +82,10 @@ public class LogFile {
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
             DataOutputStream dataOutput = new DataOutputStream(byteArray);
 
-            keys[index] = keyOptional.get();
+            keys[index] = keyOptional.get().getKey();
+            versions[index] = keyOptional.get().getValue().getVersion();
             logData[index++] = byteArray;
+
             count = index;
 
             dataOutput.writeInt(log.size());
@@ -98,23 +111,17 @@ public class LogFile {
         DataOutputStream output = new DataOutputStream(stream);
         long offset = 0;
 
+        output.writeShort(FILE_VERSION);
         output.writeInt(count);
 
         // Create header
         for (int i = 0; i < count; i++) {
-            String key = keys[i];
-
-            if (Strings.isNullOrEmpty(key)) {
-                break;
-            }
-
-            var byteOutput = logData[i];
-
-            output.writeUTF(key);
+            output.writeUTF(keys[i]);
             output.writeLong(offset);
+            output.writeShort(versions[i]);
 
             // Accumulate offset, offset begins after header ends
-            offset += byteOutput.size();
+            offset += logData[i].size();
         }
 
         for (int i = 0; i < count; i++) {
@@ -126,35 +133,32 @@ public class LogFile {
         stream.close();
     }
 
-    public static ObjectLongPair<String>[] readHeader(DataInput input)
-            throws IOException
-    {
+    public static Header readHeader(DataInput input) throws IOException {
+        short fileVersion = input.readShort();
         int size = input.readInt();
-        ObjectLongPair<String>[] result = new ObjectLongPair[size];
 
-        for (int i = 0; i < size; i++) {
-            String key = input.readUTF();
-            long address = input.readLong();
+        Header header = new Header(size, fileVersion);
+        header.read(input);
 
-            result[i]= ObjectLongPair.of(key, address);
-        }
-
-        return result;
+        return header;
     }
 
     public static void readQuery(DataInput input,
                                  LogSchema schema,
-                                 QueryResultBuilder builder
+                                 QueryResultBuilder builder,
+                                 HeaderElement headerElement
     ) throws IOException {
         int size = input.readInt();
 
         for (int i = 0; i < size; i++) {
             long date = input.readLong();
             JsonElement element = BinaryJson.read(input);
+
+            var dynamic = new Dynamic<>(JsonOps.INSTANCE, element);
+            dynamic = DataLogs.fix(dynamic, schema, headerElement.version);
+
             var entryOpt = schema
-                    .deserialize(
-                            new Dynamic<>(JsonOps.INSTANCE, element)
-                    )
+                    .deserialize(dynamic)
                     .resultOrPartial(LOGGER::error);
 
             if (entryOpt.isEmpty()) {
@@ -177,14 +181,14 @@ public class LogFile {
     public static void readLog(DataInput input, LogContainer container)
             throws IOException
     {
-        ObjectLongPair<String>[] header = readHeader(input);
+        Header header = readHeader(input);
 
-        for (ObjectLongPair<String> pair : header) {
-            var schemaOpt = DataLogs.SCHEMAS.getHolder(pair.left());
+        for (var element : header) {
+            var schemaOpt = DataLogs.SCHEMAS.getHolder(element.section);
 
             if (schemaOpt.isEmpty()) {
                 LOGGER.warn("Unknown schema found: '{}' Skipping...",
-                        pair.left()
+                        element.section
                 );
                 continue;
             }
@@ -195,9 +199,17 @@ public class LogFile {
 
             for (int j = 0; j < size; j++) {
                 long date = input.readLong();
-                JsonElement element = BinaryJson.read(input);
+                JsonElement jsonElement = BinaryJson.read(input);
+
+                var dynamic = new Dynamic<>(JsonOps.INSTANCE, jsonElement);
+                dynamic = DataLogs.fix(
+                        dynamic,
+                        schema.getValue(),
+                        element.version
+                );
+
                 var entryOpt = schema.getValue()
-                        .deserialize(new Dynamic<>(JsonOps.INSTANCE, element))
+                        .deserialize(dynamic)
                         .resultOrPartial(LOGGER::error);
 
                 if (entryOpt.isEmpty()) {
@@ -208,6 +220,68 @@ public class LogFile {
             }
 
             container.setLog(schema, log);
+        }
+    }
+
+    static class HeaderElement {
+        String section;
+        long offset;
+        short version;
+    }
+
+    @Getter
+    static class Header implements Iterable<HeaderElement> {
+        private final String[] sections;
+        private final long[] offsets;
+        private final short[] versions;
+        private final short fileVersion;
+
+        public Header(int size, short fileVersion) {
+            this.fileVersion = fileVersion;
+
+            this.sections = new String[size];
+            this.offsets = new long[size];
+            this.versions = new short[size];
+        }
+
+        void read(DataInput input) throws IOException {
+            for (int i = 0; i < sections.length; i++) {
+                sections[i] = input.readUTF();
+                offsets[i] = input.readLong();
+                versions[i] = input.readShort();
+            }
+        }
+
+        @NotNull
+        @Override
+        public Iterator<HeaderElement> iterator() {
+            return new Iterator<>() {
+                int index = 0;
+                HeaderElement singleton;
+
+                @Override
+                public boolean hasNext() {
+                    return index < sections.length;
+                }
+
+                @Override
+                public HeaderElement next() {
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (singleton == null) {
+                        singleton = new HeaderElement();
+                    }
+
+                    singleton.section = sections[index];
+                    singleton.offset = offsets[index];
+                    singleton.version = versions[index];
+                    ++index;
+
+                    return singleton;
+                }
+            };
         }
     }
 }

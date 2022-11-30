@@ -209,29 +209,9 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     public boolean overlaps(double minX, double minY, double minZ,
                             double maxX, double maxY, double maxZ
     ) {
-        System.out.println(
-                ("boolean testOverlap() {\n    return this.maxX > minX && this.minX < maxX" +
-                        "\n        " + "&& this.maxZ > minZ && this.minZ < maxZ" +
-                        "\n        " + "&& this.maxY > minY && this.minY < maxY;\n}")
-
-                        .replaceAll("this.maxX", "" + this.maxX)
-                        .replaceAll("this.maxY", "" + this.maxY)
-                        .replaceAll("this.maxZ", "" + this.maxZ)
-                        .replaceAll("this.minX", "" + this.minX)
-                        .replaceAll("this.minY", "" + this.minY)
-                        .replaceAll("this.minZ", "" + this.minZ)
-
-                        .replaceAll("maxX", "" + maxX)
-                        .replaceAll("maxY", "" + maxY)
-                        .replaceAll("maxZ", "" + maxZ)
-                        .replaceAll("minX", "" + minX)
-                        .replaceAll("minY", "" + minY)
-                        .replaceAll("minZ", "" + minZ)
-        );
-
-        return this.maxX > minX && this.minX < maxX
-            && this.maxZ > minZ && this.minZ < maxZ
-            && this.maxY > minY && this.minY < maxY;
+        return ((double) this.minX) < maxX && ((double) this.maxX) + 1.0D > minX
+                && ((double) this.minY) < maxY && ((double) this.maxY) + 1.0D > minY
+                && ((double) this.minZ) < maxZ && ((double) this.maxZ) + 1.0D > minZ;
     }
 
     public boolean contains(AbstractBounds3i o) {

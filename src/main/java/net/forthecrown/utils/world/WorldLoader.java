@@ -41,12 +41,6 @@ public @UtilityClass class WorldLoader {
     private final Logger LOGGER = FTC.getLogger();
 
     /**
-     * Determines if loader instances will load worlds 1 section at a time in
-     * series, or load all sections in parallel
-     */
-    public boolean SINGLE_SECTION_LOADING = true;
-
-    /**
      * The amount of chunks that have to be loaded before the logger logs a
      * progress update message
      */

@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public class LogSchema {
@@ -52,6 +53,22 @@ public class LogSchema {
 
     public static Builder builder(String name, short version) {
         return new Builder(name, version);
+    }
+
+    public <S> Dynamic<S> update(Dynamic<S> dynamic, short oldVersion) {
+        for (short i = (short) (oldVersion + 1); i <= version; i++) {
+            var updaters = getUpdaters().get(i);
+
+            if (updaters == null || updaters.isEmpty()) {
+                continue;
+            }
+
+            for (var u: updaters) {
+                dynamic = u.update(dynamic);
+            }
+        }
+
+        return dynamic;
     }
 
     public <S> DataResult<S> serialize(DynamicOps<S> ops, LogEntry entry) {
@@ -118,6 +135,14 @@ public class LogSchema {
     @Override
     public int hashCode() {
         return Arrays.hashCode(getFields());
+    }
+
+    public <T> boolean contains(SchemaField<T> field) {
+        if (field.id() >= fields.length) {
+            return false;
+        }
+
+        return Objects.equals(field, fields[field.id()]);
     }
 
     @RequiredArgsConstructor

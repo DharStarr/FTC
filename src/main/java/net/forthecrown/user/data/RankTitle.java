@@ -29,36 +29,36 @@ import static net.forthecrown.user.data.RankTier.*;
  */
 @Getter
 public enum RankTitle implements JsonSerializable, ComponentLike {
-    DEFAULT         (true,      NONE,      "default"),
+    DEFAULT         (true,      -1, NONE,      "default"),
 
-    LEGACY_FREE     (false,     FREE,      "&8[&7Veteran Knight&8]"),
-    KNIGHT          (true,      FREE,      "&8[&7Knight&8]"),
-    BARON           (false,     FREE,      "&8[&7Baron&8]"),
-    BARONESS        (false,     FREE,      "&8[&7Baroness&8]"),
-    VIKING          (false,     FREE,      "&8[&7Viking&8]"), // how earn?
-    BERSERKER       (false,     FREE,      "&8[&7Berserker&8]"), // how earn?
+    LEGACY_FREE     (false,     -1, FREE,      "&8[&7Veteran Knight&8]"),
+    KNIGHT          (true,      -1, FREE,      "&8[&7Knight&8]"),
+    BARON           (false,      4, FREE,      "&8[&7Baron&8]"),
+    BARONESS        (false,      3, FREE,      "&8[&7Baroness&8]"),
+    VIKING          (false,     -1, FREE,      "&8[&7Viking&8]"), // how earn?
+    BERSERKER       (false,     -1, FREE,      "&8[&7Berserker&8]"), // how earn?
 
-    LEGACY_TIER_1   (false,     TIER_1,    "&#959595[&6Veteran Lord&#959595]"),
-    LORD            (true,      TIER_1,    "&#959595[&6Lord&#959595]"),
-    LADY            (true,      TIER_1,    "&#959595[&6Lady&#959595]"),
-    SAILOR          (false,     TIER_1,    "&#959595[&6Sailor&#959595]"),
-    WARRIOR         (false,     TIER_1,    "&#959595[&6Warrior&#959595]"),
-    SHIELD_MAIDEN   (false,     TIER_1,    "&#959595[&6ShieldMaiden&#959595]"),
+    LEGACY_TIER_1   (false,     -1, TIER_1,    "&#959595[&6Veteran Lord&#959595]"),
+    LORD            (true,       9, TIER_1,    "&#959595[&6Lord&#959595]"),
+    LADY            (true,       8, TIER_1,    "&#959595[&6Lady&#959595]"),
+    SAILOR          (false,     -1, TIER_1,    "&#959595[&6Sailor&#959595]"),
+    WARRIOR         (false,     12, TIER_1,    "&#959595[&6Warrior&#959595]"),
+    SHIELD_MAIDEN   (false,     11, TIER_1,    "&#959595[&6ShieldMaiden&#959595]"),
 
-    LEGACY_TIER_2   (false,     TIER_2,    "&7[&#ffbf15Veteran Duke&7]"),
-    DUKE            (true,      TIER_2,    "&7[&#ffbf15Duke&7]"),
-    DUCHESS         (true,      TIER_2,    "&7[&#ffbf15Duchess&7]"),
-    CAPTAIN         (false,     TIER_2,    "&7[&#ffbf15Captain&7]"),
-    ELITE           (false,     TIER_2,    "&7[&#ffbf15Elite&7]"),
-    HERSIR          (false,     TIER_2,    "&7[&#ffbf15Hersir&7]"),
+    LEGACY_TIER_2   (false,     -1, TIER_2,    "&7[&#ffbf15Veteran Duke&7]"),
+    DUKE            (true,      15, TIER_2,    "&7[&#ffbf15Duke&7]"),
+    DUCHESS         (true,      14, TIER_2,    "&7[&#ffbf15Duchess&7]"),
+    CAPTAIN         (false,     -1, TIER_2,    "&7[&#ffbf15Captain&7]"),
+    ELITE           (false,     -1, TIER_2,    "&7[&#ffbf15Elite&7]"),
+    HERSIR          (false,     -1, TIER_2,    "&7[&#ffbf15Hersir&7]"),
 
-    LEGACY_TIER_3   (false,     TIER_3,    "[&#FBFF0FVeteran Prince&f]"),
-    PRINCE          (true,      TIER_3,    "[&#FBFF0FPrince&f]"),
-    PRINCESS        (true,      TIER_3,    "[&#FBFF0FPrincess&f]"),
-    ADMIRAL         (false,     TIER_3,    "[&#FBFF0FAdmiral&f]"),
-    ROYAL           (false,     TIER_3,    "[&#FBFF0FRoyal&f]"),
-    JARL            (false,     TIER_3,    "[&#FBFF0FJarl&f]"),
-    LEGEND          (false,     TIER_3,    "&#dfdfdf[&#fff147Legend&#dfdfdf]");
+    LEGACY_TIER_3   (false,     -1, TIER_3,    "[&#FBFF0FVeteran Prince&f]"),
+    PRINCE          (true,      21, TIER_3,    "[&#FBFF0FPrince&f]"),
+    PRINCESS        (true,      20, TIER_3,    "[&#FBFF0FPrincess&f]"),
+    ADMIRAL         (false,     -1, TIER_3,    "[&#FBFF0FAdmiral&f]"),
+    ROYAL           (false,     -1, TIER_3,    "[&#FBFF0FRoyal&f]"),
+    JARL            (false,     -1, TIER_3,    "[&#FBFF0FJarl&f]"),
+    LEGEND          (false,     -1, TIER_3,    "&#dfdfdf[&#fff147Legend&#dfdfdf]");
 
     /**
      * Determines if this title comes with
@@ -84,9 +84,12 @@ public enum RankTitle implements JsonSerializable, ComponentLike {
      */
     private final Component truncatedPrefix;
 
-    RankTitle(boolean defaultTitle, RankTier tier, String prefix) {
+    private final int genderEquivalent;
+
+    RankTitle(boolean defaultTitle, int gendered, RankTier tier, String prefix) {
         this.defaultTitle = defaultTitle;
         this.tier = tier;
+        this.genderEquivalent = gendered;
 
         this.truncatedPrefix = fromString(prefix);
         this.prefix = fromString(prefix == null ? null : prefix + ' ');
@@ -96,6 +99,15 @@ public enum RankTitle implements JsonSerializable, ComponentLike {
 
     private Component fromString(String prefix) {
         return prefix == null ? null : Text.renderString(prefix);
+    }
+
+    /** Gets the rank's opposite gender equivalent */
+    public RankTitle getGenderEquivalent() {
+        if (genderEquivalent == -1) {
+            return null;
+        }
+
+        return values()[genderEquivalent];
     }
 
     @Override

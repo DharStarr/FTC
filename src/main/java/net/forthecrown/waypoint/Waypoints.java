@@ -564,8 +564,12 @@ public @UtilityClass class Waypoints {
 
             // Ensure the area is correct and validate the
             // center block column to ensure it's a proper waypoint
-            Optional<CommandSyntaxException>
-                    error = Waypoints.isValidWaypointArea(pos, type, b.getWorld(), true);
+            var error = Waypoints.isValidWaypointArea(
+                    pos,
+                    type,
+                    b.getWorld(),
+                    true
+            );
 
             if (error.isPresent()) {
                 throw error.get();
@@ -574,6 +578,12 @@ public @UtilityClass class Waypoints {
             waypoint = makeWaypoint(type, pos, source);
         } else {
             waypoint = existing.iterator().next();
+
+            // Ensure the pole they're looking at is valid
+            var error = waypoint.getType().isValid(waypoint);
+            if (error.isPresent()) {
+                throw error.get();
+            }
         }
 
         if (type == WaypointTypes.GUILD) {

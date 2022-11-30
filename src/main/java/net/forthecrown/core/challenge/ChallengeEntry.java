@@ -4,17 +4,23 @@ import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.registry.Holder;
+import net.forthecrown.core.script.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.kyori.adventure.text.Component;
+import org.apache.logging.log4j.Logger;
 
+import java.nio.file.NoSuchFileException;
 import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
 public class ChallengeEntry {
+    private static final Logger LOGGER = FTC.getLogger();
+
     private final UUID id;
 
     private final Object2FloatMap<Challenge>
@@ -91,6 +97,47 @@ public class ChallengeEntry {
                 Messages.challengeCategoryFinished(category)
         );
 
+        // Log streak
         Challenges.logStreak(category, id);
+
+        // Find script callbacks for streak increase
+        var scripts = ChallengeManager.getInstance()
+                .getStorage()
+                .getScripts(category);
+
+        // If there are scripts to execute
+        if (scripts.isEmpty()) {
+            return;
+        }
+
+        var user = getUser();
+        int streak = Challenges.queryStreak(category, user)
+                .orElse(1);
+
+        // Run all scripts for each category
+        scripts.forEach(scriptName -> {
+            Script.run(scriptName, Challenges.METHOD_STREAK_INCREASE, user, streak)
+                    .error()
+                    .ifPresent(throwable -> {
+                        if (throwable instanceof NoSuchFileException) {
+                            LOGGER.error(
+                                    "No script named {} exists!",
+                                    scriptName
+                            );
+
+                            return;
+                        }
+
+                        if (throwable instanceof NoSuchMethodException) {
+                            LOGGER.error(
+                                    "No '{}' method " +
+                                            "declared in script {}",
+                                    Challenges.METHOD_STREAK_INCREASE,
+                                    scriptName,
+                                    throwable
+                            );
+                        }
+                    });
+        });
     }
 }

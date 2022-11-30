@@ -56,11 +56,6 @@ public final class PathUtil {
         }
     }
 
-    /** Gets a path to a file inside the plugin jar */
-    public static Path jarPath(String s, String... others) {
-        return JAR_FILE_SYSTEM.getPath(s, others);
-    }
-
     /** Gets the plugin's data folder */
     public static Path getPluginDirectory() {
         return FTC.getPlugin().getDataFolder().toPath();
@@ -71,8 +66,26 @@ public final class PathUtil {
         return getPluginDirectory().resolve(Paths.get(first, others));
     }
 
-    /* ----------------------------- DEFAULTS ------------------------------- */
+    /* ---------------------- JAR FILE SYSTEM ACCESS ------------------------ */
 
+    /** Gets a path to a file inside the plugin jar */
+    public static Path jarPath(String s, String... others) {
+        return JAR_FILE_SYSTEM.getPath(s, others);
+    }
+
+    /**
+     * Saves a file/directory from the plugin jar resources to the FTC
+     * data folder
+     *
+     * @param sourceDir The path to the directory/file inside the jar,
+     *                  will also act as the path the file/directory is
+     *                  saved to.
+     * @param overwrite True, to overwrite if the file already exists, false
+     *                  otherwise
+     *
+     * @throws IOException If an IO error occurred
+     * @see #saveJarPath(String, Path, boolean)
+     */
     public static void saveJarPath(String sourceDir, boolean overwrite)
             throws IOException
     {
@@ -83,8 +96,21 @@ public final class PathUtil {
         );
     }
 
+    /**
+     * Saves a file/directory from the plugin jar resources to the provided
+     * path.
+     * <p>
+     * If the provided path is a file, it will simply write its contents to
+     * provided path
+     * @param sourceDir The path to the source file/directory
+     * @param dest The destination path to save to
+     * @param overwrite True to overwrite any existing files, false to skip
+     *                  existing files
+     *
+     * @throws IOException If an IO error occurrs
+     */
     public static void saveJarPath(String sourceDir,
-                                   Path destDir,
+                                   Path dest,
                                    boolean overwrite
     ) throws IOException {
         Path jarDir = jarPath(sourceDir);
@@ -96,19 +122,22 @@ public final class PathUtil {
 
         if (Files.isDirectory(jarDir)) {
             DirectoryCopyWalker walker = new DirectoryCopyWalker(
-                    jarDir, destDir, overwrite
+                    jarDir, dest, overwrite
             );
 
             Files.walkFileTree(jarDir, walker);
             return;
         }
 
-        if (Files.exists(destDir) && !overwrite) {
+        if (Files.exists(dest) && !overwrite) {
             return;
         }
 
+        // Ensure the destination directory exists
+        SerializationHelper.ensureParentExists(dest);
+
         var input = Files.newInputStream(jarDir);
-        var output = Files.newOutputStream(destDir);
+        var output = Files.newOutputStream(dest);
 
         IOUtils.copy(input, output);
     }
@@ -322,6 +351,15 @@ public final class PathUtil {
         }
     }
 
+    /**
+     * Archives the given source directory to the destination as a
+     * ZIP file.
+     *
+     * @param source The source directory to zip up
+     * @param dest The destination path of the ZIP file
+     *
+     * @throws IOException If an IO error occurs
+     */
     public static void archive(Path source, Path dest) throws IOException {
         var parent = dest.getParent();
 
@@ -368,6 +406,8 @@ public final class PathUtil {
             );
         }
     }
+
+    /* ---------------------------- SUB CLASSES ----------------------------- */
 
     @RequiredArgsConstructor
     private static class FileFinderWalker implements FileVisitor<Path> {

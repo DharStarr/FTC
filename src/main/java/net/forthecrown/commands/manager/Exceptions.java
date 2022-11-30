@@ -35,7 +35,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
-import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
 import static net.forthecrown.commands.manager.OpenExceptionType.INSTANCE;
@@ -606,14 +605,16 @@ public interface Exceptions {
     }
 
     static CommandSyntaxException farFromWaypoint(int x, int y, int z) {
-        return format("Too far from a region post to teleport." +
+        return format("Too far from a waypoint." +
                         "\nClosest pole is at {0, vector}",
-                Vector2i.from(x, z)
+                Vector3i.from(x, y, z)
         );
     }
 
     static CommandSyntaxException privateRegion(Waypoint region) {
-        return format("'{0}' is a private region", region.get(WaypointProperties.NAME));
+        return format("'{0}' is a private waypoint",
+                region.get(WaypointProperties.NAME)
+        );
     }
 
     static CommandSyntaxException brokenWaypoint(Vector3i pos,

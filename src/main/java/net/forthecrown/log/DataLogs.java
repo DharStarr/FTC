@@ -44,4 +44,12 @@ public @UtilityClass class DataLogs {
         return DataManager.getInstance()
                 .queryLogs(query);
     }
+
+    <S> Dynamic<S> fix(Dynamic<S> dynamic, LogSchema schema, short version) {
+        if (schema.getVersion() == version) {
+            return dynamic;
+        }
+
+        return schema.update(dynamic, version);
+    }
 }

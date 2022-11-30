@@ -3,7 +3,6 @@ package net.forthecrown.log;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.ObjectLongPair;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.utils.io.SerializationHelper;
@@ -192,16 +191,14 @@ public class DataStorage {
             InputStream stream = Files.newInputStream(path);
             DataInputStream input = new DataInputStream(stream);
 
-            ObjectLongPair<String>[] header = LogFile.readHeader(input);
+            var header = LogFile.readHeader(input);
             for (var p: header) {
-                if (!p.left()
-                        .equals(holder.getKey())
-                ) {
+                if (!p.section.equals(holder.getKey())) {
                     continue;
                 }
 
-                input.skipNBytes(p.rightLong());
-                LogFile.readQuery(input, holder.getValue(), builder);
+                input.skipNBytes(p.offset);
+                LogFile.readQuery(input, holder.getValue(), builder, p);
 
                 break;
             }

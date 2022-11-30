@@ -71,7 +71,15 @@ public class UserTitles extends UserComponent {
             return hasTier(title.getTier());
         }
 
-        return available.contains(title);
+        if (available.contains(title)) {
+            return true;
+        }
+
+        if (title.getGenderEquivalent() == null) {
+            return false;
+        }
+
+        return available.contains(title.getGenderEquivalent());
     }
 
     /**
@@ -130,6 +138,10 @@ public class UserTitles extends UserComponent {
     public void addTitle(RankTitle title, boolean givePermissions, boolean setTier) {
         if (!title.isDefaultTitle()) {
             available.add(title);
+
+            if (title.getGenderEquivalent() != null) {
+                available.add(title.getGenderEquivalent());
+            }
         }
 
         if (!hasTier(title.getTier()) && setTier) {
@@ -148,6 +160,10 @@ public class UserTitles extends UserComponent {
         }
 
         available.remove(title);
+
+        if (title.getGenderEquivalent() != null) {
+            available.remove(title.getGenderEquivalent());
+        }
     }
 
     /**

@@ -16,16 +16,14 @@ public @UtilityClass class ChallengeLogs {
 
     public final Holder<LogSchema> COMPLETED;
 
-    public final SchemaField<Long> TIME;
-    public final SchemaField<UUID> PLAYER;
-    public final SchemaField<String> COMPLETED_CHALLENGE;
+    public final SchemaField<UUID> C_PLAYER;
+    public final SchemaField<String> C_CHALLENGE;
 
     static {
         var builder = LogSchema.builder("challenges/completed");
 
-        TIME = builder.add("time", Codec.LONG);
-        PLAYER = builder.add("player", UUIDUtil.CODEC);
-        COMPLETED_CHALLENGE = builder.add("challenge", FtcCodecs.KEY_CODEC);
+        C_PLAYER = builder.add("player", UUIDUtil.CODEC);
+        C_CHALLENGE = builder.add("challenge", FtcCodecs.KEY_CODEC);
 
         COMPLETED = builder.register();
     }

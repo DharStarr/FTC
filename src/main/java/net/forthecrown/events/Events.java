@@ -81,7 +81,6 @@ public final class Events {
 
         PacketListeners.register(new PlayerPacketListener());
         PacketListeners.register(new ChatPacketListener());
-        PacketListeners.register(new NameTagPacketListener());
     }
 
     /**
