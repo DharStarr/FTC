@@ -70,7 +70,7 @@ public class MessageBoardMenu extends ListPage<GuildMessage> {
     public @Nullable ItemStack createItem(@NotNull User user, @NotNull InventoryContext context) {
         return ItemStacks.builder(Material.OAK_SIGN)
                 .setName("&eMessage Board")
-                .addLore("&7A place to post messages for the guild")
+                .addLore("&7A place to post messages for the guild.")
                 .build();
     }
 

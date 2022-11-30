@@ -74,6 +74,6 @@ public class MotdListener implements Listener {
                     .color(NamedTextColor.RED);
         }
 
-        return Component.text("Survival Minecraft").color(NamedTextColor.YELLOW);
+        return Component.text("Now with guilds!").color(NamedTextColor.YELLOW);
     }
 }

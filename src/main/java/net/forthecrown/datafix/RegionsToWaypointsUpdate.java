@@ -11,13 +11,16 @@ import net.forthecrown.utils.Util;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.utils.math.WorldBounds3i;
 import net.forthecrown.waypoint.Waypoint;
 import net.forthecrown.waypoint.WaypointManager;
 import net.forthecrown.waypoint.WaypointProperties;
+import net.forthecrown.waypoint.type.PlayerWaypointType;
 import net.forthecrown.waypoint.type.WaypointTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import org.bukkit.Material;
 import org.bukkit.permissions.Permission;
 import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
@@ -89,14 +92,6 @@ public class RegionsToWaypointsUpdate extends DataUpdater {
                 waypoint.set(WaypointProperties.ALLOWS_MARKER, !noMarker);
                 waypoint.set(WaypointProperties.HIDE_RESIDENTS, hideResidents);
 
-                // Hardcoded exception for spawn region
-                // and guardian region to be invulnerable
-                if (name != null
-                        && (name.equals("Hazelguard") || name.equals("Guardian"))
-                ) {
-                    waypoint.set(WaypointProperties.INVULNERABLE, true);
-                }
-
                 waypoint.setType(WaypointTypes.REGION_POLE);
                 waypoint.setPosition(pos, Worlds.overworld());
 
@@ -104,6 +99,32 @@ public class RegionsToWaypointsUpdate extends DataUpdater {
                         rTag.getList(TAG_RESIDENCY, Tag.TAG_COMPOUND),
                         waypoint
                 );
+
+                if (!Strings.isNullOrEmpty(name)) {
+                    waypoint.set(WaypointProperties.INVULNERABLE, true);
+                } else if (waypoint.getResidents().isEmpty()) {
+                    WorldBounds3i bounds = waypoint.getBounds()
+                            .toWorldBounds(waypoint.getWorld());
+
+                    for (var b: bounds) {
+                        b.setType(Material.AIR, false);
+                    }
+
+                    LOGGER.info("Destroyed pole at {}", pos);
+                    continue;
+                } else {
+                    PlayerWaypointType type = WaypointTypes.PLAYER;
+                    Vector3i wPos = pos.add(Vector3i.UNIT_Y);
+
+                    for (int i = 0; i < type.getColumn().length; i++) {
+                        Vectors.getBlock(wPos.add(0, i, 0), waypoint.getWorld())
+                                .setType(type.getColumn()[i], false);
+                    }
+
+                    waypoint.setPosition(wPos, waypoint.getWorld());
+                    waypoint.setType(type);
+                    LOGGER.info("Converted pole at {} to player type", wPos);
+                }
 
                 manager.addWaypoint(waypoint);
 

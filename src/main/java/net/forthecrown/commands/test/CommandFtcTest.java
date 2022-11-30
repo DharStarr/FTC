@@ -1,11 +1,16 @@
 package net.forthecrown.commands.test;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.FTC;
+import net.forthecrown.core.challenge.ChallengeManager;
+import net.forthecrown.core.challenge.Challenges;
+import net.forthecrown.core.challenge.StreakCategory;
 import net.forthecrown.core.module.ModuleServices;
+import net.forthecrown.core.script.Script;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.utils.Particles;
@@ -24,6 +29,7 @@ import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import java.io.Reader;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -56,6 +62,55 @@ public class CommandFtcTest extends FtcCommand {
     @Override
     protected void createCommand(BrigadierCommand command) {
         command
+                .then(literal("streak_test")
+                        .then(argument("streak", IntegerArgumentType.integer(0))
+                                .executes(c -> {
+                                    int streak = c.getArgument("streak", Integer.TYPE);
+
+                                    // Find script callbacks for streak increase
+                                    var scripts = ChallengeManager.getInstance()
+                                            .getStorage()
+                                            .getScripts(StreakCategory.ITEMS);
+
+                                    // If there are scripts to execute
+                                    if (scripts.isEmpty()) {
+                                        c.getSource().sendMessage("No scripts");
+                                        return 0;
+                                    }
+
+                                    var user = getUserSender(c);
+
+                                    // Run all scripts for each category
+                                    scripts.forEach(scriptName -> {
+                                        Script.run(scriptName, Challenges.METHOD_STREAK_INCREASE, user, streak)
+                                                .error()
+                                                .ifPresent(throwable -> {
+                                                    if (throwable instanceof NoSuchFileException) {
+                                                        LOGGER.error(
+                                                                "No script named {} exists!",
+                                                                scriptName
+                                                        );
+
+                                                        return;
+                                                    }
+
+                                                    if (throwable instanceof NoSuchMethodException) {
+                                                        LOGGER.error(
+                                                                "No '{}' method " +
+                                                                        "declared in script {}",
+                                                                Challenges.METHOD_STREAK_INCREASE,
+                                                                scriptName,
+                                                                throwable
+                                                        );
+                                                    }
+                                                });
+                                    });
+
+                                    return 0;
+                                })
+                        )
+                )
+
                 .then(literal("guild_message")
                         .executes(c -> {
                             var user = getUserSender(c);

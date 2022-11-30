@@ -13,7 +13,6 @@ import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.text.Text;
-import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.utils.text.writer.TextWriter;
 import org.bukkit.inventory.ItemStack;
 
@@ -144,11 +143,11 @@ public class Reward {
         int guildExp = this.guildExp.getInt(streak);
 
         if (rhines > 0) {
-            writer.field("Rhines", UnitFormat.rhines(rhines));
+            writer.field("Rhines", Text.NUMBER_FORMAT.format(rhines));
         }
 
         if (gems > 0) {
-            writer.field("Gems", UnitFormat.gems(gems));
+            writer.field("Gems", Text.NUMBER_FORMAT.format(gems));
         }
 
         if (guildExp > 0) {

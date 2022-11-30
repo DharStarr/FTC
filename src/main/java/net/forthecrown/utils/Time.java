@@ -35,6 +35,13 @@ public final class Time {
         );
     }
 
+    public static LocalDate localDate(long time) {
+        return LocalDate.ofInstant(
+                Instant.ofEpochMilli(time),
+                ZoneId.systemDefault()
+        );
+    }
+
     public static LocalDateTime localTime(long timeStamp) {
         return LocalDateTime.ofInstant(
                 Instant.ofEpochMilli(timeStamp),

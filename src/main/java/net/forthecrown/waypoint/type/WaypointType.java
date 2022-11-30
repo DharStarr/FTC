@@ -65,4 +65,8 @@ public abstract class WaypointType {
                 .center()
                 .withY(waypoint.getBounds().maxY());
     }
+
+    public boolean isDestroyed(Waypoint waypoint) {
+        return false;
+    }
 }

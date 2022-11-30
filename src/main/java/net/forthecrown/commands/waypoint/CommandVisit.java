@@ -2,7 +2,6 @@ package net.forthecrown.commands.waypoint;
 
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.utils.Cooldown;
@@ -41,8 +40,6 @@ public class CommandVisit extends FtcCommand {
                             Cooldown.testAndThrow(c.getSource(), "waypoint_visit", 5 * 20);
 
                             var waypoint = Arguments.getWaypoint(c, "waypoint");
-                            FTC.getLogger().debug("bounds={}", waypoint.getBounds());
-
                             WaypointVisit.visit(getUserSender(c), waypoint);
 
                             return 0;

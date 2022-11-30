@@ -3,20 +3,6 @@ Current TODO:
 - GC rank toggle, for each individual rank :sad:
 
 Bugs:
-- isClearAbove in Util may be potentially wrong.
-
-- Waypoint validation marks snow as an interfering
-  block
-
-- Bounds3i usages are still buggy, especially
-  the AreaTrigger case
-
-- AreaTriggers tend to have malformed bounding
-  boxes or broken collision code
-
--
-
-
 
 
 

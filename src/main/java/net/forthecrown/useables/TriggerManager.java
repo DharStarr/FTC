@@ -10,7 +10,6 @@ import net.forthecrown.utils.math.Vectors;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BoundingBox;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.util.Collection;
@@ -113,11 +112,10 @@ public class TriggerManager {
         double hWidth = player.getWidth() / 2;
         double height = player.getHeight();
 
-        BoundingBox sourceBounds = makeBounds(p1, hWidth, height);
-        BoundingBox destBounds = makeBounds(p2, hWidth, height);
+        Bounds3i sourceBounds = makeBounds(p1, hWidth, height);
+        Bounds3i destBounds = makeBounds(p2, hWidth, height);
 
-        Bounds3i totalArea = Bounds3i.of(sourceBounds)
-                .combine(Bounds3i.of(destBounds));
+        Bounds3i totalArea = sourceBounds.combine(destBounds);
 
         var w = player.getWorld();
 
@@ -136,8 +134,8 @@ public class TriggerManager {
         }
     }
 
-    private BoundingBox makeBounds(Vector3d pos, double hWidth, double height) {
-        return new BoundingBox(
+    private Bounds3i makeBounds(Vector3d pos, double hWidth, double height) {
+        return Bounds3i.of(
                 pos.x() - hWidth, pos.y(),          pos.z() - hWidth,
                 pos.x() + hWidth, pos.y() + height, pos.z() + hWidth
         );

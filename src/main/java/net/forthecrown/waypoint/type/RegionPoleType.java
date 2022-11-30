@@ -80,4 +80,12 @@ public class RegionPoleType extends PlayerWaypointType {
         return super.getVisitPosition(waypoint)
                 .add(0, 1, 0);
     }
+
+    @Override
+    public boolean isDestroyed(Waypoint waypoint) {
+        return isDestroyed(
+                waypoint.getPosition().add(0, 1, 0),
+                waypoint.getWorld()
+        );
+    }
 }

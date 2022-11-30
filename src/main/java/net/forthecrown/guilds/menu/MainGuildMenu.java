@@ -37,7 +37,7 @@ public class MainGuildMenu extends MenuPage {
         upgradesMenu = new UpgradesMenu(this);
 
         initMenu(
-                Menus.builder(Menus.MAX_INV_SIZE, "Guild Menu"),
+                Menus.builder(Menus.MAX_INV_SIZE - 9, "Guild Menu"),
                 false
         );
     }
@@ -53,7 +53,7 @@ public class MainGuildMenu extends MenuPage {
                         .setItem((user, context) -> {
                             return ItemStacks.builder(Material.KNOWLEDGE_BOOK)
                                     .setName("&eChallenges")
-                                    .addLore("&7Challenges to gain guild Exp")
+                                    .addLore("&7Challenges to gain guild Exp.")
                                     .build();
                         })
 

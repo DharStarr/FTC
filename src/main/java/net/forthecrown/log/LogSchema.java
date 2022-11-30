@@ -34,13 +34,10 @@ public class LogSchema {
     private final short version;
     private final Short2ObjectMap<List<LogDataFixer>> updaters;
 
-    public LogSchema(SchemaField[] fields,
-                     short version,
-                     Short2ObjectMap<List<LogDataFixer>> updaters
-    ) {
-        this.fields = fields;
-        this.version = version;
-        this.updaters = Short2ObjectMaps.unmodifiable(updaters);
+    private LogSchema(Builder builder) {
+        this.fields = builder.fields.toArray(SchemaField[]::new);
+        this.version = builder.version;
+        this.updaters = Short2ObjectMaps.unmodifiable(builder.updaters);
 
         for (var f: Validate.noNullElements(fields)) {
             byName.put(f.name(), f);
@@ -56,6 +53,20 @@ public class LogSchema {
     }
 
     public <S> Dynamic<S> update(Dynamic<S> dynamic, short oldVersion) {
+        if (oldVersion == version) {
+            return dynamic;
+        }
+
+        if (oldVersion > version) {
+            LOGGER.warn(
+                    "Cannot update entry with greater version than schema " +
+                            "({} > {})",
+                    oldVersion, version
+            );
+
+            return dynamic;
+        }
+
         for (short i = (short) (oldVersion + 1); i <= version; i++) {
             var updaters = getUpdaters().get(i);
 
@@ -180,11 +191,7 @@ public class LogSchema {
         }
 
         public LogSchema build() {
-            return new LogSchema(
-                    fields.toArray(SchemaField[]::new),
-                    version,
-                    updaters
-            );
+            return new LogSchema(this);
         }
 
         public Holder<LogSchema> register() {

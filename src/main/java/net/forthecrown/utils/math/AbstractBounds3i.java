@@ -103,12 +103,12 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
 
     public T combine(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         return set(
-                Math.min(this.minX, maxX),
-                Math.min(this.minY, maxY),
-                Math.min(this.minZ, maxZ),
-                Math.max(this.maxX, minX),
-                Math.max(this.maxY, minY),
-                Math.max(this.maxZ, minZ)
+                Math.min(this.minX, minX),
+                Math.min(this.minY, minY),
+                Math.min(this.minZ, minZ),
+                Math.max(this.maxX, maxX),
+                Math.max(this.maxY, maxY),
+                Math.max(this.maxZ, maxZ)
         );
     }
 
@@ -188,10 +188,7 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     }
 
     public boolean overlaps(org.bukkit.util.BoundingBox box) {
-        return overlaps(
-                box.getMinX(), box.getMinY(), box.getMinZ(),
-                box.getMaxX(), box.getMaxY(), box.getMaxZ()
-        );
+        return overlaps(Bounds3i.of(box));
     }
 
     public boolean overlaps(AbstractBounds3i o) {
@@ -201,9 +198,9 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> implements
     public boolean overlaps(int minX, int minY, int minZ,
                             int maxX, int maxY, int maxZ
     ) {
-        return this.minX <= maxX && this.maxX >= minX
-            && this.minY <= maxY && this.maxY >= minY
-            && this.minZ <= maxZ && this.maxZ >= minZ;
+        return this.minX < maxX && this.maxX >= minX
+            && this.minY < maxY && this.maxY >= minY
+            && this.minZ < maxZ && this.maxZ >= minZ;
     }
 
     public boolean overlaps(double minX, double minY, double minZ,

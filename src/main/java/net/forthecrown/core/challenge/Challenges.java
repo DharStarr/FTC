@@ -13,6 +13,8 @@ import net.forthecrown.user.User;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.*;
+import net.forthecrown.utils.text.Text;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.Range;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
@@ -130,7 +132,7 @@ public @UtilityClass class Challenges {
     }
 
     Menu createItemMenu(Registry<Challenge> challenges, SellShop shop) {
-        MenuBuilder builder = Menus.builder(Menus.MAX_INV_SIZE)
+        MenuBuilder builder = Menus.builder(Menus.MAX_INV_SIZE - 9)
                 .setTitle("Daily Item Challenges")
                 .addBorder()
 
@@ -138,7 +140,22 @@ public @UtilityClass class Challenges {
                 .add(Slot.ZERO, SellShopNodes.previousPage(shop))
 
                 // Header
-                .add(Slot.of(4), createMenuHeader());
+                .add(Slot.of(4), createMenuHeader())
+
+                .add(Slot.of(4, 4),
+                        MenuNode.builder()
+                                .setItem((user, context) -> {
+                                    return ItemStacks.builder(Material.BOOK)
+                                            .setName("&eInfo")
+                                            .addLore("&7This challenge is reset daily. Complete it to build a streak.")
+                                            .addLore("&7The longer your streak, the greater the rewards!")
+                                            .addLore("")
+                                            .addLore("&7Rewards include:")
+                                            .addLore("&7Rhines, Gems, Guild EXP and mob Plushies")
+                                            .build();
+                                })
+                                .build()
+                );
 
         for (var h: challenges.entries()) {
             if (!(h.getValue() instanceof ItemChallenge item)) {
@@ -158,10 +175,22 @@ public @UtilityClass class Challenges {
     public static MenuNode createMenuHeader() {
         return MenuNode.builder()
                 .setItem((user, context) -> {
-                    return ItemStacks.builder(Material.CLOCK)
+                    var builder = ItemStacks.builder(Material.CLOCK)
                             .setName("&bDaily Item Challenges")
-                            .setFlags(ItemFlag.HIDE_ATTRIBUTES)
-                            .build();
+                            .setFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+                    int streak = queryStreak(StreakCategory.ITEMS, user)
+                            .orElse(0);
+
+                    builder.addLore(
+                            Text.format(
+                                    "Current streak: {0, number}",
+                                    NamedTextColor.GRAY,
+                                    streak
+                            )
+                    );
+
+                    return builder.build();
                 })
                 .build();
     }
@@ -184,12 +213,10 @@ public @UtilityClass class Challenges {
                 .maxResults(ChallengeConfig.maxStreak)
 
                 .field(ChallengeLogs.S_CATEGORY)
-                .add(Objects::nonNull)
-                .add(s -> category == s)
+                .add(c -> Objects.equals(category, c))
 
                 .field(ChallengeLogs.S_PLAYER)
-                .add(Objects::nonNull)
-                .add(uuid -> viewer.getUniqueId().equals(uuid))
+                .add(uuid -> Objects.equals(viewer.getUniqueId(), uuid))
 
                 .build();
 
@@ -208,7 +235,9 @@ public @UtilityClass class Challenges {
             LocalDate eDate = Time.localTime(entry.getDate())
                     .toLocalDate();
 
-            if (!category.areNeighboring(lastDate, eDate)) {
+            if (eDate.compareTo(lastDate) != 0
+                    && !category.areNeighboring(lastDate, eDate)
+            ) {
                 break;
             }
 

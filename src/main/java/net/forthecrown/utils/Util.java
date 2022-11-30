@@ -117,8 +117,11 @@ public final class Util {
         return collection == null || collection.isEmpty();
     }
 
-    public static void giveOrDropItem(Inventory inv, Location loc, ItemStack item) {
-        if(inv.firstEmpty() == -1) {
+    public static void giveOrDropItem(Inventory inv,
+                                      Location loc,
+                                      ItemStack item
+    ) {
+        if (inv.firstEmpty() == -1) {
             loc.getWorld().dropItem(loc, item);
         } else {
             inv.addItem(item);

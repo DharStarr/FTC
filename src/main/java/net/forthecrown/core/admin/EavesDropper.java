@@ -103,6 +103,10 @@ public class EavesDropper {
     }
 
     public static void reportGuildChat(User sender, Mute mute, Guild guild, Component message) {
+        if (sender.hasPermission(Permissions.EAVESDROP_ADMIN)) {
+            return;
+        }
+
         send(
                 edGuildChat(sender, guild, mute, message),
                 Properties.EAVES_DROP_GUILD_CHAT,

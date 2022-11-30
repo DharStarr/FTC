@@ -1,7 +1,7 @@
 package net.forthecrown.useables;
 
+import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.WorldBounds3i;
-import org.bukkit.util.BoundingBox;
 
 /**
  * A {@link UsableTrigger}'s type.
@@ -15,8 +15,8 @@ public enum TriggerType {
     ENTER {
         @Override
         public boolean shouldRun(WorldBounds3i bounds3i,
-                                 BoundingBox pos,
-                                 BoundingBox dest
+                                 Bounds3i pos,
+                                 Bounds3i dest
         ) {
             return bounds3i.overlaps(dest)
                     && !bounds3i.overlaps(pos);
@@ -27,8 +27,8 @@ public enum TriggerType {
     EXIT {
         @Override
         public boolean shouldRun(WorldBounds3i bounds3i,
-                                 BoundingBox pos,
-                                 BoundingBox dest
+                                 Bounds3i pos,
+                                 Bounds3i dest
         ) {
             return !bounds3i.overlaps(dest)
                     && bounds3i.overlaps(pos);
@@ -39,8 +39,8 @@ public enum TriggerType {
     EITHER {
         @Override
         public boolean shouldRun(WorldBounds3i bounds3i,
-                                 BoundingBox pos,
-                                 BoundingBox dest
+                                 Bounds3i pos,
+                                 Bounds3i dest
         ) {
             return EXIT.shouldRun(bounds3i, pos, dest)
                     || ENTER.shouldRun(bounds3i, pos, dest);
@@ -51,15 +51,15 @@ public enum TriggerType {
     MOVE {
         @Override
         public boolean shouldRun(WorldBounds3i bounds3i,
-                                 BoundingBox pos,
-                                 BoundingBox dest
+                                 Bounds3i pos,
+                                 Bounds3i dest
         ) {
             return bounds3i.overlaps(dest);
         }
     };
 
     public abstract boolean shouldRun(WorldBounds3i bounds3i,
-                                      BoundingBox pos,
-                                      BoundingBox dest
+                                      Bounds3i pos,
+                                      Bounds3i dest
     );
 }

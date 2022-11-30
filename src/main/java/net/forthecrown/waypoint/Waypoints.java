@@ -21,6 +21,7 @@ import net.forthecrown.structure.FunctionInfo;
 import net.forthecrown.structure.StructurePlaceConfig;
 import net.forthecrown.structure.Structures;
 import net.forthecrown.user.User;
+import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserHomes;
@@ -38,6 +39,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.Snow;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -276,7 +278,9 @@ public @UtilityClass class Waypoints {
         return !BannedWords.contains(name)
                 && !name.contains(" ")
                 && !name.equalsIgnoreCase(WaypointArgument.FLAG_NEAREST)
-                && !name.equalsIgnoreCase(WaypointArgument.FLAG_CURRENT);
+                && !name.equalsIgnoreCase(WaypointArgument.FLAG_CURRENT)
+                && GuildManager.get().getGuild(name) == null
+                && UserManager.get().getUserLookup().get(name) == null;
     }
 
     /**
@@ -372,7 +376,15 @@ public @UtilityClass class Waypoints {
             }
 
             // Test if block is empty
-            if (b.isEmpty() || !b.isCollidable() || b.isPassable()) {
+            // hardcoded exception for snow lmao
+            if (b.getBlockData() instanceof Snow snow) {
+                int dif = snow.getMaximumLayers() - snow.getMinimumLayers();
+                int half = dif / 2;
+
+                if (snow.getLayers() <= half) {
+                    continue;
+                }
+            } else if (b.isEmpty() || !b.isCollidable() || b.isPassable()) {
                 continue;
             }
 

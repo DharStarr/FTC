@@ -47,6 +47,7 @@ public final class Events {
         register(new ShopInventoryListener());
 
         register(new WaypointListener());
+        register(new WaypointDestroyListener());
         register(new MarketListener());
 
         // Random features

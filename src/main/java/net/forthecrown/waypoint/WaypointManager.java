@@ -80,6 +80,12 @@ public class WaypointManager extends SerializableObject.NbtDat {
                 continue;
             }
 
+            // Destroyed poles are always definitely removed
+            if (w.getType().isDestroyed(w)) {
+                toRemove.add(w);
+                continue;
+            }
+
             // Ensure the pole's area is valid
             var result = w.getType().isValid(w);
 

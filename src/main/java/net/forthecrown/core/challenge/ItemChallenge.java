@@ -168,11 +168,7 @@ public class ItemChallenge implements Challenge {
                     var builder = ItemStacks.toBuilder(baseItem)
                             .setName(getName())
                             .clearLore()
-                            .setFlags(
-                                    ItemFlag.HIDE_ENCHANTS,
-                                    ItemFlag.HIDE_ATTRIBUTES,
-                                    ItemFlag.HIDE_POTION_EFFECTS
-                            );
+                            .addFlags(ItemFlag.HIDE_ENCHANTS);
 
                     if (Challenges.hasCompleted(this, user.getUniqueId())) {
                         builder.addEnchant(Enchantment.BINDING_CURSE, 1)

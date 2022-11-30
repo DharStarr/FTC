@@ -10,6 +10,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
 public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vector3i> {
@@ -104,11 +105,24 @@ public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vec
 
     public static Bounds3i of(BoundingBox box) {
         return of(
-                Vectors.intFrom(box.getMin()),
-
+                Vectors.doubleFrom(box.getMin()),
                 Vectors.doubleFrom(box.getMax())
-                        .ceil()
-                        .toInt()
+        );
+    }
+
+    public static Bounds3i of(double minX, double minY, double minZ,
+                              double maxX, double maxY, double maxZ
+    ) {
+        return of(
+                Vector3d.from(minX, minY, minZ),
+                Vector3d.from(maxX, maxY, maxZ)
+        );
+    }
+
+    public static Bounds3i of(Vector3d min, Vector3d max) {
+        return of(
+                min.floor().toInt(),
+                max.ceil().toInt()
         );
     }
 
