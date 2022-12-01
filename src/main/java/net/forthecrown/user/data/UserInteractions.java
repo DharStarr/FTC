@@ -5,11 +5,9 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.core.Messages;
 import net.forthecrown.user.*;
 import net.forthecrown.user.property.Properties;
-import net.forthecrown.utils.Time;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import org.apache.commons.lang3.Validate;
@@ -83,10 +81,6 @@ public class UserInteractions extends UserComponent {
 
         setSpouse(null);
         spouse.getInteractions().setSpouse(null);
-
-        // Update time stamps
-        user.setTimeToNow(TimeField.MARRIAGE_CHANGE);
-        spouse.setTimeToNow(TimeField.MARRIAGE_CHANGE);
 
         // Ensure neither is in marriage chat
         user.set(Properties.MARRIAGE_CHAT, false);
@@ -308,22 +302,6 @@ public class UserInteractions extends UserComponent {
      */
     private static TeleportRequest latestRequest(List<TeleportRequest> requests) {
         return requests.isEmpty() ? null : requests.get(0);
-    }
-
-    /**
-     * Checks if this user is allowed to change their marriage status
-     * @return True, if the user's marriage status cooldown has ended
-     */
-    public boolean canChangeMarriageStatus() {
-        var tracker = user.getTimeTracker();
-
-        if (!tracker.isSet(TimeField.MARRIAGE_CHANGE)) {
-            return true;
-        }
-
-        return Time.isPast(
-                GeneralConfig.marriageCooldown + tracker.get(TimeField.MARRIAGE_CHANGE)
-        );
     }
 
     /**

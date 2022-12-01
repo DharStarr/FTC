@@ -14,7 +14,7 @@ import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.economy.Economy;
-import net.forthecrown.log.DataManager;
+import net.forthecrown.log.LogManager;
 import net.forthecrown.log.LogQuery;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.Util;
@@ -245,7 +245,7 @@ public class ChallengeManager {
     }
 
     private void loadActive() {
-        var list = DataManager.getInstance()
+        var list = LogManager.getInstance()
                 .queryLogs(
                         LogQuery.builder(ChallengeLogs.ACTIVE)
                                 .queryRange(getQueryRange())

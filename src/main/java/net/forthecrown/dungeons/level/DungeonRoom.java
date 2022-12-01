@@ -2,10 +2,10 @@ package net.forthecrown.dungeons.level;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
-import net.forthecrown.dungeons.DungeonWorld;
 import net.forthecrown.dungeons.level.decoration.DungeonSpawner;
 import net.forthecrown.utils.io.TagUtil;
 import net.minecraft.nbt.CompoundTag;
+import org.bukkit.World;
 
 import java.util.List;
 
@@ -50,7 +50,12 @@ public class DungeonRoom extends DungeonPiece {
     }
 
     @Override
-    public void onTick() {
-        spawners.forEach(spawner -> spawner.onTick(DungeonWorld.get()));
+    public void onTick(World world, DungeonLevel level) {
+        spawners.forEach(spawner -> spawner.onTick(world));
+    }
+
+    @Override
+    public boolean isTicked() {
+        return true;
     }
 }

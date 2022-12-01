@@ -59,15 +59,6 @@ public class CommandMarry extends FtcCommand {
                                 throw Exceptions.targetAlreadyMarried(target);
                             }
 
-                            // Both can change marriage status
-                            if (!userSocials.canChangeMarriageStatus()) {
-                                throw Exceptions.marriageStatusSender(user);
-                            }
-
-                            if (!targetSocials.canChangeMarriageStatus()) {
-                                throw Exceptions.marriageStatusTarget(target);
-                            }
-
                             // Both accepting proposals
                             if (!user.get(Properties.ACCEPTING_PROPOSALS)) {
                                 throw Exceptions.MARRY_DISABLED_SENDER;

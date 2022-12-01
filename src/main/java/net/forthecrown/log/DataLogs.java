@@ -29,19 +29,19 @@ public @UtilityClass class DataLogs {
     }
 
     public void log(LogSchema schema, LogEntry entry) {
-        DataManager.getInstance()
+        LogManager.getInstance()
                 .getLogs()
                 .log(schema, entry);
     }
 
     public void log(Holder<LogSchema> schema, LogEntry entry) {
-        DataManager.getInstance()
+        LogManager.getInstance()
                 .getLogs()
                 .log(schema, entry);
     }
 
     public List<LogEntry> query(LogQuery query) {
-        return DataManager.getInstance()
+        return LogManager.getInstance()
                 .queryLogs(query);
     }
 

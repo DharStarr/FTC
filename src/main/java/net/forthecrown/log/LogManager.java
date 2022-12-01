@@ -17,9 +17,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Getter
-public class DataManager {
+public class LogManager {
     @Getter
-    private static final DataManager instance = new DataManager();
+    private static final LogManager instance = new LogManager();
 
     private static final Logger LOGGER = FTC.getLogger();
 
@@ -30,14 +30,16 @@ public class DataManager {
     private LogContainer logs = new LogContainer();
 
     private final DataStorage storage;
+    private final LogIndex index;
 
     private Range<ChronoLocalDate> logRange;
 
     /* ---------------------------- CONSTRUCTOR ----------------------------- */
 
-    private DataManager() {
+    private LogManager() {
         storage = new DataStorage(PathUtil.getPluginDirectory("data"));
         logRange = Range.is(date);
+        this.index = new LogIndex();
     }
 
     /* ------------------------------ METHODS ------------------------------- */

@@ -1,5 +1,6 @@
 package net.forthecrown.dungeons.level.gate;
 
+import com.mojang.datafixers.util.Pair;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.dungeons.level.PieceTypes;
@@ -21,5 +22,27 @@ public final class Gates {
 
     private static Holder<GateType> create(String name, String struct, boolean canOpen) {
         return REGISTRY.register(name, new GateType(struct, canOpen));
+    }
+
+    public static Pair<Holder<GateType>, GateData> findMatching(GateData.Opening opening,
+                                                                boolean open
+    ) {
+        final int requiredGates = open ? 2 : 1;
+
+        for (var h: REGISTRY.entries()) {
+            var gates = h.getValue().getGates();
+
+            if (gates.size() < requiredGates) {
+                continue;
+            }
+
+            for (var g: gates) {
+                if (g.opening().equals(opening)) {
+                    return Pair.of(h, g);
+                }
+            }
+        }
+
+        return null;
     }
 }

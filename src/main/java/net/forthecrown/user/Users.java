@@ -6,7 +6,6 @@ import lombok.experimental.UtilityClass;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.Messages;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.user.data.TimeField;
 import net.forthecrown.user.data.UserInteractions;
 import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.Util;
@@ -305,9 +304,6 @@ public @UtilityClass class Users {
 
         tInter.setSpouse(user.getUniqueId());
         tInter.setWaitingFinish(null);
-
-        user.setTimeToNow(TimeField.MARRIAGE_CHANGE);
-        target.setTimeToNow(TimeField.MARRIAGE_CHANGE);
 
         target.sendMessage(Messages.nowMarried(user));
         user.sendMessage(Messages.nowMarried(target));

@@ -3,6 +3,7 @@ package net.forthecrown.dungeons.level;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
@@ -21,6 +22,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.bukkit.World;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,12 +43,15 @@ public abstract class DungeonPiece implements BoundsHolder {
 
     /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
+    /** Randomly generated ID of the piece */
     @Getter
     private final UUID id;
 
+    /** Piece's type */
     @Getter
     private final PieceType<? extends DungeonPiece> type;
 
+    /** Name of the palette that will be placed */
     @Getter @Setter
     private String paletteName = BlockStructure.DEFAULT_PALETTE_NAME;
 
@@ -60,11 +65,18 @@ public abstract class DungeonPiece implements BoundsHolder {
 
     @Getter
     private DungeonPiece parent;
-    protected final Object2ObjectMap<UUID, DungeonPiece> children = new Object2ObjectOpenHashMap<>();
+
+    protected final Object2ObjectMap<UUID, DungeonPiece>
+            children = new Object2ObjectOpenHashMap<>();
 
     @Getter
     private Rotation rotation = Rotation.NONE;
 
+    /** List of users inside this room */
+    @Getter
+    private final List<User> users = new ObjectArrayList<>();
+
+    /** The level this piece is apart of */
     @Getter
     DungeonLevel level;
 
@@ -242,15 +254,25 @@ public abstract class DungeonPiece implements BoundsHolder {
 
     /* ----------------------------- CALLBACKS ------------------------------ */
 
-    public void onTick() {
+    /** Ticked whenever 1 or more players are inside the room */
+    public void onTick(World world, DungeonLevel level) {
 
     }
 
-    public void onEnter(User user) {
+    /** Ticked whenever the room is empty */
+    public void onIdleTick(World world, DungeonLevel level) {
 
     }
 
-    public void onExit(User user) {
+    public boolean isTicked() {
+        return false;
+    }
+
+    public void onEnter(User user, DungeonLevel level) {
+
+    }
+
+    public void onExit(User user, DungeonLevel level) {
 
     }
 

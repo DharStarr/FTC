@@ -757,18 +757,6 @@ public interface Exceptions {
 
     CommandSyntaxException PRIEST_NO_ONE_WAITING = create("You have no one awaiting marriage.");
 
-    static CommandSyntaxException marriageStatusSender(User user) {
-        return format("Cannot change marriage status for {0, time}",
-                Time.timeUntil(
-                        user.getTime(TimeField.MARRIAGE_CHANGE) + GeneralConfig.marriageCooldown
-                )
-        );
-    }
-
-    static CommandSyntaxException marriageStatusTarget(User user){
-        return format("{0, user} cannot currently change marriage status.", user);
-    }
-
     static CommandSyntaxException targetAlreadyMarried(User user){
         return format("{0, user} is already married.", user);
     }

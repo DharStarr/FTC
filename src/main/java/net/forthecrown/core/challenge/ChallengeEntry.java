@@ -62,7 +62,6 @@ public class ChallengeEntry {
         );
 
         if (newVal >= challenge.getGoal(user)) {
-
             if (!challenge.canComplete(user)) {
                 return;
             }

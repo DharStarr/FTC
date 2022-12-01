@@ -31,6 +31,7 @@ public class ServerIcons {
         TAG_NORMAL      = "default",
         TAG_WHITELIST   = "maintenance",
         TAG_DEBUG       = "debug_mode",
+        TAG_XMAS        = "christmas",
         PREFIX_PRIDE    = "pride_";
 
     static void loadIcons() {
@@ -122,10 +123,15 @@ public class ServerIcons {
             return get(PREFIX_PRIDE + (Util.RANDOM.nextInt(PRIDE_COUNT)));
         }
 
+        if (time.getMonth() == Month.DECEMBER) {
+            return get(TAG_XMAS);
+        }
+
         return get(TAG_NORMAL);
     }
 
     public static CachedServerIcon get(String tag) {
-        return SERVER_ICONS.get(tag).orElseGet(Bukkit::getServerIcon);
+        return SERVER_ICONS.get(tag)
+                .orElseGet(Bukkit::getServerIcon);
     }
 }

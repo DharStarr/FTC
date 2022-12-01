@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ScriptManager {
     private static final Logger LOGGER = FTC.getLogger();
@@ -53,7 +54,10 @@ public class ScriptManager {
     public List<String> findExistingScripts() {
         return PathUtil.findAllFiles(directory, true, false)
                 .resultOrPartial(LOGGER::error)
-                .orElseGet(ObjectLists::emptyList);
+                .orElseGet(ObjectLists::emptyList)
+                .stream()
+                .filter(s -> s.endsWith(".js"))
+                .collect(Collectors.toList());
     }
 
     public NashornScriptEngine createEngine(String name, String... args) {

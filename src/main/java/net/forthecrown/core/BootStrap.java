@@ -24,7 +24,7 @@ import net.forthecrown.grenadier.exceptions.RoyalCommandException;
 import net.forthecrown.guilds.GuildManager;
 import net.forthecrown.guilds.unlockables.Unlockables;
 import net.forthecrown.inventory.ExtendedItems;
-import net.forthecrown.log.DataManager;
+import net.forthecrown.log.LogManager;
 import net.forthecrown.structure.Structures;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.user.Components;
@@ -78,7 +78,7 @@ final class BootStrap {
         // Dungeons
         init(FtcEnchants.class);
         init(Bosses.class);
-        init(LevelManager::get);
+        init(LevelManager::getInstance);
 
         // Bunch of miscellaneous modules
         init(ChatEmotes.class);
@@ -101,7 +101,7 @@ final class BootStrap {
         // the data log schemas required.
         init(ChallengeLogs.class);
         init(Transactions.class);
-        init(DataManager::getInstance);
+        init(LogManager::getInstance);
 
         // Must be initialized after the data manager
         // since it queries it to find the currently

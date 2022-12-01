@@ -45,11 +45,6 @@ public enum TimeField implements FtcKeyed {
     AFK_TIME                    ("afkTime",                 false),
 
     /**
-     * The last time the user changed their marriage status
-     */
-    MARRIAGE_CHANGE             ("lastMarriageChange",      true ),
-
-    /**
      * The first time when the user began owning a market
      */
     MARKET_OWNERSHIP_STARTED    ("market_ownershipBegan",   true ),
