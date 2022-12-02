@@ -293,6 +293,8 @@ public class CommandMail extends FtcCommand {
 
     private LiteralArgumentBuilder<CommandSource> adminSend() {
         return literal("admin_send")
+                .requires(source -> source.hasPermission(Permissions.MAIL_ALL))
+
                 .then(literal("-all")
                         .then(adminSendArgs(true))
                 )

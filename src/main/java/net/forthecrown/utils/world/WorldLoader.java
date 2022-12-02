@@ -253,20 +253,27 @@ public @UtilityClass class WorldLoader {
 
             // Calculate total progress based off of
             // sections instead of world size
+            int progressSize = sectionedSize * SECTION_SIZE;
             this.progress = new LoadProgress(
                     world,
-                    sections.length * SECTION_SIZE
+                    progressSize * progressSize
             );
 
             // Create the load sections
-            int index = 0;
-            for (int x = -sectionedSize; x < sectionedSize; x++) {
-                for (int z = -sectionedSize; z < sectionedSize; z++) {
-                    sections[index++] = new LoadSection(
-                            this,
-                            new ChunkPos(x, z)
-                    );
-                }
+            for (int i = 0; i < sections.length; i++) {
+                // Find X and Z from 1D array, google
+                // this I don't know math
+                int x = i / sectionedSize;
+                int z = i % sectionedSize;
+
+                final int
+                        xOffset = x * SECTION_SIZE,
+                        zOffset = z * SECTION_SIZE;
+
+                // Set the section to start at the calculated values
+                // Since the section's size is a constant, we don't
+                // need to specify that.
+                sections[i] = new LoadSection(this, new ChunkPos(start.x + xOffset, start.z + zOffset));
             }
 
             // Log load data
@@ -336,7 +343,7 @@ public @UtilityClass class WorldLoader {
                 section.load();
 
                 section.completed = true;
-                LOGGER.info("Finished section {}", section);
+                LOGGER.info("Finished {}", section);
 
                 if (stopped) {
                     return;

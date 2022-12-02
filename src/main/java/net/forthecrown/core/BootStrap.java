@@ -117,6 +117,8 @@ final class BootStrap {
         init(Commands.class);
         init(Events.class);
 
+        init(ServerIcons::getInstance);
+
         // Save and load the banner words list
         FTC.getPlugin().saveResource("banned_words.json", true);
         BannedWords.load();
@@ -132,7 +134,6 @@ final class BootStrap {
                 .getCallbacks()
                 .clear();
 
-        ServerIcons.loadIcons();
         Transformers.runCurrent();
     }
 

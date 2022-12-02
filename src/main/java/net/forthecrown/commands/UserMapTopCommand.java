@@ -9,7 +9,7 @@ import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserDataMap;
+import net.forthecrown.user.UUID2IntMap;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.utils.text.format.page.Header;
@@ -20,10 +20,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class UserMapTopCommand extends FtcCommand {
     public static final int DEF_PAGE_SIZE = 10;
 
-    private final UserDataMap map;
-    private final PageFormat<UserDataMap.Entry> format;
+    private final UUID2IntMap map;
+    private final PageFormat<UUID2IntMap.Entry> format;
 
-    public UserMapTopCommand(String name, UserDataMap map, Long2ObjectFunction<Component> unitMaker,
+    public UserMapTopCommand(String name, UUID2IntMap map, Long2ObjectFunction<Component> unitMaker,
                              Component title,
                              String... aliases
     ) {
@@ -34,7 +34,7 @@ public class UserMapTopCommand extends FtcCommand {
         // Create format
         this.format = PageFormat.create();
         format
-                .setHeader(Header.<UserDataMap.Entry>create()
+                .setHeader(Header.<UUID2IntMap.Entry>create()
                         // Set title
                         .title(title.color(NamedTextColor.GOLD))
 

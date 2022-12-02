@@ -52,12 +52,12 @@ public enum RankTitle implements JsonSerializable, ComponentLike {
     ELITE           (false,     -1, TIER_2,    "&7[&#ffbf15Elite&7]"),
     HERSIR          (false,     -1, TIER_2,    "&7[&#ffbf15Hersir&7]"),
 
-    LEGACY_TIER_3   (false,     -1, TIER_3,    "[&#FBFF0FVeteran Prince&f]"),
-    PRINCE          (true,      21, TIER_3,    "[&#FBFF0FPrince&f]"),
-    PRINCESS        (true,      20, TIER_3,    "[&#FBFF0FPrincess&f]"),
-    ADMIRAL         (false,     -1, TIER_3,    "[&#FBFF0FAdmiral&f]"),
-    ROYAL           (false,     -1, TIER_3,    "[&#FBFF0FRoyal&f]"),
-    JARL            (false,     -1, TIER_3,    "[&#FBFF0FJarl&f]"),
+    LEGACY_TIER_3   (false,     -1, TIER_3,    "&f[&#FBFF0FVeteran Prince&f]"),
+    PRINCE          (true,      21, TIER_3,    "&f[&#FBFF0FPrince&f]"),
+    PRINCESS        (true,      20, TIER_3,    "&f[&#FBFF0FPrincess&f]"),
+    ADMIRAL         (false,     -1, TIER_3,    "&f[&#FBFF0FAdmiral&f]"),
+    ROYAL           (false,     -1, TIER_3,    "&f[&#FBFF0FRoyal&f]"),
+    JARL            (false,     -1, TIER_3,    "&f[&#FBFF0FJarl&f]"),
     LEGEND          (false,     -1, TIER_3,    "&#dfdfdf[&#fff147Legend&#dfdfdf]");
 
     /**

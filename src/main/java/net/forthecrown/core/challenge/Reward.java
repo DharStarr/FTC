@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -122,8 +122,8 @@ public class Reward {
         }
 
         if (!Strings.isNullOrEmpty(claimScript)) {
-            Script.read(claimScript)
-                    .invoke("onRewardClaim", user, streak);
+            Script.run(claimScript, "onRewardClaim", user, streak)
+                    .closeScript();
         }
     }
 

@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.forthecrown.commands.manager.Exceptions;
-import net.forthecrown.core.script.ScriptManager;
+import net.forthecrown.core.script2.ScriptManager;
 import net.forthecrown.grenadier.CompletionProvider;
 import net.forthecrown.royalgrenadier.VanillaMappedArgument;
 import net.minecraft.commands.arguments.GameProfileArgument;

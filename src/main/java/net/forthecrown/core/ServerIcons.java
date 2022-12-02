@@ -1,137 +1,246 @@
 package net.forthecrown.core;
 
+import com.google.gson.JsonElement;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.holidays.MonthDayPeriod;
+import net.forthecrown.core.module.OnLoad;
+import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.PathUtil;
+import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.util.CachedServerIcon;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.Month;
-import java.time.ZonedDateTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.MonthDay;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 /**
  * Dynamically/randomly changes the server icon
  */
 public class ServerIcons {
-    /** Server icons */
-    public static final Registry<CachedServerIcon> SERVER_ICONS = Registries.newFreezable();
-
     private static final Logger LOGGER = FTC.getLogger();
 
-    /**
-     * A count of how many pride icons there are lmao
-     */
-    public static int PRIDE_COUNT = 0;
+    @Getter
+    private static final ServerIcons instance = new ServerIcons();
 
     public static final String
-        TAG_NORMAL      = "default",
-        TAG_WHITELIST   = "maintenance",
-        TAG_DEBUG       = "debug_mode",
-        TAG_XMAS        = "christmas",
-        PREFIX_PRIDE    = "pride_";
+            KEY_DEFAULT = "default",
+            KEY_DEBUG = "debug_mode",
+            KEY_WHITELIST = "maintenance";
 
-    static void loadIcons() {
-        var dir = folder();
+    private static final DateTimeFormatter PARSER = new DateTimeFormatterBuilder()
+            .appendValue(ChronoField.DAY_OF_MONTH)
+            .appendLiteral('.')
+            .appendValue(ChronoField.MONTH_OF_YEAR)
+            .toFormatter();
 
-        if (!dir.exists()) {
-            try {
-                // Path of icons... slay queen
-                PathUtil.saveJarPath("icons", dir.toPath(), false);
-            } catch (IOException exc) {
-                LOGGER.error("Couldn't save default server icons!", exc);
-                return;
-            }
-        }
+    private final Registry<ServerIcon> icons = Registries.newRegistry();
 
-        for (File f: dir.listFiles()) {
-            loadIcon(f);
-        }
+    private final Path directory;
+    private final Path loaderFile;
 
-        SERVER_ICONS.freeze();
+    ServerIcons() {
+        this.directory = Path.of("icons");
+        this.loaderFile = directory.resolve("icons.json");
+
+        saveDefaults();
     }
 
-    static File folder() {
-        return new File("icons");
-    }
-
-    /**
-     * Loads an icon from the given file into this
-     * @param file The file to load
-     * @return The loaded icon
-     */
-    public static CachedServerIcon loadIcon(File file) {
+    void saveDefaults() {
         try {
-            // Format file name to create formatted name
-            String tag = file.getName()
-                    .toLowerCase()
-                    .replaceAll("icon_", "")
-                    .replaceAll( ".jpg", "")
-                    .replaceAll(".jpeg", "")
-                    .replaceAll( ".png", "")
-                    .replaceAll("_icon", "")
-                    .trim();
+            PathUtil.saveJarPath("icons", directory, false);
+            LOGGER.debug("Saved default server icon directory");
+        } catch (IOException exc) {
+            LOGGER.error("Couldn't save default icons!", exc);
+        }
+    }
 
-            // Formatting name caused name to become blank :(
-            if (tag.isBlank()) {
-                LOGGER.error("Invalid icon file name: {}", file.getName());
-                return null;
+    public CachedServerIcon getIcon(String key, Random random) {
+        Optional<CachedServerIcon> cachedIcon = icons.get(key)
+                .map(icon -> icon.get(random));
+
+        return cachedIcon.orElseGet(() -> {
+            if (key.equalsIgnoreCase(KEY_DEFAULT)) {
+                return Bukkit.getServerIcon();
+            } else {
+                return getIcon(KEY_DEFAULT, random);
+            }
+        });
+    }
+
+    public CachedServerIcon getCurrent() {
+        if (icons.isEmpty()) {
+            return Bukkit.getServerIcon();
+        }
+
+        var rand = Util.RANDOM;
+
+        if (FTC.inDebugMode()) {
+            return getIcon(KEY_DEBUG, rand);
+        }
+
+        if (Bukkit.hasWhitelist()) {
+            return getIcon(KEY_WHITELIST, rand);
+        }
+
+        var date = LocalDate.now();
+
+        for (var i: icons) {
+            if (!i.shouldUse(date)) {
+                continue;
             }
 
-            // If this is a pride icon, increment pride counter lol
-            if (tag.contains(PREFIX_PRIDE)) {
-                PRIDE_COUNT++;
+            return i.get(rand);
+        }
+
+        return getIcon(KEY_DEFAULT, rand);
+    }
+
+    @OnLoad
+    public void load() {
+        SerializationHelper.readJsonFile(loaderFile, wrapper -> {
+            for (var e: wrapper.entrySet()) {
+                if (!Keys.isValidKey(e.getKey())) {
+                    LOGGER.warn("Invalid icon key found! '{}'", e.getKey());
+                    continue;
+                }
+
+                ServerIcon icon;
+                JsonElement element = e.getValue();
+
+                if (element.isJsonPrimitive() || element.isJsonArray()) {
+                    icon = new ServerIcon(null, readIconList(element));
+                } else {
+                    var json = JsonWrapper.wrap(element.getAsJsonObject());
+                    MonthDayPeriod period = parsePeriod(json.get("period"));
+
+                    List<CachedServerIcon> icons11 = readIconList(
+                            json.get("icons")
+                    );
+
+                    icon = new ServerIcon(period, icons11);
+                }
+
+                if (icon.icons.isEmpty()) {
+                    continue;
+                }
+
+                icons.register(e.getKey(), icon);
+            }
+        });
+    }
+
+    private MonthDayPeriod parsePeriod(JsonElement element) {
+        if (element == null || !element.isJsonArray()) {
+            return null;
+        }
+
+        var array = element.getAsJsonArray();
+        if (array.size() > 2 || array.isEmpty()) {
+            LOGGER.warn("Expected array with size 2, found {}", array.size());
+            return null;
+        }
+
+        String startString = array.get(0).getAsString();
+
+        MonthDay start = MonthDay.parse(startString, PARSER);
+        MonthDay end = start.withDayOfMonth(
+                start.getMonth().length(Year.now().isLeap())
+        );
+
+        if (array.size() == 2) {
+            String endString = array.get(1).getAsString();
+            end = MonthDay.parse(endString, PARSER);
+        }
+
+        return MonthDayPeriod.between(start, end);
+    }
+
+    private List<CachedServerIcon> readIconList(JsonElement element) {
+        if (element.isJsonPrimitive()) {
+            var stringPath = element.getAsString();
+            Path path = directory.resolve(stringPath);
+            var icon = loadImage(path);
+
+            if (icon == null) {
+                return List.of();
             }
 
-            CachedServerIcon icon = Bukkit.getServer().loadServerIcon(file);
-            SERVER_ICONS.register(tag, icon);
+            return List.of(icon);
+        }
 
-            return icon;
-        } catch (Exception e) {
-            LOGGER.error("Error loading server icon: " + file.getName(), e);
+        var arr = element.getAsJsonArray();
+        List<CachedServerIcon> icons = new ObjectArrayList<>(arr.size());
+
+        for (int i = 0; i < arr.size(); i++) {
+            var stringPath = arr.get(i).getAsString();
+            Path path = directory.resolve(stringPath);
+            var icon = loadImage(path);
+
+            if (icon == null) {
+                continue;
+            }
+
+            icons.add(icon);
+        }
+
+        return icons;
+    }
+
+    private CachedServerIcon loadImage(Path path) {
+        if (Files.notExists(path)) {
+            LOGGER.warn("Icon '{}' doesn't exist!", path);
+            return null;
+        }
+
+        try {
+            return Bukkit.loadServerIcon(path.toFile());
+        } catch (Exception exc) {
+            LOGGER.error("Couldn't load server icon '{}'", path, exc);
             return null;
         }
     }
 
-    /**
-     * Gets the server icon to display currently
-     * @return The current server icon
-     */
-    public static CachedServerIcon getCurrent() {
-        // None to display :( display default
-        if (SERVER_ICONS.isEmpty()) {
-            return Bukkit.getServerIcon();
+    @Getter
+    @RequiredArgsConstructor
+    static class ServerIcon {
+        private final MonthDayPeriod period;
+        private final List<CachedServerIcon> icons;
+
+        public CachedServerIcon get(Random random) {
+            if (icons.isEmpty()) {
+                return null;
+            }
+
+            if (icons.size() == 1) {
+                return icons.get(0);
+            }
+
+            return icons.get(random.nextInt(icons.size()));
         }
 
-        // Debug mode -> debug icon
-        if (FTC.inDebugMode()) {
-            return get(TAG_DEBUG);
+        public boolean shouldUse(LocalDate date) {
+            if (icons.isEmpty() || period == null) {
+                return false;
+            }
+
+            return period.contains(date);
         }
-
-        // Whitelist on -> maintenance icon
-        if (Bukkit.hasWhitelist()) {
-            return get(TAG_WHITELIST);
-        }
-
-        ZonedDateTime time = ZonedDateTime.now();
-
-        // Pride month? Select an icon with a random LGBTQ flag
-        if (time.getMonth() == Month.JUNE) {
-            return get(PREFIX_PRIDE + (Util.RANDOM.nextInt(PRIDE_COUNT)));
-        }
-
-        if (time.getMonth() == Month.DECEMBER) {
-            return get(TAG_XMAS);
-        }
-
-        return get(TAG_NORMAL);
-    }
-
-    public static CachedServerIcon get(String tag) {
-        return SERVER_ICONS.get(tag)
-                .orElseGet(Bukkit::getServerIcon);
     }
 }

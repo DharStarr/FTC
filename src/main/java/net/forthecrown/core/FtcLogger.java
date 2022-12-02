@@ -2,6 +2,7 @@ package net.forthecrown.core;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.config.GeneralConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.message.Message;
@@ -122,12 +123,11 @@ public class FtcLogger extends AbstractLogger {
     }
 
     private boolean testLevel(Level level) {
-        if (level.intLevel() <= Level.DEBUG.intLevel()
-                && FTC.inDebugMode()
-        ) {
+        if (pluginLogger.isEnabled(level)) {
             return true;
         }
 
-        return pluginLogger.isEnabled(level);
+        return FTC.inDebugMode()
+                || GeneralConfig.debugLoggerEnabled;
     }
 }

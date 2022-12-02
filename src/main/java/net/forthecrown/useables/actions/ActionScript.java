@@ -3,7 +3,7 @@ package net.forthecrown.useables.actions;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.user.Users;
@@ -26,7 +26,9 @@ public class ActionScript extends UsageAction {
 
     @Override
     public void onUse(Player player, ActionHolder holder) {
-        Script.run(script, "onUse", Users.get(player));
+        try (var _script = Script.read(script)) {
+            _script.invoke("onUse", Users.get(player));
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package net.forthecrown.core.script;
+package net.forthecrown.core.script2;
 
 import jdk.dynalink.beans.StaticClass;
 import lombok.experimental.UtilityClass;

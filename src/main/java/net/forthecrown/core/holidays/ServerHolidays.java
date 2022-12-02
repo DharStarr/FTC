@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.module.OnDayChange;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;
@@ -72,7 +72,7 @@ public class ServerHolidays extends SerializableObject.NbtDat {
             MonthDayPeriod period = h.getPeriod();
 
             // If should be active
-            if (period.contains(time)) {
+            if (period.contains(time.toLocalDate())) {
                 // It's already active, no need to do anything
                 if (h.isActive()) {
                     continue;
@@ -158,8 +158,8 @@ public class ServerHolidays extends SerializableObject.NbtDat {
      */
     public void deactivate(Holiday holiday) {
         if (!Strings.isNullOrEmpty(holiday.getPeriodEndScript())) {
-            Script.read(holiday.getPeriodEndScript())
-                    .invoke("onHolidayEnd");
+            Script.run(holiday.getPeriodEndScript(), "onHolidayEnd")
+                    .closeScript();
         }
 
         UserManager.get().getAllUsers().whenComplete((users, throwable) -> {
@@ -204,17 +204,13 @@ public class ServerHolidays extends SerializableObject.NbtDat {
 
         if (holiday.getPeriod().isExact()) {
             if (!Strings.isNullOrEmpty(holiday.getActivationScript())) {
-                Script.run(
-                        holiday.getActivationScript(),
-                        "onHolidayRun"
-                );
+                Script.run(holiday.getActivationScript(), "onHolidayRun")
+                        .closeScript();
             }
         } else {
             if (!Strings.isNullOrEmpty(holiday.getPeriodStartScript())) {
-                Script.run(
-                        holiday.getPeriodStartScript(),
-                        "onHolidayStart"
-                );
+                Script.run(holiday.getPeriodStartScript(), "onHolidayStart")
+                        .closeScript();
             }
         }
 

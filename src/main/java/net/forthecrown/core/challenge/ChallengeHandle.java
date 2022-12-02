@@ -2,9 +2,11 @@ package net.forthecrown.core.challenge;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.FTC;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Util;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -14,6 +16,8 @@ import java.util.UUID;
 @Getter
 @RequiredArgsConstructor
 public class ChallengeHandle {
+    private static final Logger LOGGER = FTC.getLogger();
+
     private final JsonChallenge challenge;
 
     public void givePoint(Object playerObject) {
@@ -21,9 +25,17 @@ public class ChallengeHandle {
     }
 
     public void givePoints(Object playerObject, double score) {
+        LOGGER.debug("givePoints invoked, plr={}, score={}",
+                playerObject, score
+        );
+
         if (hasCompleted(playerObject)) {
+            LOGGER.debug("Already completed");
+
             return;
         }
+
+        LOGGER.debug("Giving points!");
 
         var player = getPlayer(playerObject);
         var manager = ChallengeManager.getInstance();
@@ -36,16 +48,7 @@ public class ChallengeHandle {
 
     public boolean hasCompleted(Object playerObject) {
         var player = getPlayer(playerObject);
-
-        var opt = ChallengeManager.getInstance()
-                .getChallengeRegistry()
-                .getHolderByValue(challenge);
-
-        if (opt.isEmpty()) {
-            return false;
-        }
-
-        return Challenges.hasCompleted(opt.get(), player.getUniqueId());
+        return Challenges.hasCompleted(challenge, player.getUniqueId());
     }
 
     static Player getPlayer(Object arg) {

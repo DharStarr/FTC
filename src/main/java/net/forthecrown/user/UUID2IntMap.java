@@ -20,8 +20,8 @@ import java.util.function.IntSupplier;
 /**
  * A sorted UUID 2 int value map
  */
-public class UserDataMap extends SerializableObject.Json
-        implements Iterable<UserDataMap.Entry>
+public class UUID2IntMap extends SerializableObject.Json
+        implements Iterable<UUID2IntMap.Entry>
 {
     /**
      * The minimum value that can be stored in user maps,
@@ -51,11 +51,11 @@ public class UserDataMap extends SerializableObject.Json
     @Getter
     private boolean unsaved = true;
 
-    public UserDataMap(Path path) {
+    public UUID2IntMap(Path path) {
         this(path, () -> MINIMUM_VALUE);
     }
 
-    public UserDataMap(Path filePath, IntSupplier defaultSupplier) {
+    public UUID2IntMap(Path filePath, IntSupplier defaultSupplier) {
         super(filePath);
         this.defaultSupplier = defaultSupplier;
     }
@@ -257,7 +257,7 @@ public class UserDataMap extends SerializableObject.Json
         private int value;
 
         @Override
-        public int compareTo(@NotNull UserDataMap.Entry o) {
+        public int compareTo(@NotNull UUID2IntMap.Entry o) {
             return Integer.compare(value, o.value);
         }
     }

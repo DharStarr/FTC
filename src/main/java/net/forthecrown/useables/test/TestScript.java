@@ -3,7 +3,7 @@ package net.forthecrown.useables.test;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.user.Users;
@@ -45,9 +45,12 @@ public class TestScript extends UsageTest {
             return true;
         }
 
-        return script.invoke("test", Users.get(player))
-                .resultAsBoolean()
+        var result = script.invoke("test", Users.get(player))
+                .asBoolean()
                 .orElse(false);
+
+        script.close();
+        return result;
     }
 
     @Override
@@ -61,19 +64,25 @@ public class TestScript extends UsageTest {
         var result = script.invoke("getFailMessage", Users.get(player))
                 .result();
 
+        script.close();
+
+        if (result.isEmpty()) {
+            return null;
+        }
+
         var obj = result.get();
         return Text.valueOf(obj);
     }
 
     @Override
     public void postTests(Player player, CheckHolder holder) {
-        var script = Script.read(this.script);
-
-        if (!script.hasMethod("onTestsPassed")) {
-            return;
+        try (var script = Script.read(this.script)) {
+            if (script.hasMethod("onTestsPassed")) {
+                script.invoke("onTestsPassed",
+                        Users.get(player)
+                );
+            }
         }
-
-        script.invoke("onTestsPassed", Users.get(player));
     }
 
     @UsableConstructor(ConstructType.PARSE)

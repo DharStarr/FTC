@@ -7,7 +7,7 @@ import net.forthecrown.core.registry.Registries;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserDataMap;
+import net.forthecrown.user.UUID2IntMap;
 import net.forthecrown.utils.Util;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.IntTag;
@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class ActionUserMap extends UsageAction {
     private final Action action;
-    private final UserDataMap map;
+    private final UUID2IntMap map;
 
     private final int amount;
 
@@ -68,26 +68,26 @@ public class ActionUserMap extends UsageAction {
     enum Type {
         BAL {
             @Override
-            UserDataMap getMap() {
+            UUID2IntMap getMap() {
                 return UserManager.get().getBalances();
             }
         },
 
         VOTES {
             @Override
-            UserDataMap getMap() {
+            UUID2IntMap getMap() {
                 return UserManager.get().getVotes();
             }
         },
 
         GEMS {
             @Override
-            UserDataMap getMap() {
+            UUID2IntMap getMap() {
                 return UserManager.get().getGems();
             }
         };
 
-        abstract UserDataMap getMap();
+        abstract UUID2IntMap getMap();
 
         EnumMap<Action, UsageType<ActionUserMap>> typesByAction = Util.make(new EnumMap<>(Action.class), map -> {
             for (var t: Action.values()) {
@@ -125,25 +125,25 @@ public class ActionUserMap extends UsageAction {
     enum Action {
         ADD {
             @Override
-            void apply(UserDataMap map, UUID uuid, int amount) {
+            void apply(UUID2IntMap map, UUID uuid, int amount) {
                 map.add(uuid, amount);
             }
         },
 
         SET {
             @Override
-            void apply(UserDataMap map, UUID uuid, int amount) {
+            void apply(UUID2IntMap map, UUID uuid, int amount) {
                 map.set(uuid, amount);
             }
         },
 
         REMOVE {
             @Override
-            void apply(UserDataMap map, UUID uuid, int amount) {
+            void apply(UUID2IntMap map, UUID uuid, int amount) {
                 map.remove(uuid, amount);
             }
         };
 
-        abstract void apply(UserDataMap map, UUID uuid, int amount);
+        abstract void apply(UUID2IntMap map, UUID uuid, int amount);
     }
 }

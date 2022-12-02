@@ -70,6 +70,10 @@ public class ChallengeDataStorage {
         SerializationHelper.readJsonFile(streakScriptFile, json -> {
             var element = json.get(category.name().toLowerCase());
 
+            if (element == null) {
+                return;
+            }
+
             // If a single script
             if (element.isJsonPrimitive()) {
                 result.add(element.getAsString());

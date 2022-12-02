@@ -4,9 +4,11 @@ import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.waypoint.WaypointManager;
 import net.forthecrown.waypoint.WaypointProperties;
+import net.forthecrown.waypoint.Waypoints;
 import net.forthecrown.waypoint.type.WaypointTypes;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
@@ -19,27 +21,27 @@ import java.util.Collections;
 
 public class WaypointDestroyListener implements Listener {
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
         checkDestroy(Collections.singleton(event.getBlock()));
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityExplode(EntityExplodeEvent event) {
         checkDestroy(event.blockList());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockExplode(BlockExplodeEvent event) {
         checkDestroy(event.blockList());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPistonRetract(BlockPistonRetractEvent event) {
         checkDestroy(event.getBlocks());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPistonExtend(BlockPistonExtendEvent event) {
         checkDestroy(event.getBlocks());
     }
@@ -66,14 +68,7 @@ public class WaypointDestroyListener implements Listener {
         }
 
         Tasks.runLater(() -> {
-            for (var w: waypoints) {
-                if (!w.getType().isDestroyed(w)) {
-                    continue;
-                }
-
-                WaypointManager.getInstance()
-                        .removeWaypoint(w);
-            }
+            waypoints.forEach(Waypoints::removeIfPossible);
         }, 1);
     }
 }

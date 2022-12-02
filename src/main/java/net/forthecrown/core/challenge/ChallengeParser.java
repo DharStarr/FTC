@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.Results;

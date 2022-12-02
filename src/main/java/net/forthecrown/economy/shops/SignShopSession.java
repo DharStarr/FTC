@@ -151,7 +151,7 @@ public class SignShopSession {
 
                     .field(Transactions.T_EXTRA)
                     .add(Objects::nonNull)
-                    .addOr(s -> s.contains("market=" + market.getName()));
+                    .add(s -> s.contains("market=" + market.getName()));
 
             // Set the correct field to be the active field
             //

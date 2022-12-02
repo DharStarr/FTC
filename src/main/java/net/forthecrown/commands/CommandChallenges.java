@@ -7,6 +7,7 @@ import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.RegistryArguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.challenge.*;
 import net.forthecrown.core.registry.Holder;
@@ -14,11 +15,13 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.user.User;
+import net.forthecrown.user.Users;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.util.function.Predicate;
@@ -48,6 +51,24 @@ public class CommandChallenges extends FtcCommand {
     private static final Predicate<CommandSource> IS_ADMIN = source -> {
         return source.hasPermission(Permissions.CHALLENGES_ADMIN);
     };
+
+    @Override
+    public boolean test(CommandSource source) {
+        if (!super.test(source)) {
+            return false;
+        }
+
+        if (!source.isPlayer()
+                || source.hasPermission(Permissions.CHALLENGES_ADMIN)
+        ) {
+            return true;
+        }
+
+        var player = source.asPlayerOrNull();
+        var user = Users.get(player);
+
+        return user.getGuild() != null;
+    }
 
     @Override
     protected void createCommand(BrigadierCommand command) {
@@ -186,6 +207,8 @@ public class CommandChallenges extends FtcCommand {
                 );
     }
 
+    private static final Logger LOGGER = FTC.getLogger();
+
     private int trigger(CommandContext<CommandSource> c)
             throws CommandSyntaxException
     {
@@ -195,6 +218,8 @@ public class CommandChallenges extends FtcCommand {
         if (!Challenges.isActive(holder.getValue())) {
             throw Exceptions.nonActiveChallenge(holder.getValue());
         }
+
+        LOGGER.debug("holder.getValue().trigger()");
 
         holder.getValue()
                 .trigger(user.getPlayer());
@@ -217,6 +242,8 @@ public class CommandChallenges extends FtcCommand {
         if (!Challenges.isActive(holder.getValue())) {
             throw Exceptions.nonActiveChallenge(holder.getValue());
         }
+
+        LOGGER.debug("addProgress, points={}", points);
 
         ChallengeManager.getInstance()
                 .getOrCreateEntry(user.getUniqueId())

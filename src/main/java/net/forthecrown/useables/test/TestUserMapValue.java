@@ -7,7 +7,7 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.useables.*;
 import net.forthecrown.useables.util.UsageUtil;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserDataMap;
+import net.forthecrown.user.UUID2IntMap;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.format.UnitFormat;
 import net.kyori.adventure.text.Component;
@@ -22,7 +22,7 @@ public class TestUserMapValue extends UsageTest {
         TYPE_GEMS    = UsageType.of(TestUserMapValue.class),
         TYPE_VOTES   = UsageType.of(TestUserMapValue.class);
 
-    private final UserDataMap map;
+    private final UUID2IntMap map;
     private final MinMaxBounds.Ints bounds;
     private final String unit;
 
@@ -36,7 +36,7 @@ public class TestUserMapValue extends UsageTest {
         this.bounds = bounds;
     }
 
-    private static Pair<UserDataMap, String> findMap(UsageType type) {
+    private static Pair<UUID2IntMap, String> findMap(UsageType type) {
         var users = UserManager.get();
 
         if (type == TYPE_BALANCE) {

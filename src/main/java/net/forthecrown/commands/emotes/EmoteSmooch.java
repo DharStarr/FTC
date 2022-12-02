@@ -7,9 +7,9 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 
+import java.time.LocalDate;
 import java.time.Month;
 import java.time.MonthDay;
-import java.time.ZonedDateTime;
 
 import static net.forthecrown.core.Messages.*;
 
@@ -72,6 +72,6 @@ public class EmoteSmooch extends CommandEmote {
 
     @Override
     public int getCooldownTime() {
-        return VALENTINES.contains(ZonedDateTime.now()) ? 0 : cooldownTime;
+        return VALENTINES.contains(LocalDate.now()) ? 0 : cooldownTime;
     }
 }

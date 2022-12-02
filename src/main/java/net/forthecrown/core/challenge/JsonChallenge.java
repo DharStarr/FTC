@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.user.User;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -64,7 +64,7 @@ public class JsonChallenge implements Challenge {
 
         if (getListener().getScript() != null) {
             getListener().getScript()
-                    .invoke(METHOD_ON_ACTIVATE, getListener().getHandle());
+                    .invokeIfExists(METHOD_ON_ACTIVATE, getListener().getHandle());
         }
 
         return "";
@@ -76,7 +76,10 @@ public class JsonChallenge implements Challenge {
 
         if (getListener().getScript() != null) {
             getListener().getScript()
-                    .invoke(METHOD_ON_RESET, getListener().getHandle());
+                    .invokeIfExists(METHOD_ON_RESET, getListener().getHandle());
+
+            getListener().getScript().close();
+            listener.script = null;
         }
     }
 
@@ -120,7 +123,11 @@ public class JsonChallenge implements Challenge {
             return;
         }
 
-        listener.script = Script.read(script);
+        if (listener.script != null) {
+            listener.script.load();
+        } else {
+            listener.script = Script.read(script);
+        }
     }
 
     @Override
@@ -137,7 +144,7 @@ public class JsonChallenge implements Challenge {
                 .invoke(METHOD_CAN_COMPLETE, user);
 
         return result
-                .resultAsBoolean()
+                .asBoolean()
                 .orElse(false);
     }
 
@@ -145,7 +152,7 @@ public class JsonChallenge implements Challenge {
     public void onComplete(User user) {
         if (getListener().getScript() != null) {
             getListener().getScript()
-                    .invoke(METHOD_ON_COMPLETE, user);
+                    .invokeIfExists(METHOD_ON_COMPLETE, user);
         }
 
         Challenge.super.onComplete(user);

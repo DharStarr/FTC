@@ -8,8 +8,10 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
-import net.forthecrown.core.script.Script;
-import net.forthecrown.core.script.ScriptManager;
+import net.forthecrown.core.script2.Script;
+import net.forthecrown.core.script2.ScriptLoadException;
+import net.forthecrown.core.script2.ScriptManager;
+import net.forthecrown.core.script2.ScriptResult;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.utils.io.PathUtil;
@@ -145,21 +147,23 @@ public class CommandScripts extends FtcCommand {
                     @Nullable String method
     ) throws CommandSyntaxException {
         String scriptName = c.getArgument("script", String.class);
-        var script = Script.read(scriptName);
-        Object result = null;
+        Script script;
 
-        if (script.error().isPresent()) {
+        try {
+            script = Script.read(scriptName);
+        } catch (ScriptLoadException exc) {
             throw Exceptions.format(
-                    "Error evaluation script '{0}': {1}",
-                    scriptName,
-                    script.error().get()
+                    "Couldn't evaluate script '{0}'",
+                    exc.getScript().getName()
             );
-        } else if (script.result().isPresent()) {
-            result = script.result().get();
         }
+
+        Object result = script.getEvalResult();
 
         if (method != null) {
             if (!script.hasMethod(method)) {
+                script.close();
+
                 throw Exceptions.format(
                         "Script '{0}' does not have method '{1}'",
                         scriptName,
@@ -167,15 +171,21 @@ public class CommandScripts extends FtcCommand {
                 );
             }
 
-            if (script.error().isPresent()) {
+            ScriptResult invoke = script.invoke(method);
+
+            if (invoke.error().isPresent()) {
+                script.close();
+
                 throw Exceptions.format(
                         "Couldn't run '{0}' in '{1}': {2}",
                         method,
                         scriptName,
-                        script.error().get()
+                        invoke.error().get()
                 );
-            } else if (script.result().isPresent()) {
-                result = script.result().get();
+            } else if (invoke.result().isPresent()) {
+                result = invoke.result().get();
+            } else {
+                result = null;
             }
         }
 
@@ -196,6 +206,7 @@ public class CommandScripts extends FtcCommand {
             );
         }
 
+        script.close();
         return 0;
     }
 }

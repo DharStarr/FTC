@@ -42,9 +42,9 @@ public class SaveReloadCommands extends FtcCommand {
         command
                 .executes(c -> {
                     if (save) {
-                        ModuleServices.RELOAD.run();
-                    } else {
                         ModuleServices.SAVE.run();
+                    } else {
+                        ModuleServices.RELOAD.run();
                     }
 
                     c.getSource().sendAdmin(format(save, "FTC-Plugin"));

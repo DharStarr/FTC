@@ -10,10 +10,10 @@ import net.kyori.adventure.text.Component;
 public class CommandStaffChat extends FtcCommand {
 
     public CommandStaffChat(){
-        super("staffchat");
+        super("sc");
 
         setPermission(Permissions.STAFF_CHAT);
-        setAliases("sc");
+        setAliases("staffchat");
         setDescription("Sends a message to the staff chat");
 
         register();

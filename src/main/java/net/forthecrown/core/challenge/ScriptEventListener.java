@@ -3,7 +3,7 @@ package net.forthecrown.core.challenge;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;

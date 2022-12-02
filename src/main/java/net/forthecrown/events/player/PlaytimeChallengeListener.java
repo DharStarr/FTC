@@ -97,6 +97,10 @@ public class PlaytimeChallengeListener implements Listener {
                 return;
             }
 
+            if (Users.get(player).isAfk()) {
+                return;
+            }
+
             Challenges.apply("daily/playtime", challenge -> {
                 ++minutesPassed;
                 challenge.trigger(player);

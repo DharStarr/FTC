@@ -31,7 +31,7 @@ public class MotdListener implements Listener {
         }
 
         event.motd(motd());
-        event.setServerIcon(ServerIcons.getCurrent());
+        event.setServerIcon(ServerIcons.getInstance().getCurrent());
 
         Iterator<Player> iterator = event.iterator();
         while (iterator.hasNext()) {

@@ -7,13 +7,12 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.registry.Holder;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.file.NoSuchFileException;
 import java.util.UUID;
 
 @Getter
@@ -50,7 +49,13 @@ public class ChallengeEntry {
         var challenge = holder.getValue();
         float current = progress.getFloat(challenge);
 
+        LOGGER.debug(
+                "addProgress called, current={}, challenge={}",
+                current, holder.getKey()
+        );
+
         if (Challenges.hasCompleted(holder, id)) {
+            LOGGER.debug("Already completed");
             return;
         }
 
@@ -63,6 +68,7 @@ public class ChallengeEntry {
 
         if (newVal >= challenge.getGoal(user)) {
             if (!challenge.canComplete(user)) {
+                LOGGER.debug("canComplete=false");
                 return;
             }
 
@@ -73,8 +79,13 @@ public class ChallengeEntry {
             Challenges.logCompletion(holder, id);
             challenge.onComplete(user);
 
+            LOGGER.debug("{} completed {}", user.getName(), holder.getKey());
             potentiallyAddStreak(challenge.getStreakCategory());
         }
+
+        LOGGER.debug("Setting progress of {} for {} to {}",
+                holder.getKey(), user.getName(), newVal
+        );
 
         progress.put(challenge, newVal);
     }
@@ -115,28 +126,12 @@ public class ChallengeEntry {
 
         // Run all scripts for each category
         scripts.forEach(scriptName -> {
-            Script.run(scriptName, Challenges.METHOD_STREAK_INCREASE, user, streak)
-                    .error()
-                    .ifPresent(throwable -> {
-                        if (throwable instanceof NoSuchFileException) {
-                            LOGGER.error(
-                                    "No script named {} exists!",
-                                    scriptName
-                            );
-
-                            return;
-                        }
-
-                        if (throwable instanceof NoSuchMethodException) {
-                            LOGGER.error(
-                                    "No '{}' method " +
-                                            "declared in script {}",
-                                    Challenges.METHOD_STREAK_INCREASE,
-                                    scriptName,
-                                    throwable
-                            );
-                        }
-                    });
+            Script.run(
+                    scriptName,
+                    Challenges.METHOD_STREAK_INCREASE,
+                    user,
+                    streak
+            ).closeScript();
         });
     }
 }
