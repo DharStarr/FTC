@@ -10,6 +10,7 @@ import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.core.module.OnLoad;
 import net.forthecrown.core.module.OnSave;
 import net.forthecrown.guilds.unlockables.UnlockableColor;
+import net.forthecrown.user.UUID2IntMap;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.waypoint.Waypoints;
@@ -43,6 +44,10 @@ public class GuildManager {
 
     /** Guild name to guild lookup map */
     final Object2ObjectMap<String, Guild> byName = new Object2ObjectOpenHashMap<>();
+
+    /** Transient guild id 2 total exp map, used for displaying in /guildtop */
+    @Getter
+    private transient final UUID2IntMap expTop = new UUID2IntMap(null);
 
     private GuildManager() {
         storage = new GuildDataStorage(PathUtil.getPluginDirectory("guilds"));
@@ -115,6 +120,10 @@ public class GuildManager {
 
         if (!Strings.isNullOrEmpty(guild.getName())) {
             byName.put(guild.getName().toLowerCase(), guild);
+        }
+
+        if (guild.getTotalExp() > 0) {
+            expTop.set(guild.getId(), (int) guild.getTotalExp());
         }
 
         packedChunks.forEach(value -> byChunk.put(value, guild));

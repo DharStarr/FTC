@@ -187,6 +187,9 @@ public class Guild implements ForwardingAudience, InventoryHolder {
         }
 
         this.totalExp += amount;
+
+        GuildManager.get().getExpTop()
+                .set(getId(), (int) totalExp);
     }
 
     public GuildMember getMember(UUID id) {

@@ -115,7 +115,7 @@ public class MarketEviction implements JsonSerializable, Runnable {
                 shop,
                 json.getTimeStamp(KEY_EVICT_DATE),
                 json.getComponent(KEY_REASON),
-                json.getString(SOURCE_AUTOMATIC, SOURCE_UNKNOWN)
+                json.getString(KEY_SOURCE, SOURCE_UNKNOWN)
         );
     }
 }
