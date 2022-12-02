@@ -77,7 +77,7 @@ public class EavesDropper {
         }
 
         var pos = WorldVec3i.of(sign);
-        send(edSign(placer, pos, lines), Properties.EAVES_DROP_SIGN, true);
+        send(edSign(placer, pos, lines), Properties.EAVES_DROP_SIGN, false);
     }
 
     private static boolean isEmpty(List<Component> lines) {

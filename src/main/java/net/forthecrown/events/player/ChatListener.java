@@ -72,9 +72,13 @@ public class ChatListener implements Listener {
 
         // If said banned word, set mute to hard, else keep mute as is
         // then if mute == hard, report to eaves dropper and cancel event
-        if ((mute = BannedWords.checkAndWarn(player, rendered) ? Mute.HARD : mute) == Mute.HARD) {
-            EavesDropper.reportChat(rendered, mute);
+        mute = BannedWords.checkAndWarn(player, rendered) ? Mute.HARD : mute;
 
+        if (mute != Mute.NONE) {
+            EavesDropper.reportChat(rendered, mute);
+        }
+
+        if (!mute.isVisibleToOthers()) {
             event.setCancelled(true);
             return;
         }
