@@ -152,12 +152,16 @@ public class MonthDayPeriod {
 
         // End takes place on the year after start
         if (end.isBefore(start)) {
-            endDate = endDate.plusYears(1);
+            if (time.isBefore(endDate)) {
+                startDate = startDate.minusYears(1);
+            } else {
+                endDate = endDate.plusYears(1);
+            }
         }
 
-        int minEpoch = startDate.get(ChronoField.EPOCH_DAY);
-        int maxEpoch = endDate.get(ChronoField.EPOCH_DAY);
-        int timeEpoch = time.get(ChronoField.EPOCH_DAY);
+        long minEpoch = startDate.getLong(ChronoField.EPOCH_DAY);
+        long maxEpoch = endDate.getLong(ChronoField.EPOCH_DAY);
+        long timeEpoch = time.getLong(ChronoField.EPOCH_DAY);
 
         return timeEpoch <= maxEpoch
                 && timeEpoch >= minEpoch;

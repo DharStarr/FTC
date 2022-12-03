@@ -8,6 +8,7 @@ import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -134,59 +135,45 @@ public class Script implements AutoCloseable {
 
     /**
      * Reads a script file using {@link #read(Path)} and then invokes the
-     * method with the given name and arguments.
+     * method with the given name and arguments. After the function is executed,
+     * the script is closed
      *
      * @param file The script file to invoke
      * @param method The name of the method to invoke
      * @param args Arguments to pass to the function being invoked
      *
-     * @return The result of the invocation
-     *
      * @throws ScriptLoadException If the script couldn't be loaded,
      *                             see {@link #load()}
-     *
-     * @throws ScriptExecutionException If the method couldn't be invoked,
-     *                                  either because the method didn't exist
-     *                                  or the method invocation threw an
-     *                                  exception
      *
      * @throws IllegalArgumentException If the given script file didn't exist or
      *                                  wasn't a file
      */
-    public static ScriptResult run(Path file, String method, Object... args)
-        throws ScriptLoadException,
-            IllegalArgumentException
+    public static void run(Path file, String method, Object... args)
+        throws ScriptLoadException, IllegalArgumentException
     {
-        return read(file).invoke(method, args);
+        read(file).invoke(method, args).close();
     }
 
     /**
      * Reads a script file using {@link #read(String)} and then invokes the
-     * method with the given name and arguments.
+     * method with the given name and arguments. After the function is executed,
+     * the script is closed
      *
      * @param f The name of the script to invoke.
      *
      * @param method The name of the method to invoke
      * @param args Arguments to pass to the function being invoked
      *
-     * @return The result of the invocation
-     *
      * @throws ScriptLoadException If the script couldn't be loaded,
      *                             see {@link #load()}
-     *
-     * @throws ScriptExecutionException If the method couldn't be invoked,
-     *                                  either because the method didn't exist
-     *                                  or the method invocation threw an
-     *                                  exception
      *
      * @throws IllegalArgumentException If the given script file didn't exist or
      *                                  wasn't a file
      */
-    public static ScriptResult run(String f, String method, Object... args)
-            throws ScriptLoadException,
-            IllegalArgumentException
+    public static void run(String f, String method, Object... args)
+            throws ScriptLoadException, IllegalArgumentException
     {
-        return read(f).invoke(method, args);
+        read(f).invoke(method, args).close();
     }
 
     /* ------------------------------ METHODS ------------------------------- */
@@ -216,18 +203,28 @@ public class Script implements AutoCloseable {
             load();
         }
 
+        return invokeSafe(this, mirror, method, args);
+    }
+
+    static ScriptResult invokeSafe(Script script,
+                                   ScriptObjectMirror thiz,
+                                   String method,
+                                   Object... args
+    ) {
+        var engine = script.getEngine();
+
         try {
-            var result = engine.invokeMethod(mirror, method, args);
+            var result = engine.invokeMethod(thiz, method, args);
 
             return ScriptResult.builder()
                     .result(result)
-                    .script(this)
+                    .script(script)
                     .method(method)
                     .build();
         } catch (ScriptException | NoSuchMethodException e) {
             return ScriptResult.builder()
-                    .exception(new ScriptExecutionException(this, method, e))
-                    .script(this)
+                    .exception(e)
+                    .script(script)
                     .method(method)
                     .build()
                     .logIfError();
@@ -247,11 +244,9 @@ public class Script implements AutoCloseable {
      *
      * @throws ScriptLoadException If the script was not already loaded and
      *                             could not be loaded either.
-     *
-     * @throws ScriptExecutionException If the method's execution failed
      */
     public Optional<ScriptResult> invokeIfExists(String method, Object... args)
-            throws ScriptLoadException, ScriptExecutionException
+            throws ScriptLoadException
     {
         if (!hasMethod(method)) {
             return Optional.empty();
@@ -304,6 +299,13 @@ public class Script implements AutoCloseable {
             this.engine = engine;
             this.mirror = (ScriptObjectMirror)
                     engine.getBindings(ScriptContext.ENGINE_SCOPE);
+
+            var ctx = engine.getContext();
+            ctx.setAttribute(
+                    ScriptEngine.FILENAME,
+                    name,
+                    ScriptContext.ENGINE_SCOPE
+            );
 
             evalResult = engine.eval(reader);
         } catch (IOException | ScriptException exc) {
@@ -361,5 +363,10 @@ public class Script implements AutoCloseable {
     @Override
     public int hashCode() {
         return Objects.hash(getFile(), getEvalResult());
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

@@ -131,7 +131,7 @@ public class ChallengeEntry {
                     Challenges.METHOD_STREAK_INCREASE,
                     user,
                     streak
-            ).closeScript();
+            );
         });
     }
 }

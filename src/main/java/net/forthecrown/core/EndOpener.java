@@ -194,14 +194,6 @@ public class EndOpener {
         };
     }
 
-    public void setEndSize(int endSize) {
-        nextSize = endSize;
-
-        if(open) {
-            Worlds.end().getWorldBorder().setSize(endSize);
-        }
-    }
-
     static class PortalRoad {
         static final Material[] ROAD_MATERIALS = {
                 Material.COBBLESTONE,

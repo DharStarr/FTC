@@ -18,25 +18,29 @@ public class ScriptResult {
 
     private final Object result;
 
-    private final ScriptExecutionException exception;
+    private final Throwable exception;
 
     public Optional<Object> result() {
         return Optional.ofNullable(result);
     }
 
-    public Optional<ScriptExecutionException> error() {
+    public Optional<Throwable> error() {
         return Optional.ofNullable(exception);
     }
 
     public ScriptResult logIfError() {
         error().ifPresent(e -> {
-            FTC.getLogger().error(e.getMessage(), e.getCause());
+            FTC.getLogger().error(
+                    "Couldn't invoke method '{}' in '{}'",
+                    method, script.getName(),
+                    e
+            );
         });
 
         return this;
     }
 
-    public void closeScript() {
+    public void close() {
         getScript().close();
     }
 

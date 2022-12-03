@@ -25,6 +25,7 @@ import java.time.MonthDay;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import java.util.Random;
 /**
  * Dynamically/randomly changes the server icon
  */
+@Getter
 public class ServerIcons {
     private static final Logger LOGGER = FTC.getLogger();
 
@@ -45,9 +47,9 @@ public class ServerIcons {
             KEY_WHITELIST = "maintenance";
 
     private static final DateTimeFormatter PARSER = new DateTimeFormatterBuilder()
-            .appendValue(ChronoField.DAY_OF_MONTH)
+            .appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NORMAL)
             .appendLiteral('.')
-            .appendValue(ChronoField.MONTH_OF_YEAR)
+            .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL)
             .toFormatter();
 
     private final Registry<ServerIcon> icons = Registries.newRegistry();

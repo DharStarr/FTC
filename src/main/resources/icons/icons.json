@@ -5,18 +5,22 @@
   "pride_month": {
     "period": [ "01.06", "30.06" ],
     "icons": [
-      "pride_0.png",
-      "pride_1.png",
-      "pride_2.png",
-      "pride_3.png",
-      "pride_4.png",
-      "pride_5.png",
-      "pride_6.png",
-      "pride_7.png"
+      "pride/asexual.png",
+      "pride/bisexual.png",
+      "pride/homosexual.png",
+      "pride/lesbian.png",
+      "pride/lgbt.png",
+      "pride/non_binary.png",
+      "pride/pansexual.png",
+      "pride/trans.png"
     ]
   },
   "seasonal/winter": {
     "period": [ "01.12", "31.01" ],
     "icons": "seasonal/winter.png"
+  },
+  "april_fools": {
+    "period": "01.04",
+    "icons": "seasonal/april_fools.png"
   }
 }

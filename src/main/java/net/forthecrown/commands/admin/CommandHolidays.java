@@ -148,6 +148,16 @@ public class CommandHolidays extends FtcCommand {
                                                 Holiday::getMailScript,
                                                 Holiday::setMailScript
                                         ))
+
+                                        .then(scriptArg("mailMessages",
+                                                Holiday::getMailGenScript,
+                                                Holiday::setMailGenScript
+                                        ))
+
+                                        .then(scriptArg("tagReplacer",
+                                                Holiday::getTagRenderScript,
+                                                Holiday::setTagRenderScript
+                                        ))
                                 )
 
                                 .then(literal("give")
@@ -683,7 +693,10 @@ public class CommandHolidays extends FtcCommand {
         return c.getArgument("holiday", Holiday.class);
     }
 
-    private LiteralArgumentBuilder<CommandSource> currencies(String name, Function<Holiday, RewardRange> getter, BiConsumer<Holiday, RewardRange> setter) {
+    private LiteralArgumentBuilder<CommandSource> currencies(String name,
+                                                             Function<Holiday, RewardRange> getter,
+                                                             BiConsumer<Holiday, RewardRange> setter
+    ) {
         return literal(name.toLowerCase() + "s")
                 .executes(c -> {
                     Holiday holiday = get(c);

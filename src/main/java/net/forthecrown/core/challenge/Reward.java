@@ -122,8 +122,7 @@ public class Reward {
         }
 
         if (!Strings.isNullOrEmpty(claimScript)) {
-            Script.run(claimScript, "onRewardClaim", user, streak)
-                    .closeScript();
+            Script.run(claimScript, "onRewardClaim", user, streak);
         }
     }
 

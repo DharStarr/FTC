@@ -58,7 +58,11 @@ public class CommandScripts extends FtcCommand {
                 // /script run <script> [method]
                 .then(literal("run")
                         .then(argument("script", Arguments.SCRIPT)
-                                .executes(c -> run(c, null))
+                                .executes(c -> run(c, null, true))
+
+                                .then(literal("-doNotClose")
+                                        .executes(c -> run(c, null, false))
+                                )
 
                                 .then(argument("func", StringArgumentType.string())
                                         .executes(c -> {
@@ -67,8 +71,19 @@ public class CommandScripts extends FtcCommand {
                                                     String.class
                                             );
 
-                                            return run(c, func);
+                                            return run(c, func, true);
                                         })
+
+                                        .then(literal("-doNotClose")
+                                                .executes(c -> {
+                                                    String func = c.getArgument(
+                                                            "func",
+                                                            String.class
+                                                    );
+
+                                                    return run(c, null, false);
+                                                })
+                                        )
                                 )
                         )
                 )
@@ -144,7 +159,8 @@ public class CommandScripts extends FtcCommand {
     }
 
     private int run(CommandContext<CommandSource> c,
-                    @Nullable String method
+                    @Nullable String method,
+                    boolean closeAfter
     ) throws CommandSyntaxException {
         String scriptName = c.getArgument("script", String.class);
         Script script;
@@ -152,9 +168,12 @@ public class CommandScripts extends FtcCommand {
         try {
             script = Script.read(scriptName);
         } catch (ScriptLoadException exc) {
+            exc.printStackTrace();
+
             throw Exceptions.format(
-                    "Couldn't evaluate script '{0}'",
-                    exc.getScript().getName()
+                    "Couldn't evaluate script '{0}', reason: {1}",
+                    exc.getScript().getName(),
+                    exc.getCause()
             );
         }
 
@@ -206,7 +225,9 @@ public class CommandScripts extends FtcCommand {
             );
         }
 
-        script.close();
+        if (closeAfter) {
+            script.close();
+        }
         return 0;
     }
 }

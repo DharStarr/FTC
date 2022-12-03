@@ -175,8 +175,7 @@ public class MailAttachment implements JsonSerializable, HoverEventSource<Compon
         setClaimed(true);
 
         if (!Strings.isNullOrEmpty(script)) {
-            Script.run(script, "onMailClaim", user)
-                    .closeScript();
+            Script.run(script, "onMailClaim", user);
         }
     }
 

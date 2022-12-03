@@ -12,9 +12,9 @@ import org.bukkit.plugin.EventExecutor;
 import org.jetbrains.annotations.NotNull;
 import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.openjdk.nashorn.internal.runtime.Context;
-import org.openjdk.nashorn.internal.runtime.ScriptFunction;
 
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor
@@ -22,138 +22,135 @@ public class ScriptEvents {
     private final Script script;
     private final List<ExecutorWrapper> wrappers = new ObjectArrayList<>();
 
-    public void register(Object event, Object listener) {
-        register(event, null, listener, EventPriority.NORMAL, false);
+    /* ---------------------------- REGISTRATION ---------------------------- */
+
+    public void register(String function,
+                         Object eventClass
+    ) {
+        register(function, eventClass, EventPriority.NORMAL);
     }
 
-    public void register(Object event, Object thiz, Object listener) {
-        register(event, thiz, listener, EventPriority.NORMAL, false);
-    }
-
-    public void register(Object event,
-                         Object thiz,
-                         Object listener,
+    public void register(String function,
+                         Object eventClass,
                          EventPriority priority
     ) {
-        register(event, thiz, listener, priority, false);
+        register(function, eventClass, priority, false);
     }
 
-    public void register(Object event,
-                         Object thiz,
-                         Object listener,
+    public void register(String function,
+                         Object eventClass,
                          EventPriority priority,
                          boolean ignoreCancelled
     ) {
-        ScriptListenerHandle handle;
-        Class<? extends Event> type;
+        register(null, function, eventClass, priority, ignoreCancelled);
+    }
 
-        if (event instanceof StaticClass c) {
-            event = c.getRepresentedClass();
-        } else if (event instanceof String s) {
-            try {
-                event = Class.forName(s, true, getClass().getClassLoader());
-            } catch (ClassNotFoundException exc) {
-                throw new IllegalStateException(exc);
-            }
+    public void register(Object listener,
+                         String function,
+                         Object eventClass
+    ) {
+        register(listener, function, eventClass, EventPriority.NORMAL);
+    }
+
+    public void register(Object listener,
+                         String function,
+                         Object eventClass,
+                         EventPriority priority
+    ) {
+        register(listener, function, eventClass, priority, false);
+    }
+
+    public void register(Object listener,
+                         String function,
+                         Object eventClass,
+                         EventPriority priority,
+                         boolean ignoreCancelled
+    ) {
+        if (listener == null) {
+            listener = script.getMirror();
         }
 
-        if (event instanceof Class<?> c) {
-            if (!Event.class.isAssignableFrom(c)) {
-                throw Util.newException("Class '%s' is not an event class!", c);
-            }
+        var rawMirror = ScriptObjectMirror.wrap(
+                listener, Context.getGlobal()
+        );
 
-            type = (Class<? extends Event>) c;
-        } else {
-            throw Util.newException(
-                    "Invalid event type input: '%s'",
-                    event
-            );
+        if (!(rawMirror instanceof ScriptObjectMirror m)) {
+            throw Util.newException("Invalid listener: %s", listener);
         }
 
-        if (listener instanceof ScriptFunction f) {
-            listener = ScriptObjectMirror.wrap(f, Context.getGlobal());
-        }
+        var eventType = getEventClass(eventClass);
 
-        if (listener instanceof String s) {
-            handle = new ByNameHandle(s);
-        } else if (listener instanceof ScriptObjectMirror m) {
-            if (!m.isFunction() && !m.isStrictFunction()) {
-                throw Util.newException(
-                        "Input '%s' is not a function nor a function name",
-                        listener
-                );
-            }
-
-            handle = new FunctionRefHandle(
-                    m,
-                    thiz == null ? script.getMirror() : thiz
-            );
-        } else {
-            throw Util.newException(
-                    "Invalid type of listener: %s",
-                    listener
-            );
-        }
-
-        ExecutorWrapper wrapper = new ExecutorWrapper(handle, type, this);
+        ScriptListenerHandle handle = new ScriptListenerHandle(m, function);
+        ExecutorWrapper wrapper = new ExecutorWrapper(handle, eventType, this);
         wrappers.add(wrapper);
 
         Bukkit.getPluginManager()
                 .registerEvent(
-                        type,
+                        eventType,
                         wrapper,
                         priority,
                         wrapper,
-                        FTC.getPlugin(),
-                        ignoreCancelled
+                        FTC.getPlugin()
                 );
     }
 
-    public void unregister(Object listener) {
-        if (listener instanceof String s) {
-            wrappers.removeIf(wrapper -> {
-                if (!(wrapper.handle instanceof ByNameHandle h
-                        && h.methodName().equalsIgnoreCase(s))
-                ) {
-                    return false;
-                }
+    /* --------------------------- UNREGISTRATION --------------------------- */
 
+    public void unregister(String functionName) {
+        Objects.requireNonNull(functionName);
+
+        wrappers.removeIf(wrapper -> {
+            if (wrapper.handle.member.equalsIgnoreCase(functionName)) {
                 HandlerList.unregisterAll(wrapper);
                 return true;
-            });
+            }
 
-            return;
+            return false;
+        });
+    }
+
+    public void unregisterFrom(Object eventClass) {
+        var clazz = getEventClass(eventClass);
+
+        wrappers.removeIf(wrapper -> {
+            if (wrapper.type == clazz) {
+                HandlerList.unregisterAll(wrapper);
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    private Class<? extends Event> getEventClass(Object input) {
+        Objects.requireNonNull(input, "Event class is null");
+
+        if (input instanceof String s) {
+            try {
+                input = Class.forName(
+                        s, true, getClass().getClassLoader()
+                );
+            } catch (ReflectiveOperationException exc) {
+                throw new IllegalStateException(exc);
+            }
+        } else if (input instanceof StaticClass staticClass) {
+            input = staticClass.getRepresentedClass();
         }
 
-        if (listener instanceof ScriptFunction f) {
-            listener = ScriptObjectMirror.wrap(f, Context.getGlobal());
+        Class type = (Class) input;
+
+        if (!Event.class.isAssignableFrom(type)) {
+            throw Util.newException("Class %s is not an event class!",
+                    type.getName()
+            );
         }
 
-        if (listener instanceof ScriptObjectMirror m
-                && (m.isStrictFunction() || m.isFunction())
-        ) {
-            wrappers.removeIf(wrapper -> {
-                if (wrapper.handle instanceof FunctionRefHandle h
-                        && h.mirror.equals(m)
-                ) {
-                    HandlerList.unregisterAll(wrapper);
-                    return true;
-                }
-
-                return false;
-            });
-
-            return;
-        }
-
-        throw Util.newException(
-                "Invalid type of input for unregister() method: %s",
-                listener
-        );
+        return type;
     }
 
     void close() {
-
+        wrappers.forEach(HandlerList::unregisterAll);
+        wrappers.clear();
     }
 
     @Getter
@@ -181,29 +178,11 @@ public class ScriptEvents {
         }
     }
 
-    interface ScriptListenerHandle {
-        void invoke(Script script, Event event) throws ScriptExecutionException;
-    }
-
-    record ByNameHandle(String methodName) implements ScriptListenerHandle {
-        @Override
+    public record ScriptListenerHandle(ScriptObjectMirror scriptObject,
+                                       String member
+    ) {
         public void invoke(Script script, Event event) {
-            script.invoke(methodName, event);
-        }
-    }
-
-    record FunctionRefHandle(ScriptObjectMirror mirror, Object thiz)
-            implements ScriptListenerHandle
-    {
-        @Override
-        public void invoke(Script script, Event event) {
-            try {
-                mirror.call(thiz, event);
-            } catch (Exception e) {
-                throw new ScriptExecutionException(
-                        script, "<method reference>", e
-                );
-            }
+            Script.invokeSafe(script, scriptObject, member, event);
         }
     }
 }
