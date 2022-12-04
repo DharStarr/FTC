@@ -10,12 +10,14 @@ import net.forthecrown.core.FTC;
 import net.forthecrown.dungeons.DungeonWorld;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
 import net.forthecrown.utils.ChunkedMap;
+import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Bounds3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -36,13 +38,20 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
             TAG_ROOT = "root",
             TAG_BOSS_ROOM = "bossRoom";
 
-    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
+    /* -------------------------- INSTANCE FIELDS --------------------------- */
 
     /** Piece ID to piece lookup map */
-    private final Map<UUID, DungeonPiece> pieceLookup = new Object2ObjectOpenHashMap<>();
+    private final Map<UUID, DungeonPiece>
+            pieceLookup = new Object2ObjectOpenHashMap<>();
 
     @Getter
     private final ChunkedMap<DungeonPiece> chunkMap = new ChunkedMap<>();
+
+    @Getter
+    private final Set<DungeonPiece> activePieces = new ObjectOpenHashSet<>();
+
+    @Getter
+    private final Set<DungeonPiece> inactivePieces = new ObjectOpenHashSet<>();
 
     /** The root room from which all other rooms have sprung */
     @Getter
@@ -51,7 +60,11 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
     @Getter @Setter
     private DungeonRoom bossRoom;
 
-    /* ----------------------------- METHODS ------------------------------ */
+    private BukkitTask tickTask;
+
+    private final LevelListener listener = new LevelListener(this);
+
+    /* ------------------------------ METHODS ------------------------------- */
 
     /**
      * Adds this piece and ALL of its children to this level.
@@ -94,6 +107,39 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         return chunkMap.getOverlapping(area);
     }
 
+    public void tick() {
+        var world = DungeonWorld.get();
+
+        inactivePieces.forEach(piece -> piece.onIdleTick(world, this));
+        activePieces.forEach(piece -> piece.onTick(world, this));
+    }
+
+    public void startTicking() {
+        stopTicking();
+        tickTask = Tasks.runTimer(this::tick, 1, 1);
+    }
+
+    public void stopTicking() {
+        tickTask = Tasks.cancel(tickTask);
+    }
+
+    void onActivate() {
+        startTicking();
+        listener.register();
+
+        inactivePieces.addAll(
+                pieceLookup.values()
+                        .stream()
+                        .filter(DungeonPiece::isTicked)
+                        .toList()
+        );
+    }
+
+    void onDeactivate() {
+        stopTicking();
+        listener.unregister();
+    }
+
     /* ----------------------------- PLACEMENT ------------------------------ */
 
     public void place() {
@@ -114,7 +160,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         getRoot().visit(placementVisitor);
     }
 
-    /* ----------------------------- SERIALIZATION ------------------------------ */
+    /* --------------------------- SERIALIZATION ---------------------------- */
 
     public void save(CompoundTag tag) {
         ListTag pieces = savePieces();
@@ -181,7 +227,8 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
 
     private void loadPieces(ListTag tag, UUID rootId) {
         Map<UUID, DungeonPiece> linkMap = new Object2ObjectOpenHashMap<>();
-        Set<Pair<DungeonPiece, Set<UUID>>> piecesAndChildren = new ObjectOpenHashSet<>();
+        Set<Pair<DungeonPiece, Set<UUID>>>
+                piecesAndChildren = new ObjectOpenHashSet<>();
 
         for (var e: tag) {
             CompoundTag pTag = (CompoundTag) e;
@@ -192,7 +239,10 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
 
             if (pTag.contains(TAG_CHILDREN, Tag.TAG_LIST)) {
                 children.addAll(
-                        TagUtil.readCollection(pTag.get(TAG_CHILDREN), TagUtil::readUUID)
+                        TagUtil.readCollection(
+                                pTag.get(TAG_CHILDREN),
+                                TagUtil::readUUID
+                        )
                 );
             }
 
@@ -210,7 +260,8 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
                 var childPiece = linkMap.get(child);
 
                 if (childPiece == null) {
-                    LOGGER.warn("Missing child mapping for ID: '{}', parent: '{}'",
+                    LOGGER.warn(
+                            "Missing child mapping for ID: '{}', parent: '{}'",
                             child, piece.getId()
                     );
 
@@ -224,7 +275,12 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
         DungeonRoom rootPiece = (DungeonRoom) linkMap.get(rootId);
 
         if (rootPiece == null) {
-            LOGGER.warn("No root piece in NBT! Cannot load piece data, no root under ID: {}", rootId);
+            LOGGER.warn(
+                    "No root piece in NBT! Cannot load piece data, " +
+                            "no root under ID: {}",
+                    rootId
+            );
+
             return;
         }
 

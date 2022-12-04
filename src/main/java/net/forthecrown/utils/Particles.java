@@ -51,9 +51,7 @@ public @UtilityClass class Particles {
 
     public static void drawBounds(World w, AbstractBounds3i bounds, Color color) {
         var min = bounds.min().toDouble();
-        var max = bounds.max()
-                .toDouble()
-                .add(Vector3d.ONE);
+        var max = bounds.max().toDouble().add(Vector3d.ONE);
 
         drawBounds(min, max, w, color);
     }
@@ -67,9 +65,7 @@ public @UtilityClass class Particles {
 
     public static void drawBounds(World w, AbstractBounds3i bounds, ParticleBuilder builder) {
         var min = bounds.min().toDouble();
-        var max = bounds.max()
-                .toDouble()
-                .add(Vector3d.ONE);
+        var max = bounds.max().toDouble().add(Vector3d.ONE);
 
         drawBounds(min, max, w, builder);
     }

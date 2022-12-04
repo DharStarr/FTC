@@ -75,6 +75,10 @@ public class PlayerMoveGuildChunkListener implements Listener {
         // Jules: Use user variable instead of user ID lookups
         var user = Users.getLoadedUser(playerId);
 
+        if (user == null) {
+            return false;
+        }
+
         if (user.getGuildId() == null) {
             return false;
         }

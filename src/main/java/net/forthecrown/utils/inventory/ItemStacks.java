@@ -16,6 +16,8 @@ import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -232,7 +234,7 @@ public final class ItemStacks {
         return save(item).toString();
     }
 
-    public static ItemStack ofNbtString(String nbt) throws CommandSyntaxException {
+    public static ItemStack fromNbtString(String nbt) throws CommandSyntaxException {
         return load(TagParser.parseTag(nbt));
     }
 
@@ -355,6 +357,18 @@ public final class ItemStacks {
      */
     public static PotionItemBuilder potionBuilder(Material material, int amount) {
         return new PotionItemBuilder(material, amount);
+    }
+
+    public static BaseItemBuilder<?> toBuilder(ItemStack stack) {
+        var meta = stack.getItemMeta();
+
+        if (meta instanceof PotionMeta) {
+            return new PotionItemBuilder(stack, meta);
+        } else if (meta instanceof SkullMeta) {
+            return new SkullItemBuilder(stack, meta);
+        } else {
+            return new DefaultItemBuilder(stack, meta);
+        }
     }
 
     /* ----------------------------- NON EMPTY ITERATOR ------------------------------ */

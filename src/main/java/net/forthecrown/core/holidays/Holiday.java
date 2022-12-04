@@ -4,10 +4,12 @@ import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.inventory.FtcInventory;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.io.TagUtil;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -29,7 +31,9 @@ public class Holiday implements InventoryHolder {
     private static final String
             TAG_SCRIPT = "activateScript",
             TAG_END_SCRIPT = "periodEndScript",
-            TAG_START_SCRIPT = "periodStartScript";
+            TAG_START_SCRIPT = "periodStartScript",
+            TAG_MAIL_SCRIPT = "mailScript",
+            TAG_RENDER_SCRIPT = "tagRenderScript";
 
     /**
      * The holiday's name
@@ -114,6 +118,40 @@ public class Holiday implements InventoryHolder {
      */
     private String activationScript;
 
+    /**
+     * Script called to generate a mail message for users when the holiday
+     * is being activated or ran.
+     * <p>
+     * Calls a <code>createMessage(ZonedDateTime, Random, User)</code> function
+     * to get the mail message.
+     * <p>
+     * If this script is not set, then 1 of the mail messages will be randomly
+     * selected and used instead.
+     */
+    private String mailGenScript;
+
+    /**
+     * Script called to render tags in mail messages, item lore, item display
+     * names and such.
+     * <p>
+     * The function called in the script will be
+     * <code>renderTags(Component, User, Holiday, ZonedDateTime)</code>, which
+     * must return an object.
+     * <p>
+     * Script will be called for each line of lore, for each user and for each
+     * instance of tags being replaced, as such, this may be called thousands of
+     * times per holiday activation. For that reason, this script will be cached
+     * in {@link #tagRenderer} to prevent the script from being loaded, executed
+     * and closed thousands of times.
+     * <p>
+     * If this script is set, then {@link HolidayTags} will be called before
+     * this script to render the default tags.
+     */
+    private String tagRenderScript;
+
+    /** Cached value of {@link #tagRenderScript} */
+    private Script tagRenderer;
+
     public Holiday(String name) {
         this.name = name;
         this.inventory = FtcInventory.of(this, ServerHolidays.INV_SIZE, name());
@@ -170,6 +208,14 @@ public class Holiday implements InventoryHolder {
         if (!Strings.isNullOrEmpty(periodEndScript)) {
             tag.putString(TAG_END_SCRIPT, periodEndScript);
         }
+
+        if (!Strings.isNullOrEmpty(mailGenScript)) {
+            tag.putString(TAG_MAIL_SCRIPT, mailGenScript);
+        }
+
+        if (!Strings.isNullOrEmpty(tagRenderScript)) {
+            tag.putString(TAG_RENDER_SCRIPT, tagRenderScript);
+        }
     }
 
     public void load(CompoundTag tag) {
@@ -186,6 +232,8 @@ public class Holiday implements InventoryHolder {
         setActivationScript(tag.getString(TAG_SCRIPT));
         setPeriodStartScript(tag.getString(TAG_START_SCRIPT));
         setPeriodEndScript(tag.getString(TAG_END_SCRIPT));
+        setMailGenScript(tag.getString(TAG_MAIL_SCRIPT));
+        setTagRenderScript(tag.getString(TAG_RENDER_SCRIPT));
 
         if (tag.contains("mails")) {
             ListTag list = tag.getList("mails", Tag.TAG_STRING);
@@ -232,22 +280,34 @@ public class Holiday implements InventoryHolder {
      *         if the messages list is empty.
      */
     public Component getMailMessage(ZonedDateTime time, Random random, User user) {
-        if (mails.isEmpty()) {
-            return null;
-        }
-
         Component c;
 
-        // If list size 1, get entry 0
-        // otherwise, let random pick an
-        // entry
-        if (mails.size() == 1) {
-            c = mails.get(0);
+        if (!Strings.isNullOrEmpty(mailGenScript)) {
+            var result = Script.read(mailGenScript)
+                    .invoke("createMessage", time, random, user)
+                    .result();
+
+            if (result.isEmpty()) {
+                return null;
+            }
+
+            c = Text.valueOf(result.get());
         } else {
-            c = mails.get(random.nextInt(mails.size()));
+            if (mails.isEmpty()) {
+                return null;
+            }
+
+            // If list size 1, get entry 0
+            // otherwise, let random pick an
+            // entry
+            if (mails.size() == 1) {
+                c = mails.get(0);
+            } else {
+                c = mails.get(random.nextInt(mails.size()));
+            }
         }
 
-        return HolidayTags.replaceTags(c, user, this, time);
+        return renderTags(c, user, time);
     }
 
     /**
@@ -256,7 +316,19 @@ public class Holiday implements InventoryHolder {
      * @return True, if and only if, the rhine and gem rewards are empty AND autoGiveItems is false or the inventory is empty
      */
     public boolean hasNoRewards() {
-        return rhines.isNone() && gems.isNone() && (!autoGiveItems || inventory.isEmpty());
+        if (period.isExact()) {
+            if (!Strings.isNullOrEmpty(activationScript)) {
+                return false;
+            }
+        } else if (!Strings.isNullOrEmpty(periodStartScript)
+                || !Strings.isNullOrEmpty(periodEndScript)
+        ) {
+            return false;
+        }
+
+        return rhines.isNone()
+                && gems.isNone()
+                && (!autoGiveItems || inventory.isEmpty());
     }
 
     /**
@@ -283,5 +355,39 @@ public class Holiday implements InventoryHolder {
      */
     public String getFilteredName() {
         return getName().replaceAll("_", " ");
+    }
+
+    public Component renderTags(Component initial,
+                                User user,
+                                ZonedDateTime time
+    ) {
+        var rendered = HolidayTags.replaceTags(initial, user, this, time);
+
+        if (!Strings.isNullOrEmpty(tagRenderScript)) {
+            if (tagRenderer == null) {
+                tagRenderer = Script.read(tagRenderScript);
+            }
+
+            var result = tagRenderer
+                    .invoke("renderTags", rendered, user, this, time)
+                    .result();
+
+            if (result.isEmpty()) {
+                return null;
+            }
+
+            return Text.valueOf(result.get());
+        }
+
+        return rendered;
+    }
+
+    public void closeRenderer() {
+        if (tagRenderer == null) {
+            return;
+        }
+
+        tagRenderer.close();
+        tagRenderer = null;
     }
 }

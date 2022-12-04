@@ -4,9 +4,9 @@ import lombok.Data;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
+import java.time.LocalDate;
 import java.time.Month;
 import java.time.MonthDay;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -137,20 +137,34 @@ public class MonthDayPeriod {
      * @param time The timezone to use
      * @return True, if this holiday should be active right now
      */
-    public boolean contains(ZonedDateTime time) {
-        if (isExact()) {
-            return start.getDayOfMonth() == time.getDayOfMonth()
-                    && start.getMonthValue() == time.getMonthValue();
+    public boolean contains(LocalDate time) {
+        LocalDate startDate = LocalDate.of(
+                time.getYear(), start.getMonth(), start.getDayOfMonth()
+        );
+
+        if (end == null) {
+            return startDate.compareTo(time) == 0;
         }
 
-        var month = time.getMonthValue();
-        var date = time.getDayOfMonth();
+        LocalDate endDate = LocalDate.of(
+                time.getYear(), end.getMonth(), end.getDayOfMonth()
+        );
 
-        if (month < start.getDayOfMonth() || month > end.getMonthValue()) {
-            return false;
+        // End takes place on the year after start
+        if (end.isBefore(start)) {
+            if (time.isBefore(endDate)) {
+                startDate = startDate.minusYears(1);
+            } else {
+                endDate = endDate.plusYears(1);
+            }
         }
 
-        return date >= start.getDayOfMonth() && date <= end.getDayOfMonth();
+        long minEpoch = startDate.getLong(ChronoField.EPOCH_DAY);
+        long maxEpoch = endDate.getLong(ChronoField.EPOCH_DAY);
+        long timeEpoch = time.getLong(ChronoField.EPOCH_DAY);
+
+        return timeEpoch <= maxEpoch
+                && timeEpoch >= minEpoch;
     }
 
     /**

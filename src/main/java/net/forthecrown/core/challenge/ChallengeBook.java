@@ -23,8 +23,10 @@ import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 
 public class ChallengeBook {
+    /** Pay challenge cost */
     public static final int PAY_COST = 10_000;
 
+    /** Clickable text node used to run the pay challenge logic */
     public static final ClickableTextNode PAY_NODE = ClickableTexts.register(
             new ClickableTextNode("challenge_pay")
                     .setExecutor(user -> {
@@ -33,8 +35,20 @@ public class ChallengeBook {
                         }
 
                         Challenges.apply("daily/pay", challenge -> {
+                            if (!challenge.canComplete(user)) {
+                                return;
+                            }
+
                             user.removeBalance(PAY_COST);
                             challenge.trigger(user);
+
+                            user.sendMessage(
+                                    Text.format(
+                                            "Paid &e{0, rhines}&r to complete challenge!",
+                                            NamedTextColor.GRAY,
+                                            PAY_COST
+                                    )
+                            );
 
                             Transactions.builder()
                                     .type(TransactionType.PAY_CHALLENGE)
@@ -82,7 +96,13 @@ public class ChallengeBook {
         Map<ResetInterval, IntIntPair>
                 summary = new EnumMap<>(ResetInterval.class);
 
+        // Count completed challenges by their category
         for (var c: ChallengeManager.getInstance().getActiveChallenges()) {
+            // Item challenges are only shown in /shop
+            if (c instanceof ItemChallenge) {
+                continue;
+            }
+
             boolean completed = Challenges.hasCompleted(c, entry.getId());
 
             IntIntPair pair = summary.computeIfAbsent(
@@ -101,12 +121,15 @@ public class ChallengeBook {
             int total = e.getValue().leftInt();
             int completed = e.getValue().rightInt();
 
+            // If there's no challenges for this type
             if (total <= 0) {
                 continue;
             }
 
-            builder.addField(
-                    text(e.getKey().getDisplayName() + " Challenges"),
+            builder
+                    .addEmptyLine()
+                    .addField(
+                    text(e.getKey().getDisplayName() + " challenges"),
 
                     Text.format("{0, number}/{1, number}",
                             completed >= total
@@ -131,12 +154,18 @@ public class ChallengeBook {
                         .getActiveChallenges()
         );
 
-        activeList.removeIf(challenge -> challenge.getResetInterval() != interval);
+        // Remove challenges that don't match this category
+        activeList.removeIf(challenge -> {
+            return challenge.getResetInterval() != interval
+                    || challenge instanceof ItemChallenge;
+        });
 
+        // If there's nothing to display now lol
         if (activeList.isEmpty()) {
             return;
         }
 
+        // Challenge 2 isCompleted map
         Object2BooleanMap<Challenge>
                 completed = new Object2BooleanOpenHashMap<>();
 
@@ -159,15 +188,23 @@ public class ChallengeBook {
             float progress = entry.getProgress()
                     .getFloat(c);
 
+            float goal = c.getGoal(entry.getUser());
+
             ++totalRequired;
 
-            if (isCompleted || progress >= c.getGoal()) {
+            // Since just adding the total goal and progress of each challenge
+            // together produces wrong results for the percentage count at the
+            // top of the page, the percentage value is calculated as a sum of
+            // the percentage of each challenge's completion rate
+            if (isCompleted || progress >= goal) {
                 ++totalProgress;
             } else {
-                totalProgress += (progress / c.getGoal());
+                totalProgress += (progress / goal);
             }
         }
 
+        // I don't think this will happen, as it could only
+        // happen if each challenge had a goal of 0 lol
         if (totalRequired != 0.0F) {
             double progress = (totalProgress / totalRequired) * 100;
 
@@ -192,13 +229,18 @@ public class ChallengeBook {
             float progress = entry.getProgress()
                     .getFloat(c);
 
+            float goal = c.getGoal(entry.getUser());
+
+            // Ensure that if the challenge is completed, it always
+            // shows the goal, not more, not less
             if (isCompleted) {
-                progress = c.getGoal();
+                progress = goal;
             }
 
-            Component displayName = c.displayName()
+            Component displayName = c.displayName(entry.getUser())
                     .color(null);
 
+            // Hard coded exception for the pay challenge
             if (Objects.equals(payChallenge, c) && !isCompleted) {
                 displayName = displayName.append(space())
                         .append(PAY_NODE.prompt(entry.getUser()));
@@ -222,12 +264,12 @@ public class ChallengeBook {
                     .addText(displayName)
 
                     .justifyRight(
-                            Text.format("{0, number, #.}/{1, number}",
+                            Text.format("{0, number, -floor}/{1, number}",
                                     isCompleted
                                             ? NamedTextColor.DARK_GREEN
                                             : NamedTextColor.GRAY,
 
-                                    progress, c.getGoal()
+                                    progress, goal
                             )
                                     .hoverEvent(
                                             text(isCompleted

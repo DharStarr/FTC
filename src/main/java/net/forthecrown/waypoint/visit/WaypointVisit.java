@@ -96,7 +96,7 @@ public class WaypointVisit implements Runnable {
         nearWaypoint = nearestWaypoint != null
                 && nearestWaypoint.getBounds().contains(user.getPlayer());
 
-        // For hulk smashing to be allowed we must pass 4 checks:
+        // For hulk smashing to be allowed we must pass 5 checks:
         // 1) server allows hulk smashing
         // 2) user allows hulk smashing
         // 3) The area above the pole must only be air

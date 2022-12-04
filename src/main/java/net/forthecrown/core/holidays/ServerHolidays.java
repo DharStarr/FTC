@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.module.OnDayChange;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.user.UserManager;
 import net.forthecrown.user.Users;
@@ -32,6 +32,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The class which manages the server's automated Holiday system.
@@ -72,7 +73,7 @@ public class ServerHolidays extends SerializableObject.NbtDat {
             MonthDayPeriod period = h.getPeriod();
 
             // If should be active
-            if (period.contains(time)) {
+            if (period.contains(time.toLocalDate())) {
                 // It's already active, no need to do anything
                 if (h.isActive()) {
                     continue;
@@ -158,8 +159,7 @@ public class ServerHolidays extends SerializableObject.NbtDat {
      */
     public void deactivate(Holiday holiday) {
         if (!Strings.isNullOrEmpty(holiday.getPeriodEndScript())) {
-            Script.read(holiday.getPeriodEndScript())
-                    .invoke("onHolidayEnd");
+            Script.run(holiday.getPeriodEndScript(), "onHolidayEnd");
         }
 
         UserManager.get().getAllUsers().whenComplete((users, throwable) -> {
@@ -204,17 +204,11 @@ public class ServerHolidays extends SerializableObject.NbtDat {
 
         if (holiday.getPeriod().isExact()) {
             if (!Strings.isNullOrEmpty(holiday.getActivationScript())) {
-                Script.run(
-                        holiday.getActivationScript(),
-                        "onHolidayRun"
-                );
+                Script.run(holiday.getActivationScript(), "onHolidayRun");
             }
         } else {
             if (!Strings.isNullOrEmpty(holiday.getPeriodStartScript())) {
-                Script.run(
-                        holiday.getPeriodStartScript(),
-                        "onHolidayStart"
-                );
+                Script.run(holiday.getPeriodStartScript(), "onHolidayStart");
             }
         }
 
@@ -232,6 +226,8 @@ public class ServerHolidays extends SerializableObject.NbtDat {
             final int gems = holiday.getGems().get(Util.RANDOM);
 
             users.forEach(user -> giveRewards(user, holiday, rhines, gems));
+
+            holiday.closeRenderer();
             Users.unloadOffline();
         });
     }
@@ -260,19 +256,19 @@ public class ServerHolidays extends SerializableObject.NbtDat {
                 .color(NamedTextColor.YELLOW);
 
         ZonedDateTime time = ZonedDateTime.now();
+        Component mailMsg = holiday.getMailMessage(time, Util.RANDOM, user);
 
         // If the holiday has mails, add a random mail message
         // else use the generic message lol
-        if (!holiday.getMails().isEmpty()) {
-            builder.append(holiday.getMailMessage(time, Util.RANDOM, user));
-        } else {
-            builder.append(
-                    Component.text("Holiday!", NamedTextColor.YELLOW)
-                            .append(Component.text(" What holiday? We don't know :D",
-                                    NamedTextColor.GRAY
-                            ))
-            );
-        }
+        builder.append(Objects.requireNonNullElseGet(
+                mailMsg,
+
+                () -> Component.text("Holiday!", NamedTextColor.YELLOW)
+                        .append(Component.text(
+                                " What holiday? We don't know :D",
+                                NamedTextColor.GRAY
+                        ))
+        ));
 
         builder.append(Component.text("."));
 
@@ -290,7 +286,9 @@ public class ServerHolidays extends SerializableObject.NbtDat {
         ItemStack item = null;
 
         // If item should be given and if we have items to give
-        if(holiday.isAutoGiveItems() && !holiday.getInventory().isEmpty()) {
+        if (holiday.isAutoGiveItems()
+                && !holiday.getInventory().isEmpty()
+        ) {
             item = getRewardItem(holiday, user, time);
         }
 
@@ -338,7 +336,8 @@ public class ServerHolidays extends SerializableObject.NbtDat {
             ItemMeta meta1 = instItem.getItemMeta();
 
             // Format item metadata
-            holiday.getContainer().formatExistingInfo(time, holiday, meta1, user);
+            holiday.getContainer()
+                    .formatExistingInfo(time, holiday, meta1, user);
 
             instItem.setItemMeta(meta1);
             inv.setItem(i, instItem);

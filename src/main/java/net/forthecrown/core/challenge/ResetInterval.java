@@ -3,9 +3,11 @@ package net.forthecrown.core.challenge;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/** Interval at which challenges are reset */
 @Getter
 @RequiredArgsConstructor
 public enum ResetInterval {
+    /** Reset everytime the date changes */
     DAILY ("Daily") {
         @Override
         public int getMax() {
@@ -13,6 +15,7 @@ public enum ResetInterval {
         }
     },
 
+    /** Reset on every monday */
     WEEKLY ("Weekly") {
         @Override
         public int getMax() {
@@ -20,6 +23,7 @@ public enum ResetInterval {
         }
     },
 
+    /** Never automatically reset */
     MANUAL ("") {
         @Override
         public int getMax() {

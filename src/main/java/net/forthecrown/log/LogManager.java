@@ -14,13 +14,12 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoLocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
+import java.util.List;
 
 @Getter
-public class DataManager {
+public class LogManager {
     @Getter
-    private static final DataManager instance = new DataManager();
+    private static final LogManager instance = new LogManager();
 
     private static final Logger LOGGER = FTC.getLogger();
 
@@ -31,14 +30,16 @@ public class DataManager {
     private LogContainer logs = new LogContainer();
 
     private final DataStorage storage;
+    private final LogIndex index;
 
     private Range<ChronoLocalDate> logRange;
 
     /* ---------------------------- CONSTRUCTOR ----------------------------- */
 
-    private DataManager() {
+    private LogManager() {
         storage = new DataStorage(PathUtil.getPluginDirectory("data"));
         logRange = Range.is(date);
+        this.index = new LogIndex();
     }
 
     /* ------------------------------ METHODS ------------------------------- */
@@ -53,16 +54,7 @@ public class DataManager {
         logRange = Range.between(logRange.getMinimum(), date);
     }
 
-    public Stream<LogEntry> queryLogs(LogQuery query) {
-        Stream.Builder<LogEntry> builder = Stream.builder();
-
-        // Used for tracking the amount of found entries
-        // to not look for more than query.getMaxResults() results.
-        //
-        // An integer pointer would be very
-        // great for this but no :(
-        AtomicInteger found = new AtomicInteger(0);
-
+    public List<LogEntry> queryLogs(LogQuery query) {
         // Clamp query's search range to existing logs to
         // prevent unnecessary loops
         Range<ChronoLocalDate> searchRange = Range.between(
@@ -71,8 +63,9 @@ public class DataManager {
         );
 
         ChronoLocalDate d = searchRange.getMaximum();
+        short safeGuard = 512;
 
-        short safeGuard = Short.MAX_VALUE / 2;
+        QueryResultBuilder builder = new QueryResultBuilder(query);
 
         // While within search range, query logs of specific day
         // and then move the date backwards by one
@@ -90,31 +83,25 @@ public class DataManager {
                 break;
             }
 
-            LogContainer container;
-
             // If current date, then don't load file,
             // File will most likely have invalid data,
             // use the loaded container
             if (d.compareTo(date) == 0) {
-                container = this.logs;
-            } else {
-                // If the file don't exist, nothing to look for
-                if (!Files.exists(storage.getLogFile(d))) {
-                    d = d.minus(1, ChronoUnit.DAYS);
-                    continue;
+                var log = this.logs.getLog(query.getSchema());
+
+                if (log != null) {
+                    log.performQuery(builder);
                 }
-
-                // Load log file
-                container = new LogContainer();
-                storage.loadLogs(d, container);
             }
-
-            // Perform query
-            container.performQuery(query, builder, found);
+            // If the file don't exist, nothing to look for
+            else if (Files.exists(storage.getLogFile(d))) {
+                // Query log file while loading it lol
+                storage.loadForQuery(d, builder);
+            }
 
             // If we've found more than the max requested results,
             // then stop looking for more
-            if (found.get() >= query.getMaxResults()) {
+            if (builder.hasFoundEnough()) {
                 break;
             }
 

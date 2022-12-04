@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Objects;
 
-public interface WaypointParseResult {
+public interface WaypointResults {
     /* ----------------------------- CONSTANTS ------------------------------ */
 
     ParseResult<Waypoint> NEAREST = (source, validate) -> {

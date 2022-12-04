@@ -8,20 +8,15 @@ import net.forthecrown.commands.click.ClickableTexts;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.book.BookBuilder;
 import net.forthecrown.utils.book.BookSetting;
-import net.forthecrown.utils.text.TextInfo;
 import net.kyori.adventure.text.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.forthecrown.core.Messages.BUTTON_ACCEPT_TICK;
-import static net.forthecrown.core.Messages.BUTTON_DENY_CROSS;
 import static net.kyori.adventure.text.Component.text;
 
 public final class SettingsBook {
     private SettingsBook() {}
-
-    public static final int BUTTONS_LENGTH = TextInfo.getPxWidth(BUTTON_DENY_CROSS.content() + " " + BUTTON_ACCEPT_TICK.content());
 
     private static final ClickableTextNode ROOT_NODE = ClickableTexts.register(new ClickableTextNode("settings"));
     private static final List<ToggleOption> OPTIONS = new ArrayList<>();

@@ -77,7 +77,7 @@ public class EavesDropper {
         }
 
         var pos = WorldVec3i.of(sign);
-        send(edSign(placer, pos, lines), Properties.EAVES_DROP_SIGN, true);
+        send(edSign(placer, pos, lines), Properties.EAVES_DROP_SIGN, false);
     }
 
     private static boolean isEmpty(List<Component> lines) {
@@ -103,6 +103,10 @@ public class EavesDropper {
     }
 
     public static void reportGuildChat(User sender, Mute mute, Guild guild, Component message) {
+        if (sender.hasPermission(Permissions.EAVESDROP_ADMIN)) {
+            return;
+        }
+
         send(
                 edGuildChat(sender, guild, mute, message),
                 Properties.EAVES_DROP_GUILD_CHAT,

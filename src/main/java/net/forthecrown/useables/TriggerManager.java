@@ -10,7 +10,6 @@ import net.forthecrown.utils.math.Vectors;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BoundingBox;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.util.Collection;
@@ -25,7 +24,11 @@ import java.util.Set;
  * manage all triggers created by commands and such.
  */
 public class TriggerManager {
-    private final Map<String, UsableTrigger> triggers = new Object2ObjectOpenHashMap<>();
+    public static final double PLAYER_HALF_WIDTH = 0.6D / 2;
+    public static final double PLAYER_HEIGHT = 1.8D;
+
+    private final Map<String, UsableTrigger>
+            triggers = new Object2ObjectOpenHashMap<>();
 
     private final WorldChunkMap<UsableTrigger> worldMap = new WorldChunkMap<>();
 
@@ -107,17 +110,9 @@ public class TriggerManager {
     }
 
     public void run(Player player, Location source, Location destination) {
-        Vector3d p1 = Vectors.doubleFrom(source);
-        Vector3d p2 = Vectors.doubleFrom(destination);
-
-        double hWidth = player.getWidth() / 2;
-        double height = player.getHeight();
-
-        BoundingBox sourceBounds = makeBounds(p1, hWidth, height);
-        BoundingBox destBounds = makeBounds(p2, hWidth, height);
-
-        Bounds3i totalArea = Bounds3i.of(sourceBounds)
-                .combine(Bounds3i.of(destBounds));
+        Bounds3i sourceBounds = makePlayerBounds(source);
+        Bounds3i destBounds = makePlayerBounds(destination);
+        Bounds3i totalArea = sourceBounds.combine(destBounds);
 
         var w = player.getWorld();
 
@@ -136,10 +131,14 @@ public class TriggerManager {
         }
     }
 
-    private BoundingBox makeBounds(Vector3d pos, double hWidth, double height) {
-        return new BoundingBox(
-                pos.x() - hWidth, pos.y(),          pos.z() - hWidth,
-                pos.x() + hWidth, pos.y() + height, pos.z() + hWidth
+    public static Bounds3i makePlayerBounds(Location location) {
+        return makeBounds(Vectors.doubleFrom(location));
+    }
+
+    private static Bounds3i makeBounds(Vector3d pos) {
+        return Bounds3i.of(
+                pos.x() - PLAYER_HALF_WIDTH, pos.y(),                 pos.z() - PLAYER_HALF_WIDTH,
+                pos.x() + PLAYER_HALF_WIDTH, pos.y() + PLAYER_HEIGHT, pos.z() + PLAYER_HALF_WIDTH
         );
     }
 

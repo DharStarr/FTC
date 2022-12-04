@@ -45,11 +45,6 @@ public enum TimeField implements FtcKeyed {
     AFK_TIME                    ("afkTime",                 false),
 
     /**
-     * The last time the user changed their marriage status
-     */
-    MARRIAGE_CHANGE             ("lastMarriageChange",      true ),
-
-    /**
      * The first time when the user began owning a market
      */
     MARKET_OWNERSHIP_STARTED    ("market_ownershipBegan",   true ),
@@ -57,7 +52,9 @@ public enum TimeField implements FtcKeyed {
     /**
      * The last time this user bought/abandoned a market
      */
-    MARKET_LAST_ACTION          ("market_lastAction",       true );
+    MARKET_LAST_ACTION          ("market_lastAction",       true ),
+
+    LAST_MOVEIN                 ("lastMoveIn",              true );
 
     /**
      * The serialized key of this timestamp, used in JSON

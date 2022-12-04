@@ -3,7 +3,7 @@ package net.forthecrown.core.challenge;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -34,10 +34,12 @@ public class ScriptEventListener implements Listener, EventExecutor {
             return;
         }
 
+        // This apparently doesn't happen automatically ¬_¬
         if (!handle.getChallenge().getEventClass().isInstance(event)) {
             return;
         }
 
+        // Execute script if there's an onEvent method
         if (script != null
                 && script.hasMethod(Challenges.METHOD_ON_EVENT)
         ) {
@@ -50,6 +52,7 @@ public class ScriptEventListener implements Listener, EventExecutor {
             return;
         }
 
+        // Else, get player and give them a point
         Player player = findPlayer(event);
         if (player == null) {
             return;

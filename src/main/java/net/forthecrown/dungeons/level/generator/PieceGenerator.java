@@ -1,14 +1,17 @@
 package net.forthecrown.dungeons.level.generator;
 
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.registry.Holder;
 import net.forthecrown.dungeons.level.DungeonPiece;
 import net.forthecrown.dungeons.level.DungeonRoom;
 import net.forthecrown.dungeons.level.RoomType;
 import net.forthecrown.dungeons.level.Rooms;
 import net.forthecrown.dungeons.level.gate.DungeonGate;
 import net.forthecrown.dungeons.level.gate.GateData;
+import net.forthecrown.dungeons.level.gate.GateType;
 import net.forthecrown.dungeons.level.gate.Gates;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.WeightedList;
@@ -84,7 +87,22 @@ public class PieceGenerator {
                         return false;
                     }
 
-                    return !data.successful.contains(pair.second());
+                    // Ensure connectors have matching opening sizes
+                    GateData.Opening opening = getOrigin()
+                            .getTargetGate()
+                            .opening();
+
+                    var gates = pair.second().getGates();
+                    int matchingOpenings = 0;
+
+                    for (var g: gates) {
+                        if (g.opening().equals(opening)) {
+                            matchingOpenings++;
+                        }
+                    }
+
+                    return !data.successful.contains(pair.second())
+                            && matchingOpenings > 0;
                 })
 
                 .forEach(pair -> potentials.add(pair.firstInt(), pair.second()));
@@ -236,19 +254,56 @@ public class PieceGenerator {
         return exits.stream()
                 .map(data1 -> data1.toAbsolute(piece))
                 .map(exit -> {
-                    DungeonGate gate = Gates.DEFAULT_GATE.getValue().create();
-                    List<GateData> gates = gate.getType().getGates();
+                    // Find a gate which matches the exit's size
+                    Pair<Holder<GateType>, GateData>
+                            pair = Gates.findMatching(exit.opening(), false);
 
-                    Validate.isTrue(!gates.isEmpty(), "%s has no gates, cannot use!", gate.getType().getStructureName());
+                    Holder<GateType> gateType;
+                    GateData entrance;
+                    List<GateData> gates;
 
-                    NodeAlign.align(gate, exit, gates.get(GATE_INDEX_ENTRANCE));
+                    // If exit not found, resort to using the default gate
+                    if (pair == null) {
+                        gateType = Gates.DEFAULT_GATE;
+                        gates = gateType.getValue().getGates();
+                        entrance = gates.get(GATE_INDEX_ENTRANCE);
+                    } else {
+                        gateType = pair.getFirst();
+                        entrance = pair.getSecond();
+                        gates = gateType.getValue().getGates();
+                    }
+
+                    DungeonGate gate = gateType.getValue().create();
+                    int entranceIndex = gates.indexOf(entrance);
+
+                    Validate.isTrue(
+                            !gates.isEmpty(),
+                            "%s has no gates, cannot use!",
+                            gate.getType().getStructureName()
+                    );
+
+                    NodeAlign.align(gate, exit, entrance);
                     piece.addChild(gate);
 
                     // No exit
                     if (gates.size() == 1) {
                         gate.setOpen(false);
                     } else {
-                        gate.setTargetGate(gates.get(GATE_INDEX_EXIT).toAbsolute(gate));
+                        int exitIndex = -1;
+
+                        // Find exit gate, Lazy way of finding the opposite
+                        // index of entranceIndex, since it probably only has 2
+                        // entrances
+                        while ((++exitIndex) == entranceIndex
+                                && exitIndex < gates.size()
+                        ) {
+
+                        }
+
+                        gate.setTargetGate(
+                                gates.get(exitIndex)
+                                        .toAbsolute(gate)
+                        );
                     }
 
                     return gate;

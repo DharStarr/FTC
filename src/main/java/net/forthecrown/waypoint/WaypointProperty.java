@@ -2,7 +2,6 @@ package net.forthecrown.waypoint;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.forthecrown.core.DynmapUtil;
 import net.forthecrown.utils.io.types.SerializerParser;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,8 +41,6 @@ public class WaypointProperty<T> {
     ) {
         // This method is overriden by several instances of this class,
         // but this was the most used function call I made in it lol
-        if (DynmapUtil.isInstalled()) {
-            WaypointDynmap.updateMarker(waypoint);
-        }
+        Waypoints.updateDynmap(waypoint);
     }
 }

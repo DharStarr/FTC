@@ -120,7 +120,8 @@ public abstract class SimpleBoss extends KeyedBossImpl implements SingleEntityBo
         // Update boss bar
         bossBar.setProgress(
                 GenericMath.clamp(
-                        newHealth / entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(),
+                        newHealth / entity.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+                                .getValue(),
                         0, 1
                 )
         );

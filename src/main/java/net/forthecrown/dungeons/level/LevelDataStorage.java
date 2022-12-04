@@ -1,7 +1,6 @@
 package net.forthecrown.dungeons.level;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.forthecrown.dungeons.DungeonWorld;
 import net.forthecrown.structure.BlockStructure;
 import net.forthecrown.structure.StructureFillConfig;
@@ -17,8 +16,8 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.Date;
 
-@RequiredArgsConstructor
-public class LevelArchiveStorage {
+@Getter
+public class LevelDataStorage {
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR)
             .appendLiteral('_')
@@ -31,8 +30,16 @@ public class LevelArchiveStorage {
             .appendValue(ChronoField.MINUTE_OF_HOUR)
             .toFormatter();
 
-    @Getter
     private final Path directory;
+    private final Path archiveDirectory;
+
+    private final Path activeLevel;
+
+    LevelDataStorage(Path directory) {
+        this.directory = directory;
+        this.archiveDirectory = directory.resolve("archives");
+        this.activeLevel = directory.resolve("level.dat");
+    }
 
     public Path getPath(long creationTime, int i) {
         LocalDateTime localTime = Time.localTime(creationTime);
@@ -43,7 +50,7 @@ public class LevelArchiveStorage {
         }
 
         strPath += ".dat";
-        return directory.resolve(strPath);
+        return archiveDirectory.resolve(strPath);
     }
 
     public void archiveLevel(DungeonLevel level, long creationTime) {
@@ -51,7 +58,7 @@ public class LevelArchiveStorage {
         int i = 0;
 
         while (path == null || Files.exists(path)) {
-            path = getPath(creationTime, i++);
+            path = getPath(creationTime, i);
         }
 
         BlockStructure structure = new BlockStructure();

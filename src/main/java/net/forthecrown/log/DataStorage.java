@@ -9,7 +9,9 @@ import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.logging.log4j.Logger;
 
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -28,11 +30,12 @@ public class DataStorage {
 
     /* ----------------------- FILE NAME FORMATTERS ------------------------- */
 
+    public static final boolean USE_BINARY_FORMAT = true;
+
     public static final DateTimeFormatter FILENAME_FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .appendLiteral("_")
             .appendText(ChronoField.DAY_OF_WEEK, TextStyle.FULL_STANDALONE)
-            .appendLiteral(".json")
             .toFormatter();
 
     public final DateTimeFormatter YEAR_MONTH_FORMATTER = new DateTimeFormatterBuilder()
@@ -88,18 +91,49 @@ public class DataStorage {
     }
 
     public Path getLogFile(ChronoLocalDate date) {
-        return getDirectory(date)
-                .resolve(FILENAME_FORMATTER.format(date));
+        var directory = getDirectory(date);
+
+        Path textPath = directory.resolve(
+                FILENAME_FORMATTER.format(date) + ".json"
+        );
+
+        if (Files.exists(textPath) || !USE_BINARY_FORMAT) {
+            return textPath;
+        }
+
+        return directory.resolve(
+                FILENAME_FORMATTER.format(date) + ".ftc_log"
+        );
     }
 
     public void loadLogs(ChronoLocalDate date, LogContainer container) {
         Path path = getLogFile(date);
 
-        SerializationHelper.readJsonFile(path, wrapper -> {
-            container.deserialize(
-                    new Dynamic<>(JsonOps.INSTANCE, wrapper.getSource())
-            );
-        });
+        if (!Files.exists(path)) {
+            return;
+        }
+
+        if (path.toString().endsWith(".json")) {
+            SerializationHelper.readJsonFile(path, wrapper -> {
+                container.deserialize(
+                        new Dynamic<>(JsonOps.INSTANCE, wrapper.getSource())
+                );
+            });
+        } else {
+            try {
+                InputStream stream = Files.newInputStream(path);
+                DataInputStream input = new DataInputStream(stream);
+
+                LogFile.readLog(input, container);
+
+                input.close();
+                stream.close();
+            } catch (IOException exc) {
+                LOGGER.error("Couldn't read binary JSON file {}",
+                        path, exc
+                );
+            }
+        }
     }
 
     public void saveLogs(LocalDate date, LogContainer container) {
@@ -110,6 +144,71 @@ public class DataStorage {
             return;
         }
 
-        SerializationHelper.writeJson(getLogFile(date), result.get());
+        var path = getLogFile(date);
+
+        if (path.toString().endsWith(".json")) {
+            SerializationHelper.writeJson(getLogFile(date), result.get());
+        } else {
+            try {
+                SerializationHelper.ensureParentExists(path);
+                saveBinaryLogs(path, container);
+            } catch (IOException exc) {
+                LOGGER.error("Couldn't write binary log file {}",
+                        path, exc
+                );
+            }
+        }
+    }
+
+    private void saveBinaryLogs(Path path, LogContainer container)
+            throws IOException
+    {
+        DataLog[] logs = container.getLogs();
+        LogFile file = new LogFile(logs);
+
+        file.fillArrays();
+        file.write(path);
+    }
+
+    public void loadForQuery(ChronoLocalDate date, QueryResultBuilder builder) {
+        var path = getLogFile(date);
+
+        var holder = builder.getQuery().getSchema();
+
+        if (path.toString().endsWith(".json")) {
+            var container = new LogContainer();
+            loadLogs(date, container);
+
+            var log = container.getLog(holder);
+
+            if (log != null) {
+                log.performQuery(builder);
+            }
+            return;
+        }
+
+        try {
+            InputStream stream = Files.newInputStream(path);
+            DataInputStream input = new DataInputStream(stream);
+
+            var header = LogFile.readHeader(input);
+            for (var p: header) {
+                if (!p.section.equals(holder.getKey())) {
+                    continue;
+                }
+
+                input.skipNBytes(p.offset);
+                LogFile.readQuery(input, holder.getValue(), builder, p);
+
+                break;
+            }
+
+            input.close();
+            stream.close();
+        } catch (IOException exc) {
+            LOGGER.error("Error reading binary log file {}",
+                    path, exc
+            );
+        }
     }
 }

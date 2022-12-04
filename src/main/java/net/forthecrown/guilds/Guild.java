@@ -70,11 +70,15 @@ public class Guild implements ForwardingAudience, InventoryHolder {
     @Getter
     private Inventory inventory;
 
-    private final ObjectSet<UnlockableChunkUpgrade> activeEffects = new ObjectOpenHashSet<>();
+    private final ObjectSet<UnlockableChunkUpgrade>
+            activeEffects = new ObjectOpenHashSet<>();
 
     @Getter
-    private final ObjectList<GuildMessage> msgBoardPosts = new ObjectArrayList<>();
-    private final ObjectList<GuildInvite> outgoingInvites = new ObjectArrayList<>();
+    private final ObjectList<GuildMessage>
+            msgBoardPosts = new ObjectArrayList<>();
+
+    private final ObjectList<GuildInvite>
+            outgoingInvites = new ObjectArrayList<>();
 
     public Guild(UUID id, long totalExp, long creationTimeStamp) {
         this.id = id;
@@ -144,9 +148,8 @@ public class Guild implements ForwardingAudience, InventoryHolder {
     public Component displayName() {
         return text()
                 .append(
-                        text("[", getSettings().getSecondaryColor().getTextColor()),
-                        text(getName(), getSettings().getPrimaryColor().getTextColor()),
-                        text("]", getSettings().getSecondaryColor().getTextColor())
+                       getSettings().getNameFormat()
+                               .apply(this)
                 )
 
                 .clickEvent(ClickEvent.runCommand("/g info " + getName()))
@@ -184,6 +187,9 @@ public class Guild implements ForwardingAudience, InventoryHolder {
         }
 
         this.totalExp += amount;
+
+        GuildManager.get().getExpTop()
+                .set(getId(), (int) totalExp);
     }
 
     public GuildMember getMember(UUID id) {
@@ -374,6 +380,7 @@ public class Guild implements ForwardingAudience, InventoryHolder {
         g.settings.deserialize(json.getObject(SETTINGS_KEY));
 
         // Read inventory
+        g.refreshGuildChest();
         Guilds.readInventory(g.inventory, json.get(CHEST_KEY));
 
         return g;

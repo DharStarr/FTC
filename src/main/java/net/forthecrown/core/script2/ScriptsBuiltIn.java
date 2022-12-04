@@ -1,4 +1,4 @@
-package net.forthecrown.core.script;
+package net.forthecrown.core.script2;
 
 import jdk.dynalink.beans.StaticClass;
 import lombok.experimental.UtilityClass;
@@ -25,15 +25,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
-import org.openjdk.nashorn.internal.runtime.ScriptFunction;
 import org.spongepowered.math.vector.Vector2d;
 import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 
 @UtilityClass
 class ScriptsBuiltIn {
@@ -63,18 +58,5 @@ class ScriptsBuiltIn {
         );
 
         engine.put("logger", logger);
-
-        try {
-            MethodHandle handle = MethodHandles.publicLookup()
-                    .findStatic(
-                            Util.class,
-                            "consoleCommand",
-                            MethodType.methodType(void.class, String.class, Object[].class)
-                    );
-
-            engine.put("command", handle);
-        } catch (NoSuchMethodException | IllegalAccessException exc) {
-            throw new RuntimeException(exc);
-        }
     }
 }

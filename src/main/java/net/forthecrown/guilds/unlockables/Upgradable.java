@@ -9,13 +9,17 @@ import net.forthecrown.guilds.GuildMember;
 import net.forthecrown.guilds.GuildPermission;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.ThrowingRunnable;
+import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.context.ClickContext;
 import net.forthecrown.utils.inventory.menu.context.InventoryContext;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -150,6 +154,36 @@ public enum Upgradable implements Unlockable {
     @Override
     public MenuNode toInvOption() {
         return MenuNode.builder()
+                .setItem((user, context) -> {
+                    var guild = context.getOrThrow(GUILD);
+                    var item = ItemStacks.builder(material)
+                            .setName(Component.text(name, NamedTextColor.YELLOW))
+                            .addLore(Component.text(desc, NamedTextColor.GRAY)
+                                             .decoration(TextDecoration.ITALIC, false))
+                            .build();
+
+                    ItemMeta meta = item.getItemMeta();
+                    List<Component> lore = meta.lore();
+                    lore.add(Component.text((this == GUILD_CHEST_SIZE ?
+                                    "Current size: " + getCurrentAmount.apply(guild) :
+                                    "Current amount: " + getCurrentAmount.apply(guild) + "/" + currentLimit(guild)))
+                                     .color(NamedTextColor.GRAY)
+                                     .decoration(TextDecoration.ITALIC, false));
+
+                    if (!this.isUnlocked(guild)) {
+                        lore.add(2, Component.text("Progress: " + getExpProgress(guild) + "/" + getExpRequired(guild))
+                                .color(NamedTextColor.GRAY)
+                                .decoration(TextDecoration.ITALIC, false));
+                        lore.add(Component.empty());
+                        lore.add(getClickComponent());
+                        lore.add(getShiftClickComponent());
+                    }
+                    
+                    meta.lore(lore);
+                    item.setItemMeta(meta);
+                    return item;
+                })
+
                 .setRunnable((u, context, c) -> onClick(u, c, context, () -> {}))
                 .build();
     }

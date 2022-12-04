@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
+import net.forthecrown.utils.Util;
 import org.apache.commons.lang3.Range;
 
 import java.time.LocalDate;
@@ -33,7 +35,17 @@ public class LogQuery implements Predicate<LogEntry> {
                 continue;
             }
 
-            if (!predicates.test(entry.get(f))) {
+            try {
+                if (!predicates.test(entry.get(f))) {
+                    return false;
+                }
+            } catch (Throwable t) {
+                FTC.getLogger().error(
+                        "Error testing field '{}' on entry, value={}",
+                        f.name(),
+                        entry.get(f),
+                        t
+                );
                 return false;
             }
         }
@@ -66,6 +78,14 @@ public class LogQuery implements Predicate<LogEntry> {
         private SchemaField lastField;
 
         public <T> Builder<T> field(SchemaField<T> field) {
+            if (!schema.getValue().contains(field)) {
+                throw Util.newException(
+                        "Field {}, id={} is not in the {} schema",
+                        field.name(), field.id(),
+                        schema.getKey()
+                );
+            }
+
             this.lastField = field;
             return (Builder<T>) this;
         }
@@ -89,7 +109,7 @@ public class LogQuery implements Predicate<LogEntry> {
         ) {
             Objects.requireNonNull(lastField, "Field not set");
 
-            var existing = predicates[lastField.id()];
+            Predicate<F> existing = predicates[lastField.id()];
 
             if (existing != null) {
                 predicates[lastField.id()] = combiner.apply(existing, predicate);

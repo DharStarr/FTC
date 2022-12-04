@@ -112,7 +112,11 @@ public class WorldChunkMap<T extends BoundsHolder> {
     }
 
     public int size() {
-        return worlds.size();
+        return worlds.values()
+                .stream()
+                .filter(map -> !map.isEmpty())
+                .mapToInt(value -> value.size() + 1)
+                .sum();
     }
 
     public void clear() {

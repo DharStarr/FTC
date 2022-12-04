@@ -10,12 +10,15 @@ import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.module.OnLoad;
 import net.forthecrown.core.module.OnSave;
+import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
-import net.forthecrown.log.DataManager;
+import net.forthecrown.economy.Economy;
+import net.forthecrown.log.LogManager;
 import net.forthecrown.log.LogQuery;
 import net.forthecrown.utils.Time;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.inventory.menu.Menu;
 import net.forthecrown.utils.io.PathUtil;
 import org.apache.commons.lang3.Range;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +52,9 @@ public class ChallengeManager {
     @Getter
     private final ChallengeDataStorage storage;
 
+    @Getter
+    private Menu itemChallengeMenu;
+
     public ChallengeManager() {
         date = LocalDate.now();
 
@@ -62,15 +68,10 @@ public class ChallengeManager {
     // Called reflectively in BootStrap
     @OnEnable
     private static void init() {
-        instance.registerItemChallenges();
         instance.loadChallenges();
 
         ConfigManager.get()
                 .registerConfig(ChallengeConfig.class);
-    }
-
-    private void registerItemChallenges() {
-
     }
 
     public ChallengeEntry getEntry(UUID uuid) {
@@ -87,13 +88,30 @@ public class ChallengeManager {
 
     @OnDayChange
     void onDayChange(ZonedDateTime time) {
-        save();
         date = time.toLocalDate();
 
-        reset(ResetInterval.DAILY);
         if (time.getDayOfWeek() == DayOfWeek.MONDAY) {
+            // Clear all item challenge's used items
+            // list, so they can be selected again
+            for (var h: challengeRegistry.entries()) {
+                if (!(h.getValue() instanceof ItemChallenge)) {
+                    continue;
+                }
+
+                var container = storage.loadContainer(h);
+
+                if (container.getUsed().isEmpty()) {
+                    continue;
+                }
+
+                container.getUsed().clear();
+                storage.saveContainer(container);
+            }
+
             reset(ResetInterval.WEEKLY);
         }
+
+        reset(ResetInterval.DAILY);
     }
 
     public void reset(ResetInterval interval) {
@@ -116,16 +134,32 @@ public class ChallengeManager {
             return;
         }
 
-        List<Challenge> challenges = challengeRegistry.values()
+        List<Holder<Challenge>> challenges = challengeRegistry.entries()
                 .stream()
-                .filter(challenge -> challenge.getResetInterval() == interval)
+                .filter(h -> {
+                    var c = h.getValue();
+                    return c.getResetInterval() == interval;
+                })
                 .collect(ObjectArrayList.toList());
+
+        challenges.removeIf(holder -> {
+            var c = holder.getValue();
+
+            if (!(c instanceof ItemChallenge)) {
+                return false;
+            }
+
+            activate(holder, true);
+            return true;
+        });
 
         if (interval.getMax() != -1
                 && challenges.size() > interval.getMax()
                 && !ChallengeConfig.allowRepeatingChallenges
         ) {
-            challenges.removeIf(current::contains);
+            challenges.removeIf(holder -> {
+                return current.contains(holder.getValue());
+            });
         }
 
         if (challenges.isEmpty()) {
@@ -138,25 +172,27 @@ public class ChallengeManager {
                 interval.getMax()
         );
 
-        Set<Challenge> picked = Util.pickUniqueEntries(
+        Set<Holder<Challenge>> picked = Util.pickUniqueEntries(
                 challenges,
                 Util.RANDOM,
                 required
         );
 
-        picked.forEach(challenge -> activate(challenge, true));
+        picked.forEach(holder -> {
+            activate(holder, true);
+        });
 
         LOGGER.debug("Reset all {} challenges, added {} new ones",
                 interval, picked.size()
         );
     }
 
-    public void activate(Challenge challenge, boolean log) {
-        var extra = challenge.activate();
-        activeChallenges.add(challenge);
+    public void activate(Holder<Challenge> holder, boolean resetting) {
+        var extra = holder.getValue().activate(resetting);
+        activeChallenges.add(holder.getValue());
 
-        if (log) {
-            Challenges.logActivation(challenge, extra);
+        if (resetting) {
+            Challenges.logActivation(holder, extra);
         }
     }
 
@@ -171,11 +207,13 @@ public class ChallengeManager {
 
     private void loadChallenges() {
         challengeRegistry.clear();
-        challengeRegistry.removeIf(
-                holder -> holder.getValue() instanceof JsonChallenge
-        );
-
         storage.loadChallenges(challengeRegistry);
+        storage.loadItemChallenges(challengeRegistry);
+
+        itemChallengeMenu = Challenges.createItemMenu(
+                challengeRegistry,
+                Economy.get().getSellShop()
+        );
     }
 
     @OnSave
@@ -207,13 +245,10 @@ public class ChallengeManager {
     }
 
     private void loadActive() {
-        var list = DataManager.getInstance()
+        var list = LogManager.getInstance()
                 .queryLogs(
                         LogQuery.builder(ChallengeLogs.ACTIVE)
                                 .queryRange(getQueryRange())
-
-                                .field(ChallengeLogs.A_TIME)
-                                .add(Objects::nonNull)
 
                                 .field(ChallengeLogs.A_TYPE)
                                 .add(Objects::nonNull)
@@ -225,7 +260,7 @@ public class ChallengeManager {
                                         return true;
                                     }
 
-                                    var time = entry.get(ChallengeLogs.A_TIME);
+                                    var time = entry.getDate();
 
                                     var local = Time.localTime(time);
                                     var now = LocalDate.now();
@@ -234,8 +269,7 @@ public class ChallengeManager {
                                 })
 
                                 .build()
-                )
-                .toList();
+                );
 
         if (list.isEmpty()) {
             reset(ResetInterval.DAILY);
@@ -247,7 +281,7 @@ public class ChallengeManager {
         list.forEach(entry -> {
             String key = entry.get(ChallengeLogs.A_CHALLENGE);
 
-            challengeRegistry.get(key)
+            challengeRegistry.getHolder(key)
                     .ifPresentOrElse(
                             challenge -> {
                                 activate(challenge, false);

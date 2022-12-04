@@ -56,10 +56,11 @@
       "guildExp": 10
     }
   },
-  "daily/advancement": {
+  "weekly/advancement": {
     "displayName": "Advancement",
     "eventClass": "org.bukkit.event.player.PlayerAdvancementDoneEvent",
     "script": "challenges/on_advancement.js",
+    "type": "weekly",
     "description": [
       "Get any advancement"
     ],
@@ -164,11 +165,12 @@
       "guildExp": 25
     }
   },
-  "daily/headhunt": {
-    "displayName": "Headhunt",
+  "daily/shop_challenge": {
+    "displayName": "Item Challenge",
     "eventClass": "custom",
+    "goal": 2,
     "description": [
-      "Complete the Daily Challenge in /shop"
+      "Complete 2 of the daily challenges in /shop"
     ],
     "reward": {
       "guildExp": 40

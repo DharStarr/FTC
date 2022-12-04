@@ -4,17 +4,22 @@ import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.registry.Holder;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.kyori.adventure.text.Component;
+import org.apache.logging.log4j.Logger;
 
 import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
 public class ChallengeEntry {
+    private static final Logger LOGGER = FTC.getLogger();
+
     private final UUID id;
 
     private final Object2FloatMap<Challenge>
@@ -40,38 +45,93 @@ public class ChallengeEntry {
         }
     }
 
-    public void addProgress(Challenge challenge, float value) {
+    public void addProgress(Holder<Challenge> holder, float value) {
+        var challenge = holder.getValue();
         float current = progress.getFloat(challenge);
 
-        Holder<Challenge> holder = ChallengeManager.getInstance()
-                .getChallengeRegistry()
-                .getHolderByValue(challenge)
-                .orElseThrow();
+        LOGGER.debug(
+                "addProgress called, current={}, challenge={}",
+                current, holder.getKey()
+        );
 
         if (Challenges.hasCompleted(holder, id)) {
+            LOGGER.debug("Already completed");
             return;
         }
 
+        User user = getUser();
+
         float newVal = Math.min(
                 value + current,
-                challenge.getGoal()
+                challenge.getGoal(user)
         );
 
-        if (newVal >= challenge.getGoal()) {
-            User user = getUser();
-
+        if (newVal >= challenge.getGoal(user)) {
             if (!challenge.canComplete(user)) {
+                LOGGER.debug("canComplete=false");
                 return;
             }
 
             user.sendMessage(
-                    Messages.challengeCompleted(challenge)
+                    Messages.challengeCompleted(challenge, user)
             );
 
             Challenges.logCompletion(holder, id);
             challenge.onComplete(user);
+
+            LOGGER.debug("{} completed {}", user.getName(), holder.getKey());
+            potentiallyAddStreak(challenge.getStreakCategory());
         }
 
+        LOGGER.debug("Setting progress of {} for {} to {}",
+                holder.getKey(), user.getName(), newVal
+        );
+
         progress.put(challenge, newVal);
+    }
+
+    private void potentiallyAddStreak(StreakCategory category) {
+        var manager = ChallengeManager.getInstance();
+
+        for (var c: manager.getActiveChallenges()) {
+            if (c.getStreakCategory() != category) {
+                continue;
+            }
+
+            if (!Challenges.hasCompleted(c, getId())) {
+                return;
+            }
+        }
+
+        getUser().sendMessage(
+                Messages.challengeCategoryFinished(category)
+        );
+
+        // Log streak
+        Challenges.logStreak(category, id);
+
+        // Find script callbacks for streak increase
+        var scripts = ChallengeManager.getInstance()
+                .getStorage()
+                .getScripts(category);
+
+        // If there are scripts to execute
+        if (scripts.isEmpty()) {
+            return;
+        }
+
+        var user = getUser();
+        int streak = Challenges.queryStreak(category, user)
+                .orElse(1);
+
+        // Run all scripts for each category
+        scripts.forEach(scriptName -> {
+            Script.run(
+                    scriptName,
+                    Challenges.METHOD_STREAK_INCREASE,
+                    user,
+                    streak
+            );
+        });
     }
 }

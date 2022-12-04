@@ -10,8 +10,10 @@ import net.forthecrown.core.module.OnDayChange;
 import net.forthecrown.core.module.OnLoad;
 import net.forthecrown.core.module.OnSave;
 import net.forthecrown.guilds.unlockables.UnlockableColor;
+import net.forthecrown.user.UUID2IntMap;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.io.PathUtil;
+import net.forthecrown.waypoint.Waypoints;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -42,6 +44,10 @@ public class GuildManager {
 
     /** Guild name to guild lookup map */
     final Object2ObjectMap<String, Guild> byName = new Object2ObjectOpenHashMap<>();
+
+    /** Transient guild id 2 total exp map, used for displaying in /guildtop */
+    @Getter
+    private transient final UUID2IntMap expTop = new UUID2IntMap(null);
 
     private GuildManager() {
         storage = new GuildDataStorage(PathUtil.getPluginDirectory("guilds"));
@@ -76,8 +82,15 @@ public class GuildManager {
         var unlockables = guild.getUnlockables();
 
         // Add defaults as unlocked
-        unlockables.setExpProgress(UnlockableColor.WHITE, UnlockableColor.WHITE.getExpRequired());
-        unlockables.setExpProgress(UnlockableColor.LIGHT_GRAY, UnlockableColor.LIGHT_GRAY.getExpRequired());
+        unlockables.setExpProgress(
+                UnlockableColor.WHITE.getPrimaryOption(),
+                UnlockableColor.WHITE.getExpRequired()
+        );
+
+        unlockables.setExpProgress(
+                UnlockableColor.LIGHT_GRAY.getSecondaryOption(),
+                UnlockableColor.LIGHT_GRAY.getExpRequired()
+        );
 
         user.setGuild(guild);
         addGuild(guild, LongSets.emptySet());
@@ -109,6 +122,10 @@ public class GuildManager {
             byName.put(guild.getName().toLowerCase(), guild);
         }
 
+        if (guild.getTotalExp() > 0) {
+            expTop.set(guild.getId(), (int) guild.getTotalExp());
+        }
+
         packedChunks.forEach(value -> byChunk.put(value, guild));
     }
 
@@ -122,6 +139,12 @@ public class GuildManager {
 
         if (!Strings.isNullOrEmpty(name)) {
             byName.put(name.toLowerCase(), guild);
+
+        }
+
+        var waypoint = guild.getSettings().getWaypoint();
+        if (waypoint != null) {
+            Waypoints.updateDynmap(waypoint);
         }
     }
 
@@ -181,7 +204,11 @@ public class GuildManager {
         byChunk.put(pos.toLong(), guild);
 
         if (DynmapUtil.isInstalled()) {
-            GuildDynmap.renderChunk(pos, guild);
+            if (guild == null) {
+                GuildDynmap.unrenderChunk(pos);
+            } else {
+                GuildDynmap.renderChunk(pos, guild);
+            }
         }
     }
 

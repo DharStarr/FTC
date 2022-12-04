@@ -1,4 +1,8 @@
 function onEvent(event, handle) {
+    if (!event.hasChangedPosition()) {
+        return;
+    }
+
     var from = event.getFrom();
     var to = event.getTo();
 

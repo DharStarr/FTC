@@ -35,7 +35,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
-import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
 import static net.forthecrown.commands.manager.OpenExceptionType.INSTANCE;
@@ -228,6 +227,10 @@ public interface Exceptions {
         return format("You can only do this every: {0, time}", millis);
     }
 
+    static CommandSyntaxException cooldownEndsIn(long millis) {
+        return format("You can do this again in {0, time}", millis);
+    }
+
     static CommandSyntaxException alreadySetCosmetic(Component cosmeticName, Component typeName) {
         return format("{0} is already your {1} effect",
                 cosmeticName, typeName
@@ -254,7 +257,7 @@ public interface Exceptions {
 
     static CommandSyntaxException nonActiveChallenge(Challenge challenge) {
         return format("Challenge {0} is not active!",
-                challenge.displayName()
+                challenge.displayName(null)
         );
     }
 
@@ -602,14 +605,16 @@ public interface Exceptions {
     }
 
     static CommandSyntaxException farFromWaypoint(int x, int y, int z) {
-        return format("Too far from a region post to teleport." +
+        return format("Too far from a waypoint." +
                         "\nClosest pole is at {0, vector}",
-                Vector2i.from(x, z)
+                Vector3i.from(x, y, z)
         );
     }
 
     static CommandSyntaxException privateRegion(Waypoint region) {
-        return format("'{0}' is a private region", region.get(WaypointProperties.NAME));
+        return format("'{0}' is a private waypoint",
+                region.get(WaypointProperties.NAME)
+        );
     }
 
     static CommandSyntaxException brokenWaypoint(Vector3i pos,
@@ -751,18 +756,6 @@ public interface Exceptions {
     CommandSyntaxException PRIEST_ALREADY_ACCEPTED = create("You have already accepted.");
 
     CommandSyntaxException PRIEST_NO_ONE_WAITING = create("You have no one awaiting marriage.");
-
-    static CommandSyntaxException marriageStatusSender(User user) {
-        return format("Cannot change marriage status for {0, time}",
-                Time.timeUntil(
-                        user.getTime(TimeField.MARRIAGE_CHANGE) + GeneralConfig.marriageCooldown
-                )
-        );
-    }
-
-    static CommandSyntaxException marriageStatusTarget(User user){
-        return format("{0, user} cannot currently change marriage status.", user);
-    }
 
     static CommandSyntaxException targetAlreadyMarried(User user){
         return format("{0, user} is already married.", user);
@@ -968,7 +961,9 @@ public interface Exceptions {
     }
 
     static CommandSyntaxException cannotClaimMoreChunks(Guild guild, int max) {
-        return format("{0} Cannot claim more than {1, number} chunks", guild, max);
+        return format("{0} Cannot claim more than {1, number} chunks",
+                      guild.displayName(), max
+        );
     }
 
     static CommandSyntaxException chunkAlreadyClaimed(Guild owner) {

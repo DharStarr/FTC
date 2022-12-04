@@ -1,8 +1,12 @@
 package net.forthecrown.guilds.unlockables;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import net.forthecrown.core.registry.Registry;
+import net.forthecrown.guilds.Guild;
 import net.forthecrown.guilds.GuildColor;
 import net.forthecrown.guilds.GuildPermission;
+import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.text.Text;
@@ -16,7 +20,7 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 @Getter
-public enum UnlockableColor implements Unlockable {
+public enum UnlockableColor {
     WHITE(13, GuildColor.WHITE),
     BLACK(20, GuildColor.BLACK),
     GRAY(21, GuildColor.GRAY),
@@ -35,74 +39,153 @@ public enum UnlockableColor implements Unlockable {
     RED(42, GuildColor.RED),
     ;
 
+    @Getter
+    static final UnlockableOption[] primaries;
+
+    @Getter
+    static final UnlockableOption[] secondaries;
+
+    static {
+        var values = values();
+
+        primaries = new UnlockableOption[values.length];
+        secondaries = new UnlockableOption[values.length];
+
+        for (var v: values) {
+            primaries[v.ordinal()] = v.getPrimaryOption();
+            secondaries[v.ordinal()] = v.getSecondaryOption();
+        }
+    }
+
     private final int slot, expRequired;
     private final GuildColor color;
+
+    private final UnlockableOption primaryOption;
+    private final UnlockableOption secondaryOption;
 
     UnlockableColor(int slot, GuildColor color) {
         this.slot = slot;
         this.expRequired = 200;
         this.color = color;
+
+        this.primaryOption = new UnlockableOption(this, true);
+        this.secondaryOption = new UnlockableOption(this, false);
     }
 
-    @Override
-    public GuildPermission getPerm() {
-        return GuildPermission.CAN_CHANGE_GUILD_COLORS;
+    static void registerAll(Registry<Unlockable> unlockables) {
+        for (var v: values()) {
+            var p = v.getPrimaryOption();
+            var e = v.getSecondaryOption();
+
+            unlockables.register(p.getKey(), p);
+            unlockables.register(e.getKey(), e);
+        }
     }
 
-    @Override
-    public String getKey() {
-        return "PC_" + color.name();
-    }
+    private static void setColor(boolean primary,
+                                 Guild guild,
+                                 User user,
+                                 GuildColor color
+    ) {
+        if (primary) {
+            guild.getSettings().setPrimaryColor(color);
+        } else {
+            guild.getSettings().setSecondaryColor(color);
+        }
 
-    @Override
-    public Component getName() {
-        return Text.format("Primary color: {0}",
-                NamedTextColor.YELLOW,
-                getColor().toText()
+        guild.sendMessage(
+                Text.format("&6{0, user}&r has changed the guild's &6{2}&r color to {1}.",
+                        NamedTextColor.YELLOW,
+                        user,
+                        text(color.toText(), color.getTextColor()),
+                        primary ? "primary" : "secondary"
+                )
         );
     }
 
-    @Override
-    public MenuNode toInvOption() {
-        return MenuNode.builder()
-                .setItem((user, context) -> {
-                    var builder = ItemStacks.builder(color.toWool())
-                            .setName(text(color.toText(), color.getTextColor()))
-                            .setFlags(ItemFlag.HIDE_ENCHANTS);
+    @Getter
+    @RequiredArgsConstructor
+    private static class UnlockableOption implements Unlockable {
+        private final UnlockableColor color;
+        private final boolean primary;
 
-                    var guild = context.getOrThrow(GUILD);
+        @Override
+        public GuildPermission getPerm() {
+            return GuildPermission.CAN_CHANGE_GUILD_COSMETICS;
+        }
 
-                    if (isUnlocked(guild)) {
-                        if (guild.getSettings().getPrimaryColor() == color) {
-                            builder.addEnchant(Enchantment.BINDING_CURSE, 1);
-                            builder.addLore("&6Currently Selected");
-                        } else {
-                            builder.addLore("&7Click to select");
-                        }
-                    } else {
-                        builder
-                                .addLore(getProgressComponent(guild))
-                                .addLoreRaw(empty())
-                                .addLore(getClickComponent())
-                                .addLore(getShiftClickComponent());
-                    }
+        @Override
+        public String getKey() {
+            return (primary ? "primary_color/" : "secondary_color/") + color.name();
+        }
 
-                    return builder.build();
-                })
+        @Override
+        public Component getName() {
+            return Text.format("{0} color: {1}",
+                    primary ? "Primary" : "Secondary",
+                    color.getColor().toText()
+            );
+        }
 
-                .setRunnable((user, context, click) -> {
-                    onClick(user, click, context, () -> {
+        @Override
+        public int getSlot() {
+            return color.getSlot();
+        }
+
+        @Override
+        public int getExpRequired() {
+            return color.getExpRequired();
+        }
+
+        @Override
+        public MenuNode toInvOption() {
+            return MenuNode.builder()
+                    .setItem((user, context) -> {
+                        var color = this.color.color;
+
+                        var builder = ItemStacks.builder(color.toWool())
+                                .setName(text(color.toText(), color.getTextColor()))
+                                .setFlags(ItemFlag.HIDE_ENCHANTS);
+
                         var guild = context.getOrThrow(GUILD);
-                        guild.getSettings().setPrimaryColor(color);
-                        guild.sendMessage(
-                                Text.format("&f{0, user}&r has changed the guild's primary color to {1}.",
-                                        user,
-                                        text(color.toText(), color.getTextColor())
-                                )
-                        );
-                    });
-                })
 
-                .build();
+                        if (isUnlocked(guild)) {
+                            boolean active = primary
+                                    ? guild.getSettings().getPrimaryColor() == color
+                                    : guild.getSettings().getSecondaryColor() == color;
+
+                            if (active) {
+                                builder.addEnchant(Enchantment.BINDING_CURSE, 1);
+                                builder.addLore("&6Currently Selected");
+                            } else {
+                                builder.addLore("&7Click to select");
+                            }
+                        } else {
+                            builder
+                                    .addLore(getProgressComponent(guild))
+                                    .addLoreRaw(empty())
+                                    .addLore(getClickComponent())
+                                    .addLore(getShiftClickComponent());
+                        }
+
+                        return builder.build();
+                    })
+
+                    .setRunnable((user, context, click) -> {
+                        onClick(user, click, context, () -> {
+                            var guild = context.getOrThrow(GUILD);
+                            click.shouldReloadMenu(true);
+
+                            setColor(
+                                    primary,
+                                    guild,
+                                    user,
+                                    color.color
+                            );
+                        });
+                    })
+
+                    .build();
+        }
     }
 }

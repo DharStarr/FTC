@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
+import net.forthecrown.core.FTC;
 import net.forthecrown.core.Worlds;
 import org.bukkit.Location;
 
@@ -46,6 +47,7 @@ public @UtilityClass class GeneralConfig {
             useAsyncTpForPlayers        = false,
             staffLogEnabled             = false,
             announcePunishments         = false,
+            allowMaxPlayerRandomization = true,
 
             /**
              * Determines whether chunk loader runs in parallel or in series.
@@ -54,7 +56,9 @@ public @UtilityClass class GeneralConfig {
              * at a time, instead of running all the world's sections in
              * parallel
              */
-            chunkLoaderRunsInSeries     = true;
+            chunkLoaderRunsInSeries     = true,
+
+            debugLoggerEnabled          = FTC.inDebugMode();
 
     public static int
             effectCost_arrow            = 1000,

@@ -1,6 +1,5 @@
 package net.forthecrown.utils.inventory;
 
-import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -10,17 +9,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
-@Getter
 public class PotionItemBuilder extends BaseItemBuilder<PotionItemBuilder> {
-    private PotionData baseEffect;
-    private Color color;
-    private final List<PotionEffect> effects = new ArrayList<>();
+    public static final PotionData EMPTY = new PotionData(PotionType.UNCRAFTABLE, false, false);
 
-    public PotionItemBuilder(Material material, int amount) {
+    PotionItemBuilder(Material material, int amount) {
         super(material, amount);
 
         Validate.isTrue(
@@ -29,39 +25,46 @@ public class PotionItemBuilder extends BaseItemBuilder<PotionItemBuilder> {
         );
     }
 
+    PotionItemBuilder(ItemStack stack, ItemMeta baseMeta) {
+        super(stack, baseMeta);
+    }
+
+    private PotionMeta meta() {
+        return (PotionMeta) baseMeta;
+    }
+
     public PotionItemBuilder setBaseEffect(PotionData baseEffect) {
-        this.baseEffect = baseEffect;
+        if (baseEffect != null) {
+            meta().setBasePotionData(baseEffect);
+        } else {
+            meta().setBasePotionData(EMPTY);
+        }
+
         return this;
     }
 
     public PotionItemBuilder setColor(Color color) {
-        this.color = color;
+        meta().setColor(color);
         return this;
     }
 
     public PotionItemBuilder addEffect(PotionEffect effect) {
-        this.effects.add(effect);
+        meta().addCustomEffect(effect, true);
+        return this;
+    }
+
+    public PotionItemBuilder setEffects(Collection<PotionEffect> effects) {
+        meta().clearCustomEffects();
+
+        for (var e: effects) {
+            addEffect(e);
+        }
+
         return this;
     }
 
     @Override
     protected PotionItemBuilder getThis() {
         return this;
-    }
-
-    @Override
-    protected void onBuild(ItemStack item, ItemMeta meta) {
-        var potionMeta = (PotionMeta) meta;
-
-        if (baseEffect != null) {
-            potionMeta.setBasePotionData(baseEffect);
-        }
-
-        potionMeta.setColor(color);
-        potionMeta.clearCustomEffects();
-
-        for (var e: this.effects) {
-            potionMeta.addCustomEffect(e, true);
-        }
     }
 }

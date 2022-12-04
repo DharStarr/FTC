@@ -3,12 +3,12 @@ package net.forthecrown.commands.marriage;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Permissions;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
-import net.forthecrown.user.property.Properties;
 import net.forthecrown.user.data.UserInteractions;
+import net.forthecrown.user.property.Properties;
 
 public class CommandMarry extends FtcCommand {
 
@@ -57,15 +57,6 @@ public class CommandMarry extends FtcCommand {
 
                             if (targetSocials.isMarried()) {
                                 throw Exceptions.targetAlreadyMarried(target);
-                            }
-
-                            // Both can change marriage status
-                            if (!userSocials.canChangeMarriageStatus()) {
-                                throw Exceptions.marriageStatusSender(user);
-                            }
-
-                            if (!targetSocials.canChangeMarriageStatus()) {
-                                throw Exceptions.marriageStatusTarget(target);
                             }
 
                             // Both accepting proposals

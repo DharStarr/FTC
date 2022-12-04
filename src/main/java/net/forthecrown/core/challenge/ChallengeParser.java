@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import net.forthecrown.core.FTC;
-import net.forthecrown.core.script.Script;
+import net.forthecrown.core.script2.Script;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.utils.io.Results;
@@ -23,11 +23,6 @@ public class ChallengeParser {
             KEY_RESET_INTERVAL = "type",
 
             KEY_REWARD = "reward",
-            KEY_R_RHINES = "rhines",
-            KEY_R_GEMS = "gems",
-            KEY_R_ITEM = "item",
-            KEY_R_GUILD = "guildExp",
-
             KEY_GOAL = "goal",
 
             EVENT_CUSTOM = "custom";
@@ -41,8 +36,12 @@ public class ChallengeParser {
 
         JsonChallenge.Builder builder = JsonChallenge.builder()
                 .name(json.getComponent(KEY_NAME))
-                .goal(json.getFloat(KEY_GOAL, 1))
                 .script(json.getString(KEY_SCRIPT, ""))
+
+                .goal(StreakBasedValue.read(
+                        json.get(KEY_GOAL),
+                        StreakBasedValue.ONE
+                ))
 
                 .resetInterval(json.getEnum(
                         KEY_RESET_INTERVAL,
@@ -103,15 +102,8 @@ public class ChallengeParser {
         }
 
         if (json.has(KEY_REWARD)) {
-            var rewards = json.getWrapped(KEY_REWARD);
-
             builder.reward(
-                    JsonReward.builder()
-                            .gems(rewards.getInt(KEY_R_GEMS, 0))
-                            .rhines(rewards.getInt(KEY_R_RHINES, 0))
-                            .guildExp(rewards.getInt(KEY_R_GUILD, 0))
-                            .item(rewards.getItem(KEY_R_ITEM, null))
-                            .build()
+                    Reward.deserialize(json.get(KEY_REWARD))
             );
         }
 

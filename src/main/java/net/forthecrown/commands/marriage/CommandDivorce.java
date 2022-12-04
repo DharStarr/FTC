@@ -3,11 +3,10 @@ package net.forthecrown.commands.marriage;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.Permissions;
 import net.forthecrown.core.Messages;
+import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
-import net.forthecrown.user.Users;
 import net.forthecrown.user.data.UserInteractions;
 
 public class CommandDivorce extends FtcCommand {
@@ -64,16 +63,6 @@ public class CommandDivorce extends FtcCommand {
 
         if (inter.getSpouse() == null) {
             throw Exceptions.NOT_MARRIED;
-        }
-
-        if (!inter.canChangeMarriageStatus()) {
-            throw Exceptions.marriageStatusSender(user);
-        }
-
-        User spouse = Users.get(inter.getSpouse());
-
-        if(!spouse.getInteractions().canChangeMarriageStatus()) {
-            throw Exceptions.marriageStatusTarget(spouse);
         }
     }
 }

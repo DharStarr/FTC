@@ -17,7 +17,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static net.forthecrown.core.holidays.HolidayTags.replaceTags;
 import static net.kyori.adventure.text.Component.text;
 
 /**
@@ -117,14 +116,14 @@ public class RewardContainer {
     public void formatExistingInfo(ZonedDateTime time, Holiday holiday, ItemMeta meta, User recipient) {
         if (meta.hasDisplayName()) {
             Component display = meta.displayName();
-            meta.displayName(replaceTags(display, recipient, holiday, time));
+            meta.displayName(holiday.renderTags(display, recipient, time));
         }
 
         List<Component> lore = meta.lore();
 
         if (lore != null && !lore.isEmpty()) {
             lore = lore.stream()
-                    .map(component -> replaceTags(component, recipient, holiday, time))
+                    .map(component -> holiday.renderTags(component, recipient, time))
                     .collect(Collectors.toList());
 
             meta.lore(lore);
@@ -141,11 +140,13 @@ public class RewardContainer {
      * @param recipient The recipient of the reward
      */
     public void apply(ZonedDateTime time, Holiday holiday, ItemMeta meta, User recipient) {
-        meta.displayName(replaceTags(getName(), recipient, holiday, time));
+        meta.displayName(
+                holiday.renderTags(name, recipient, time)
+        );
 
         if (!lore.isEmpty()) {
             List<Component> fLore = lore.stream()
-                    .map(s -> replaceTags(s, recipient, holiday, time))
+                    .map(s -> holiday.renderTags(s, recipient, time))
                     .collect(Collectors.toList());
 
             meta.lore(fLore);

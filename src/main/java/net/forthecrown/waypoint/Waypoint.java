@@ -188,7 +188,7 @@ public class Waypoint implements BoundsHolder {
         if (hasBeenAdded() && getWorld() != null) {
             // If type is region_pole, it'll need
             // to destroy the old pole
-            type.onMove(this, position, world);
+            type.onPreMove(this, position, world);
 
             // Remove from the spatial lookup
             manager.getChunkMap()

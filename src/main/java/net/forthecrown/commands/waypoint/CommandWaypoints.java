@@ -16,10 +16,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
 import net.forthecrown.utils.math.Vectors;
 import net.forthecrown.utils.text.Text;
-import net.forthecrown.waypoint.Waypoint;
-import net.forthecrown.waypoint.WaypointProperties;
-import net.forthecrown.waypoint.WaypointProperty;
-import net.forthecrown.waypoint.Waypoints;
+import net.forthecrown.waypoint.*;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.World;
 import org.spongepowered.math.vector.Vector3i;
@@ -88,6 +85,17 @@ public class CommandWaypoints extends FtcCommand {
                                 })
                         )
 
+                        .then(literal("remove")
+                                .executes(c -> {
+                                    var waypoint = get(c);
+                                    WaypointManager.getInstance()
+                                            .removeWaypoint(waypoint);
+
+                                    c.getSource().sendAdmin("Removed waypoint");
+                                    return 0;
+                                })
+                        )
+
                         .then(literal("property")
 
                                 // /waypoints <point> property <prop>
@@ -127,41 +135,62 @@ public class CommandWaypoints extends FtcCommand {
                                                 })
 
                                                 .executes(c -> {
-                                                    Waypoint waypoint = get(c);
-                                                    Holder<WaypointProperty> holder = (Holder) c.getArgument("property", Holder.class);
-                                                    var property = holder.getValue();
-
-                                                    var type = property.getSerializer();
-
-                                                    String strInput = (String) c.getArgument("value", String.class);
-                                                    StringReader input = new StringReader(strInput);
-
-                                                    Object value = type.getArgumentType()
-                                                            .parse(input);
-
-                                                    Readers.ensureCannotRead(input);
-
-                                                    if (property == WaypointProperties.NAME) {
-                                                        String strValue = value.toString();
-
-                                                        if (!Waypoints.isValidName(strValue)) {
-                                                            throw Exceptions.format("'{0}' is an invalid name", strValue);
-                                                        }
-                                                    }
-
-                                                    waypoint.set(property, value);
-
-                                                    ((CommandSource) c.getSource()).sendAdmin(
-                                                            Text.format("Value of {0} is now {1}",
-                                                                    property.getName(), type.display(value)
-                                                            )
-                                                    );
-                                                    return 0;
+                                                    return property(c, false);
                                                 })
+                                        )
+
+                                        .then(literal("-clear")
+                                                .executes(c -> property(c, true))
                                         )
                                 )
                         )
                 );
+    }
+
+    private int property(CommandContext<CommandSource> c, boolean unset)
+            throws CommandSyntaxException
+    {
+        Waypoint waypoint = get(c);
+        Holder<WaypointProperty> holder = (Holder) c.getArgument("property", Holder.class);
+        var property = holder.getValue();
+
+        var type = property.getSerializer();
+
+        if (unset) {
+            waypoint.set(property, null);
+
+            c.getSource().sendAdmin(
+                    Text.format("Unset property {0}",
+                            holder.getKey()
+                    )
+            );
+            return 0;
+        }
+
+        String strInput = (String) c.getArgument("value", String.class);
+        StringReader input = new StringReader(strInput);
+
+        Object value = type.getArgumentType()
+                .parse(input);
+
+        Readers.ensureCannotRead(input);
+
+        if (property == WaypointProperties.NAME) {
+            String strValue = value.toString();
+
+            if (!Waypoints.isValidName(strValue)) {
+                throw Exceptions.format("'{0}' is an invalid name", strValue);
+            }
+        }
+
+        waypoint.set(property, value);
+
+        ((CommandSource) c.getSource()).sendAdmin(
+                Text.format("Value of {0} is now {1}",
+                        property.getName(), type.display(value)
+                )
+        );
+        return 0;
     }
 
     private int move(CommandContext<CommandSource> c, Vector3i pos, World world)

@@ -19,9 +19,9 @@ public class RegionPoleType extends PlayerWaypointType {
     }
 
     @Override
-    public void onMove(Waypoint waypoint,
-                       Vector3i newPosition,
-                       World newWorld
+    public void onPreMove(Waypoint waypoint,
+                          Vector3i newPosition,
+                          World newWorld
     ) {
         clearPole(waypoint);
     }
@@ -79,5 +79,13 @@ public class RegionPoleType extends PlayerWaypointType {
     public Vector3d getVisitPosition(Waypoint waypoint) {
         return super.getVisitPosition(waypoint)
                 .add(0, 1, 0);
+    }
+
+    @Override
+    public boolean isDestroyed(Waypoint waypoint) {
+        return isDestroyed(
+                waypoint.getPosition().add(0, 1, 0),
+                waypoint.getWorld()
+        );
     }
 }

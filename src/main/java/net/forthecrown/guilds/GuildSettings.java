@@ -1,14 +1,12 @@
 package net.forthecrown.guilds;
 
 import com.google.gson.JsonObject;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.core.DynmapUtil;
 import net.forthecrown.utils.ArrayIterator;
-import net.forthecrown.utils.Tasks;
 import net.forthecrown.utils.io.JsonUtils;
 import net.forthecrown.utils.io.JsonWrapper;
 import net.forthecrown.waypoint.Waypoint;
@@ -30,6 +28,7 @@ public class GuildSettings {
             RANKS_KEY = "ranks",
             PRIMARY_COLOR_KEY = "primaryColor",
             SECONDARY_COLOR_KEY = "secondaryColor",
+            NAME_FORMAT_KEY = "nameFormat",
             BANNER_KEY = "banner",
             IS_PUBLIC_KEY = "isPublic",
             ALLOWS_VISIT_KEY = "allowsVisit";
@@ -46,6 +45,8 @@ public class GuildSettings {
     private GuildColor primaryColor = GuildColor.WHITE;
     @Getter
     private GuildColor secondaryColor = GuildColor.LIGHT_GRAY;
+    @Getter
+    private final GuildNameFormat nameFormat = GuildNameFormat.createDefault();
 
     @Getter
     private ItemStack banner = new ItemStack(Material.WHITE_BANNER);
@@ -115,22 +116,27 @@ public class GuildSettings {
 
         this.primaryColor = color;
 
-        if (!DynmapUtil.isInstalled()) {
+        // Update dynmap
+        if (DynmapUtil.isInstalled()) {
+            GuildDynmap.updateGuildChunks(getGuild());
+        }
+    }
+
+    public void setSecondaryColor(GuildColor color) {
+        if (color == this.secondaryColor) {
             return;
         }
 
+        this.secondaryColor = color;
+
         // Update dynmap
-        Tasks.runAsync(() -> {
-            Guild guild = getGuild();
-            LongSet guildChunks = GuildManager.get().getGuildChunks(guild);
+        if (DynmapUtil.isInstalled()) {
+            GuildDynmap.updateGuildChunks(getGuild());
+        }
+    }
 
-            guildChunks.forEach(c -> {
-                var cPos = Guilds.chunkFromPacked(c);
+    private static void updateDynmap() {
 
-                GuildDynmap.unrenderChunk(cPos);
-                GuildDynmap.renderChunk(cPos, guild);
-            });
-        });
     }
 
     public void setBanner(ItemStack item) {
@@ -166,6 +172,10 @@ public class GuildSettings {
         secondaryColor = json.getEnum(SECONDARY_COLOR_KEY, GuildColor.class);
         banner = json.getItem(BANNER_KEY);
         setWaypoint(json.getUUID(WAYPOINT_KEY));
+
+        if (json.has(NAME_FORMAT_KEY)) {
+            nameFormat.deserialize(json.get(NAME_FORMAT_KEY));
+        }
     }
 
     // Get Json from GuildSettings
@@ -194,6 +204,10 @@ public class GuildSettings {
         result.add(BANNER_KEY, JsonUtils.writeItem(this.banner));
         result.addProperty(IS_PUBLIC_KEY, this.isPublic);
         result.addProperty(ALLOWS_VISIT_KEY, this.allowsVisit);
+
+        if (!nameFormat.isDefault()) {
+            result.add(NAME_FORMAT_KEY, nameFormat.serialize());
+        }
 
         return result;
     }

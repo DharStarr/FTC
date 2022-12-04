@@ -8,12 +8,13 @@ import net.forthecrown.core.admin.Punishments;
 import net.forthecrown.core.challenge.ChallengeManager;
 import net.forthecrown.core.config.ConfigManager;
 import net.forthecrown.core.holidays.ServerHolidays;
+import net.forthecrown.core.module.ModuleServices;
 import net.forthecrown.core.resource.ResourceWorldTracker;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.guilds.GuildManager;
-import net.forthecrown.log.DataManager;
+import net.forthecrown.log.LogManager;
 import net.forthecrown.structure.Structures;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.user.UserManager;
@@ -40,8 +41,10 @@ public class SaveReloadCommands extends FtcCommand {
     protected void createCommand(BrigadierCommand command) {
         command
                 .executes(c -> {
-                    for (var e: Section.values()) {
-                        e.run(save);
+                    if (save) {
+                        ModuleServices.SAVE.run();
+                    } else {
+                        ModuleServices.RELOAD.run();
                     }
 
                     c.getSource().sendAdmin(format(save, "FTC-Plugin"));
@@ -179,8 +182,8 @@ public class SaveReloadCommands extends FtcCommand {
         ),
 
         DATA_LOG (
-                DataManager.getInstance()::save,
-                DataManager.getInstance()::load
+                LogManager.getInstance()::save,
+                LogManager.getInstance()::load
         ),
 
         CONFIG (

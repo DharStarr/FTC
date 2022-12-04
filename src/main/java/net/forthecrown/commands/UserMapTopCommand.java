@@ -8,23 +8,43 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
+import net.forthecrown.guilds.GuildManager;
+import net.forthecrown.user.UUID2IntMap;
 import net.forthecrown.user.UserManager;
-import net.forthecrown.user.UserDataMap;
 import net.forthecrown.user.Users;
+import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.format.UnitFormat;
 import net.forthecrown.utils.text.format.page.Header;
 import net.forthecrown.utils.text.format.page.PageFormat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+import java.util.UUID;
+import java.util.function.Function;
+
 public class UserMapTopCommand extends FtcCommand {
     public static final int DEF_PAGE_SIZE = 10;
 
-    private final UserDataMap map;
-    private final PageFormat<UserDataMap.Entry> format;
+    private final UUID2IntMap map;
+    private final PageFormat<UUID2IntMap.Entry> format;
 
-    public UserMapTopCommand(String name, UserDataMap map, Long2ObjectFunction<Component> unitMaker,
+    public UserMapTopCommand(String name,
+                             UUID2IntMap map,
+                             Long2ObjectFunction<Component> unitMaker,
                              Component title,
+                             String... aliases
+    ) {
+        this(name, map, unitMaker, title, id -> {
+            var user = Users.get(id);
+            return user.displayName();
+        }, aliases);
+    }
+
+    public UserMapTopCommand(String name,
+                             UUID2IntMap map,
+                             Long2ObjectFunction<Component> unitMaker,
+                             Component title,
+                             Function<UUID, Component> display,
                              String... aliases
     ) {
         super(name);
@@ -34,7 +54,7 @@ public class UserMapTopCommand extends FtcCommand {
         // Create format
         this.format = PageFormat.create();
         format
-                .setHeader(Header.<UserDataMap.Entry>create()
+                .setHeader(Header.<UUID2IntMap.Entry>create()
                         // Set title
                         .title(title.color(NamedTextColor.GOLD))
 
@@ -52,13 +72,10 @@ public class UserMapTopCommand extends FtcCommand {
                 )
 
                 .setEntry((writer, entry, viewerIndex) -> {
-                    var user = Users.get(entry.getUniqueId());
-
-                    writer.formatted("{0, user} - &e{1}",
-                            user, unitMaker.apply(entry.getValue())
+                    writer.formatted("{0} - &e{1}",
+                            display.apply(entry.getUniqueId()),
+                            unitMaker.apply(entry.getValue())
                     );
-
-                    user.unloadIfOffline();
                 })
 
                 // First argument is page, second is page size
@@ -139,6 +156,24 @@ public class UserMapTopCommand extends FtcCommand {
                 UnitFormat::playTime,
                 Component.text("Top by playtime"),
                 "nolifetop", "topplayers"
+        );
+
+        new UserMapTopCommand(
+                "guildtop",
+                GuildManager.get().getExpTop(),
+
+                key -> {
+                    return Text.format("{0, number} Guild Exp", key);
+                },
+
+                Component.text("Top by Guild Exp"),
+
+                uuid -> {
+                    return GuildManager.get()
+                            .getGuild(uuid)
+                            .displayName();
+                },
+                "topguilds"
         );
     }
 }

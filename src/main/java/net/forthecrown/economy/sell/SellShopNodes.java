@@ -22,7 +22,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
-final class SellShopNodes {
+public final class SellShopNodes {
     private SellShopNodes() {}
 
     /* ----------------------------- CONSTANTS ------------------------------ */

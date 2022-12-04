@@ -100,7 +100,7 @@ class GuildChunkNode extends GuildCommandNode {
 
         var text = TextJoiner.onNewLine()
                 .setPrefix(
-                        Text.format("{0} guild owns {1, number} chunk{2}. Displaying the center coordinates:",
+                        Text.format("{0} guild owns {1, number} chunk{2}. Displaying the center coordinates:\n",
                                 NamedTextColor.GRAY,
 
                                 guild.displayName(),
@@ -238,8 +238,9 @@ class GuildChunkNode extends GuildCommandNode {
             Particles.drawBounds(
                     world,
                     bounds,
-                    (claim ? Particle.DRIPPING_HONEY : Particle.FALLING_LAVA)
+                    (claim ? Particle.END_ROD : Particle.FALLING_LAVA)
                             .builder()
+                            .extra(0F)
             );
         }
     }

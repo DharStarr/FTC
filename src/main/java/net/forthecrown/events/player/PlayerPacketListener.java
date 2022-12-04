@@ -6,48 +6,51 @@ import net.forthecrown.user.packet.PacketListener;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.world.level.GameType;
 
-import java.util.Objects;
+import java.util.ListIterator;
+import java.util.UUID;
 
 public class PlayerPacketListener implements PacketListener {
     @PacketHandler(ignoreCancelled = true)
     public void onGameModePacket(ClientboundPlayerInfoPacket packet, PacketCall call) {
-        if (packet.getAction() != ClientboundPlayerInfoPacket.Action.ADD_PLAYER
-                && packet.getAction() != ClientboundPlayerInfoPacket.Action.UPDATE_GAME_MODE
-        ) {
-            return;
-        }
+        UUID target = call.getPlayer().getUniqueId();
+        ListIterator<ClientboundPlayerInfoPacket.PlayerUpdate>
+                iterator = packet.getEntries().listIterator();
 
-        boolean playerAdd = packet.getAction() == ClientboundPlayerInfoPacket.Action.ADD_PLAYER;
-        var it = packet.getEntries().listIterator();
-        var id = call.getPlayer().getUniqueId();
+        if (packet.getAction() == ClientboundPlayerInfoPacket.Action.UPDATE_GAME_MODE) {
+            while (iterator.hasNext()) {
+                ClientboundPlayerInfoPacket.PlayerUpdate u = iterator.next();
 
-        while (it.hasNext()) {
-            var next = it.next();
+                if (u.getGameMode() != GameType.SPECTATOR) {
+                    continue;
+                }
 
-            if (next.getGameMode() != GameType.SPECTATOR
-                    || Objects.equals(next.getProfile().getId(), id)
-                    || Objects.equals(next.getProfile().getName(), call.getPlayer().getName())
-            ) {
-                continue;
+                if(!u.getProfile().getId().equals(target)) {
+                    call.setCancelled(true);
+                    return;
+                }
             }
+        } else if (packet.getAction() == ClientboundPlayerInfoPacket.Action.ADD_PLAYER) {
+            //I swear to god, if a player receives a packet of their own player being added
+            //I will murder someone...
+            //Well, I guess I have to :shrug:
 
-            if (!playerAdd) {
-                it.remove();
-            } else {
-                it.set(
-                        new ClientboundPlayerInfoPacket.PlayerUpdate(
-                                next.getProfile(),
-                                next.getLatency(),
-                                GameType.DEFAULT_MODE,
-                                next.getDisplayName(),
-                                next.getProfilePublicKey()
-                        )
-                );
+            while (iterator.hasNext()) {
+                ClientboundPlayerInfoPacket.PlayerUpdate u = iterator.next();
+
+                if (u.getGameMode() != GameType.SPECTATOR
+                        || u.getProfile().getId().equals(target)
+                ) {
+                    continue;
+                }
+
+                iterator.set(new ClientboundPlayerInfoPacket.PlayerUpdate(
+                        u.getProfile(),
+                        u.getLatency(),
+                        GameType.SURVIVAL,
+                        u.getDisplayName(),
+                        u.getProfilePublicKey()
+                ));
             }
-        }
-
-        if (packet.getEntries().isEmpty()) {
-            call.setCancelled(true);
         }
     }
 }

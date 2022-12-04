@@ -67,12 +67,14 @@ dependencies {
     //LuckPerms and WorldGuard
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.5-SNAPSHOT'
+    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.5-SNAPSHOT'
 
     // DiscordSRV
     compileOnly 'com.discordsrv:discordsrv:1.26.0'
 
     // Voting plugin for VoteEvent
 
+    testImplementation 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
 
     //Grenadier, Dynmap and GSit

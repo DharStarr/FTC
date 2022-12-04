@@ -24,7 +24,7 @@ import net.forthecrown.grenadier.exceptions.RoyalCommandException;
 import net.forthecrown.guilds.GuildManager;
 import net.forthecrown.guilds.unlockables.Unlockables;
 import net.forthecrown.inventory.ExtendedItems;
-import net.forthecrown.log.DataManager;
+import net.forthecrown.log.LogManager;
 import net.forthecrown.structure.Structures;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.user.Components;
@@ -67,12 +67,18 @@ final class BootStrap {
 
         // Waypoints
         init(WaypointTypes.class);
-        init(WaypointManager::getInstance);
         init(WaypointProperties.class);
+        init(WaypointManager::getInstance);
+
+        // Structures
+        // Should be loaded before dungeons, as dungeons
+        // might potentially need to access the structures
+        init(Structures::get);
 
         // Dungeons
         init(FtcEnchants.class);
         init(Bosses.class);
+        init(LevelManager::getInstance);
 
         // Bunch of miscellaneous modules
         init(ChatEmotes.class);
@@ -81,8 +87,6 @@ final class BootStrap {
         init(Usables::getInstance);
         init(ResourceWorldTracker::get);
         init(ServerHolidays::get);
-        init(Structures::get);
-        init(LevelManager::get);
         init(Announcer::get);
         init(Economy::get);
         init(Configs.class);
@@ -92,16 +96,12 @@ final class BootStrap {
         init(PacketListeners.class);
         init(Punishments::get);
 
-        // Commands and events
-        init(Commands.class);
-        init(Events.class);
-
         // The following 2 classes must be loaded
         // before the data manager, they register
         // the data log schemas required.
         init(ChallengeLogs.class);
         init(Transactions.class);
-        init(DataManager::getInstance);
+        init(LogManager::getInstance);
 
         // Must be initialized after the data manager
         // since it queries it to find the currently
@@ -112,6 +112,12 @@ final class BootStrap {
         init(ResourceWorld::get);
         init(EndOpener::get);
         init(Economy.get()::getMarkets);
+
+        // Commands and events
+        init(Commands.class);
+        init(Events.class);
+
+        init(ServerIcons::getInstance);
 
         // Save and load the banner words list
         FTC.getPlugin().saveResource("banned_words.json", true);
@@ -128,7 +134,6 @@ final class BootStrap {
                 .getCallbacks()
                 .clear();
 
-        ServerIcons.loadIcons();
         Transformers.runCurrent();
     }
 

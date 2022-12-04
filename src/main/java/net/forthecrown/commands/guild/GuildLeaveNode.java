@@ -33,7 +33,6 @@ class GuildLeaveNode extends GuildCommandNode {
                                 guild, user.getName(), "No members left"
                         );
 
-                        user.sendMessage(Messages.leftGuild(guild));
                         user.sendMessage(Messages.GUILD_DELETED_EMPTY);
                     } else {
                         if (guild.isLeader(user)) {
@@ -41,7 +40,6 @@ class GuildLeaveNode extends GuildCommandNode {
                         }
 
                         guild.removeMember(user.getUniqueId());
-                        user.sendMessage(Messages.leftGuild(guild));
                         guild.sendMessage(Messages.leftGuildAnnouncement(user));
                     }
 

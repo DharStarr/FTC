@@ -47,6 +47,7 @@ public final class Events {
         register(new ShopInventoryListener());
 
         register(new WaypointListener());
+        register(new WaypointDestroyListener());
         register(new MarketListener());
 
         // Random features
@@ -81,7 +82,6 @@ public final class Events {
 
         PacketListeners.register(new PlayerPacketListener());
         PacketListeners.register(new ChatPacketListener());
-        PacketListeners.register(new NameTagPacketListener());
     }
 
     /**

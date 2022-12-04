@@ -4,6 +4,7 @@ import net.forthecrown.commands.ToggleCommand;
 import net.forthecrown.core.admin.Mute;
 import net.forthecrown.core.challenge.Challenge;
 import net.forthecrown.core.challenge.ResetInterval;
+import net.forthecrown.core.challenge.StreakCategory;
 import net.forthecrown.core.config.GeneralConfig;
 import net.forthecrown.cosmetics.Cosmetic;
 import net.forthecrown.economy.market.MarketConfig;
@@ -2405,8 +2406,8 @@ public interface Messages {
 
     Component HOME_WAYPOINT_SET = text(
             "Set home waypoint." +
-            "\nUse /home to come to this waypoint when near another waypoint." +
-            "\nUse /invite <player> to invite others there",
+            "\nUse /invite <player> to invite others " +
+            "\nUse /home to come to this waypoint when near another waypoint.",
             NamedTextColor.YELLOW
     );
 
@@ -2885,10 +2886,10 @@ public interface Messages {
 
     /* ---------------------------- CHALLENGES ----------------------------- */
 
-    static Component challengeCompleted(Challenge challenge) {
+    static Component challengeCompleted(Challenge challenge, User user) {
         return format("Completed challenge &e{0}&r.",
                 NamedTextColor.GRAY,
-                challenge.displayName()
+                challenge.displayName(user)
         );
     }
 
@@ -2900,6 +2901,13 @@ public interface Messages {
         return format("&6{0}&r challenges have been reset!",
                 NamedTextColor.YELLOW,
                 interval.getDisplayName()
+        );
+    }
+
+    static Component challengeCategoryFinished(StreakCategory category) {
+        return format("All &6{0}&r challenges complete!",
+                NamedTextColor.YELLOW,
+                category.getDisplayName()
         );
     }
 }

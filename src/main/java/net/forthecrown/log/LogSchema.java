@@ -7,6 +7,9 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectMaps;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
@@ -17,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public class LogSchema {
@@ -27,8 +31,13 @@ public class LogSchema {
     private final Map<String, SchemaField>
             byName = new Object2ObjectOpenHashMap<>();
 
-    public LogSchema(SchemaField[] fields) {
-        this.fields = fields;
+    private final short version;
+    private final Short2ObjectMap<List<LogDataFixer>> updaters;
+
+    private LogSchema(Builder builder) {
+        this.fields = builder.fields.toArray(SchemaField[]::new);
+        this.version = builder.version;
+        this.updaters = Short2ObjectMaps.unmodifiable(builder.updaters);
 
         for (var f: Validate.noNullElements(fields)) {
             byName.put(f.name(), f);
@@ -36,7 +45,41 @@ public class LogSchema {
     }
 
     public static Builder builder(String name) {
-        return new Builder(name);
+        return builder(name, (short) 1);
+    }
+
+    public static Builder builder(String name, short version) {
+        return new Builder(name, version);
+    }
+
+    public <S> Dynamic<S> update(Dynamic<S> dynamic, short oldVersion) {
+        if (oldVersion == version) {
+            return dynamic;
+        }
+
+        if (oldVersion > version) {
+            LOGGER.warn(
+                    "Cannot update entry with greater version than schema " +
+                            "({} > {})",
+                    oldVersion, version
+            );
+
+            return dynamic;
+        }
+
+        for (short i = (short) (oldVersion + 1); i <= version; i++) {
+            var updaters = getUpdaters().get(i);
+
+            if (updaters == null || updaters.isEmpty()) {
+                continue;
+            }
+
+            for (var u: updaters) {
+                dynamic = u.update(dynamic);
+            }
+        }
+
+        return dynamic;
     }
 
     public <S> DataResult<S> serialize(DynamicOps<S> ops, LogEntry entry) {
@@ -105,10 +148,23 @@ public class LogSchema {
         return Arrays.hashCode(getFields());
     }
 
+    public <T> boolean contains(SchemaField<T> field) {
+        if (field.id() >= fields.length) {
+            return false;
+        }
+
+        return Objects.equals(field, fields[field.id()]);
+    }
+
     @RequiredArgsConstructor
     public static class Builder {
         private final String name;
         private final List<SchemaField> fields = new ObjectArrayList<>();
+
+        private final Short2ObjectMap<List<LogDataFixer>>
+                updaters = new Short2ObjectOpenHashMap<>();
+
+        private final short version;
 
         public <T> SchemaField<T> add(String name, Codec<T> codec) {
             SchemaField<T> field = new SchemaField<>(
@@ -124,8 +180,18 @@ public class LogSchema {
             return this;
         }
 
+        public Builder addUpdate(int version, LogDataFixer fixer) {
+            var list = updaters.computeIfAbsent(
+                    (short) version,
+                    s -> new ObjectArrayList<>()
+            );
+
+            list.add(fixer);
+            return this;
+        }
+
         public LogSchema build() {
-            return new LogSchema(fields.toArray(SchemaField[]::new));
+            return new LogSchema(this);
         }
 
         public Holder<LogSchema> register() {

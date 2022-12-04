@@ -69,7 +69,6 @@ public class CommandBecomeBaron extends FtcCommand {
 
                             user.removeBalance(GeneralConfig.baronPrice);
                             user.getTitles().addTitle(RankTitle.BARON);
-                            user.getTitles().addTitle(RankTitle.BARONESS);
 
                             Transactions.builder()
                                     .type(TransactionType.BECOME_BARON)

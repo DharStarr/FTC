@@ -33,7 +33,6 @@ public interface VisitPredicate {
             if (nearest == null) {
                 throw Exceptions.FAR_FROM_WAYPOINT;
             } else {
-                var pos = nearest.getPosition();
                 throw Exceptions.farFromWaypoint(nearest);
             }
         } else {
@@ -66,6 +65,10 @@ public interface VisitPredicate {
 
     private static VisitPredicate waypointIsValid(boolean dest) {
         return visit -> {
+            if (visit.getUser().hasPermission(Permissions.WAYPOINTS_ADMIN)) {
+                return;
+            }
+
             if (dest && !visit.getDestination().isWorldLoaded()) {
                 throw Exceptions.UNLOADED_WORLD;
             }
