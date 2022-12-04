@@ -11,6 +11,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.UserHomes;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 
 import static net.forthecrown.commands.manager.Exceptions.CANNOT_SET_HOME;
 
@@ -63,6 +64,7 @@ public class CommandSetHome extends FtcCommand {
         } else {
             context.user.sendMessage(Messages.homeSet(context.name));
         }
+        context.user.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 
         return 0;
     }

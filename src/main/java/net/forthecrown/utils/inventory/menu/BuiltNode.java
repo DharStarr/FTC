@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.menu.context.ClickContext;
 import net.forthecrown.utils.inventory.menu.context.InventoryContext;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,11 +15,16 @@ import org.jetbrains.annotations.NotNull;
 public class BuiltNode implements MenuNode {
     private final MenuNodeItem item;
     private final MenuClickConsumer runnable;
+    private final boolean playSound;
 
     @Override
     public void onClick(User user, InventoryContext context, ClickContext click) throws CommandSyntaxException {
         if (runnable == null) {
             return;
+        }
+
+        if (playSound) {
+            user.playSound(Sound.UI_BUTTON_CLICK, 0.4f, 1);
         }
 
         runnable.onClick(user, context, click);

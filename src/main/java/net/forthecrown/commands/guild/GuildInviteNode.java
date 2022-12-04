@@ -12,6 +12,7 @@ import net.forthecrown.guilds.GuildPermission;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.text.writer.TextWriter;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Sound;
 
 import java.util.function.Consumer;
 
@@ -77,8 +78,10 @@ class GuildInviteNode extends GuildCommandNode {
                                             ).hoverEvent(Component.text("Click to cancel"))
                                     )
                             );
+                            user.playSound(Sound.UI_TOAST_OUT, 2, 1.5f);
 
                             target.sendMessage(Messages.guildInviteTarget(guild));
+                            target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
 
                             return 0;
                         })

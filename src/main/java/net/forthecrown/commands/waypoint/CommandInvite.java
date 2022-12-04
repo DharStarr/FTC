@@ -9,6 +9,7 @@ import net.forthecrown.royalgrenadier.types.selector.EntityArgumentImpl;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
+import org.bukkit.Sound;
 
 public class CommandInvite extends FtcCommand {
 
@@ -90,12 +91,15 @@ public class CommandInvite extends FtcCommand {
                                 waypoint.invite(user.getUniqueId(), target.getUniqueId());
 
                                 target.sendMessage(Messages.targetInvited(user));
+                                target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
                                 user.sendMessage(Messages.senderInvited(target));
                             }
 
                             if (targets.size() > 1) {
                                 user.sendMessage(Messages.invitedTotal(targets.size()));
                             }
+
+                            user.playSound(Sound.UI_TOAST_OUT, 2, 1.5f);
 
                             return 0;
                         })

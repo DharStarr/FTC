@@ -15,6 +15,8 @@ import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.inventory.ItemStacks;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -184,6 +186,7 @@ public class ShopCreateListener implements Listener {
 
             //Send the info message
             player.sendMessage(Messages.createdShop(shop));
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 1, 1);
 
             shop.update();
             shop.delayUnload();

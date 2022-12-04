@@ -13,6 +13,7 @@ import net.forthecrown.utils.text.Text;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Iterator;
@@ -106,6 +107,7 @@ public class CommandDeposit extends FtcCommand {
 
         user.addBalance(earned);
         user.sendMessage(Messages.deposit(coins, earned));
+        user.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 
         // Log deposit
         Transactions.builder()

@@ -5,6 +5,7 @@ import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 
@@ -43,6 +44,7 @@ public class ToolBlockCommands extends FtcCommand {
                 (source, user, self) -> {
                     Player player = user.getPlayer();
                     player.openInventory(player.getEnderChest());
+                    user.playSound(Sound.BLOCK_ENDER_CHEST_OPEN, 1, 1);
 
                     return 0;
                 },

@@ -23,6 +23,7 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.property.Properties;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Sound;
 
 import java.util.List;
 
@@ -196,6 +197,7 @@ public class CommandPay extends FtcCommand {
 
             user.sendMessage(Messages.paySender(target, amount, selfMessage));
             target.sendMessage(Messages.payTarget(user, amount, message));
+            target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
 
             paidAmount++;
             target.unloadIfOffline();
@@ -207,6 +209,10 @@ public class CommandPay extends FtcCommand {
                     .extra("cmd='%s' targets=%s", c.getInput(), targets.size())
                     .amount(amount)
                     .log();
+        }
+
+        if (paidAmount > 0) {
+            user.playSound(Sound.UI_TOAST_OUT, 2, 1.5f);
         }
 
         if (paidAmount > 1) {

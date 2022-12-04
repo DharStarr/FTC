@@ -8,6 +8,8 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.User;
 import net.forthecrown.waypoint.Waypoint;
 import net.forthecrown.waypoint.Waypoints;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 
 public class CommandMoveIn extends FtcCommand {
 
@@ -62,6 +64,7 @@ public class CommandMoveIn extends FtcCommand {
 
                     user.getHomes().setHomeWaypoint(waypoint);
                     user.sendMessage(Messages.HOME_WAYPOINT_SET);
+                    user.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
 
                     return 0;
                 });

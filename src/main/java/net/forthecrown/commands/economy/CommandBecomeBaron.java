@@ -11,6 +11,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.RankTitle;
+import org.bukkit.Sound;
 
 public class CommandBecomeBaron extends FtcCommand {
     public CommandBecomeBaron() {
@@ -77,6 +78,8 @@ public class CommandBecomeBaron extends FtcCommand {
                                     .log();
 
                             user.sendMessage(Messages.becomeBaron());
+                            user.playSound(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1, 1)
+                            ;
                             return 0;
                         })
                 );

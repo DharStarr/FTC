@@ -14,6 +14,7 @@ import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.user.data.UserHomes;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 
 public class CommandDeleteHome extends FtcCommand {
     public CommandDeleteHome(){
@@ -75,6 +76,8 @@ public class CommandDeleteHome extends FtcCommand {
         } else {
             source.sendAdmin(Messages.deletedHomeOther(user, name));
         }
+
+        user.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
 
         return 0;
     }

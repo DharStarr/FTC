@@ -17,6 +17,8 @@ import net.forthecrown.utils.Util;
 import net.forthecrown.utils.math.Bounds3i;
 import net.forthecrown.utils.math.Vectors;
 import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Entity;
@@ -130,6 +132,10 @@ public class CommandWild extends FtcCommand {
         }
 
         p.teleport(wildLocation(world));
+
+        if (p instanceof Player) {
+            ((Player) p).playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, SoundCategory.MASTER, 1, 1);
+        }
 
         if(p.getWorld().getName().contains("world_resource")) {
             p.sendMessage(Messages.WILD_RW_TEXT);

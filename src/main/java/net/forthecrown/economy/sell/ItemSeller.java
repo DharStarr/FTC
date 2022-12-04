@@ -17,6 +17,7 @@ import net.forthecrown.user.data.UserShopData;
 import net.forthecrown.user.property.Properties;
 import net.forthecrown.utils.inventory.ItemStacks;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -120,6 +121,7 @@ public final class ItemSeller {
 
         if (send) {
             player.sendMessage(Messages.soldItems(result, material));
+            player.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
         }
 
         // If price dropped

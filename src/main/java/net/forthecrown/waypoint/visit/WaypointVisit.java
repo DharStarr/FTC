@@ -24,6 +24,7 @@ import net.forthecrown.waypoint.visit.handlers.VehicleVisitHandler;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.spongepowered.math.vector.Vector3d;
@@ -219,6 +220,7 @@ public class WaypointVisit implements Runnable {
 
             // Shoot you up into the sky lol
             user.getPlayer().setVelocity(new Vector(0, 20, 0));
+            user.playSound(Sound.ENTITY_ENDER_DRAGON_SHOOT, 1, 1.2f);
 
             // If they have cosmetic effect, execute it
             if (activeEffect != null) {
@@ -247,6 +249,7 @@ public class WaypointVisit implements Runnable {
 
             // Just TP them to pole... boring
             user.getPlayer().teleport(getTeleportLocation());
+            user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
             runTpHandlers();
         }
@@ -281,6 +284,7 @@ public class WaypointVisit implements Runnable {
                     task.cancel();
 
                     user.getPlayer().teleport(getTeleportLocation());
+                    user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
                     runTpHandlers();
 

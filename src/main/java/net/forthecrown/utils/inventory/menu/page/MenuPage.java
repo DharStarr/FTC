@@ -7,6 +7,7 @@ import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.menu.*;
 import net.forthecrown.utils.inventory.menu.context.ClickContext;
 import net.forthecrown.utils.inventory.menu.context.InventoryContext;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +56,7 @@ public abstract class MenuPage implements MenuNode {
         }
 
         menu.open(user, context);
+        user.playSound(Sound.UI_BUTTON_CLICK, 0.4f, 1);
     }
 
     @Override

@@ -826,6 +826,19 @@ public class User implements ForwardingAudience.Single,
         this.lastMessage = lastMessage.asBukkit();
     }
 
+
+    /**
+     * Plays a message to this user only
+     * @param sound The sound to play
+     * @param volume The volume of the sound
+     * @param pitch The pitch of the sound
+     */
+    public void playSound(Sound sound, float volume, float pitch) {
+        if (isOnline()) {
+            getPlayer().playSound(getLocation(), sound, SoundCategory.MASTER, volume, pitch);
+        }
+    }
+
     /* ----------------------------- ECONOMY ------------------------------ */
 
     /**

@@ -12,6 +12,7 @@ import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.inventory.FtcItems;
 import net.forthecrown.core.Messages;
 import net.forthecrown.user.User;
+import org.bukkit.Sound;
 
 import javax.annotation.Nonnegative;
 
@@ -56,6 +57,7 @@ public class CommandWithdraw extends FtcCommand {
 
         user.removeBalance(totalAmount);
         user.sendMessage(Messages.withdrew(itemAmount, totalAmount));
+        user.playSound(Sound.ENTITY_ITEM_PICKUP, 1, 1);
 
         Transactions.builder()
                 .type(TransactionType.WITHDRAW)

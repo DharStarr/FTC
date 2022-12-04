@@ -265,6 +265,7 @@ final class SellShopNodes {
                     context.shouldReloadMenu(true);
                 })
 
+                .setPlaySound(false)
                 .build();
     }
 }

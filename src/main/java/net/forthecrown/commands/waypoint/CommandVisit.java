@@ -6,6 +6,9 @@ import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.utils.Cooldown;
 import net.forthecrown.waypoint.visit.WaypointVisit;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
+import org.bukkit.entity.Player;
 
 public class CommandVisit extends FtcCommand {
 

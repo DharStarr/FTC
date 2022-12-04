@@ -26,6 +26,7 @@ public interface MenuNode extends MenuNodeItem, MenuClickConsumer {
     class Builder {
         private MenuNodeItem item;
         private MenuClickConsumer runnable;
+        private boolean playSound = true;
 
         public Builder setItem(MenuNodeItem item) {
             this.item = item;
@@ -50,8 +51,13 @@ public interface MenuNode extends MenuNodeItem, MenuClickConsumer {
             return this;
         }
 
+        public Builder setPlaySound(boolean b) {
+            this.playSound = b;
+            return this;
+        }
+
         public MenuNode build() {
-            return new BuiltNode(item, runnable);
+            return new BuiltNode(item, runnable, playSound);
         }
     }
 }

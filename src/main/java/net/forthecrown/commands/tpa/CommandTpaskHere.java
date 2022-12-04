@@ -6,6 +6,7 @@ import net.forthecrown.core.Permissions;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.user.TeleportRequest;
 import net.forthecrown.user.User;
+import org.bukkit.Sound;
 
 import static net.forthecrown.commands.tpa.CommandTpask.*;
 import static net.forthecrown.core.Messages.*;
@@ -47,6 +48,9 @@ public class CommandTpaskHere extends FtcCommand {
 
                     player.sendMessage(requestSent(target, tpaCancelButton(target)));
                     target.sendMessage(tpaTargetMessage(TPA_FORMAT_HERE, player));
+
+                    player.playSound(Sound.UI_TOAST_OUT, 2, 1.5f);
+                    target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
 
                     TeleportRequest.run(player, target, true);
                     return 0;

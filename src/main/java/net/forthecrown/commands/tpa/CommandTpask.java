@@ -12,6 +12,7 @@ import net.forthecrown.user.TeleportRequest;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.UserInteractions;
 import net.forthecrown.user.property.Properties;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 
@@ -55,6 +56,9 @@ public class CommandTpask extends FtcCommand {
 
                     player.sendMessage(requestSent(target, tpaCancelButton(target)));
                     target.sendMessage(tpaTargetMessage(TPA_FORMAT_NORMAL, player));
+
+                    player.playSound(Sound.UI_TOAST_OUT, 2, 1.5f);
+                    target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
 
                     TeleportRequest.run(player, target, false);
                     return 0;

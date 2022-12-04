@@ -9,6 +9,7 @@ import net.forthecrown.core.Messages;
 import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -177,6 +178,7 @@ public class UserTeleport {
             } else {
                 player.teleport(dest);
             }
+            user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
             if (setReturn) {
                 user.setReturnLocation(location);
