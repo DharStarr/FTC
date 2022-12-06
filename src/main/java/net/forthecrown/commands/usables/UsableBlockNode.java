@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.pos.Position;
@@ -12,6 +13,9 @@ import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.UsableBlock;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.utils.math.WorldVec3i;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.block.TileState;
 
@@ -70,8 +74,27 @@ class UsableBlockNode extends BukkitUsableNode<UsableBlock> {
         var pos = PositionArgument.getLocation(context, argumentName);
         var usables = Usables.getInstance();
 
+        if (!(pos.getBlock().getState() instanceof TileState)) {
+            throw Exceptions.USABLE_INVALID_BLOCK;
+        }
+
         if (!usables.isUsableBlock(pos.getBlock())) {
-            throw Exceptions.BLOCK_NOT_USABLE;
+            String input = Commands.findInput(argumentName, context);
+
+            if (input == null) {
+                throw Exceptions.BLOCK_NOT_USABLE;
+            }
+
+            String command = "/usable_block -create " + input;
+
+            throw Exceptions.format(
+                    "{0} is not a usable block!\n{1} to make it a usable",
+                    input,
+
+                    Component.text("[" + command + "]", NamedTextColor.AQUA)
+                            .hoverEvent(Component.text("Click to run"))
+                            .clickEvent(ClickEvent.runCommand(command))
+            );
         }
 
         return usables.getBlock(pos.getBlock());

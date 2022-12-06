@@ -212,14 +212,14 @@ public final class Text {
 
         // Not enough space for gradient
         if (length < 2) {
-            return Component.text(input).color(start);
+            return Component.text(input, start);
         }
 
         var builder = Component.text();
 
         for (int i = 0; i < length; i++) {
             var c = chars[i];
-            float progress = ((float) i) / length;
+            float progress = ((float) i) / (length - 1);
 
             builder.append(
                     Component.text(c, TextColor.lerp(progress, start, end))

@@ -16,6 +16,7 @@ public class StreakIncreaseEvent extends Event {
     private final User user;
     private final StreakCategory category;
     private final int streak;
+    private final ChallengeEntry entry;
 
     @Override
     public @NotNull HandlerList getHandlers() {

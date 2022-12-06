@@ -4,12 +4,16 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.selectors.EntityArgument;
 import net.forthecrown.grenadier.types.selectors.EntitySelector;
 import net.forthecrown.useables.UsableEntity;
 import net.forthecrown.useables.Usables;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -67,8 +71,27 @@ class UsableEntityNode extends BukkitUsableNode<UsableEntity> {
         var entity = EntityArgument.getEntity(context, argumentName);
         var usables = Usables.getInstance();
 
+        if (entity instanceof Player) {
+            throw Exceptions.PLAYER_USABLE;
+        }
+
         if (!usables.isUsableEntity(entity)) {
-            throw Exceptions.ENTITY_NOT_USABLE;
+            String input = Commands.findInput(argumentName, context);
+
+            if (input == null) {
+                throw Exceptions.ENTITY_NOT_USABLE;
+            }
+
+            String command = "/usable_entity -create " + input;
+
+            throw Exceptions.format(
+                    "Entity {0} is not usable!\n{1} to make it usable",
+                    entity.teamDisplayName(),
+
+                    Component.text("[" + command + "]", NamedTextColor.AQUA)
+                            .hoverEvent(Component.text("Click to run"))
+                            .clickEvent(ClickEvent.runCommand(command))
+            );
         }
 
         return usables.getEntity(entity);

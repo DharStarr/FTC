@@ -10,7 +10,6 @@ import net.forthecrown.log.DataLogs;
 import net.forthecrown.log.LogEntry;
 import net.forthecrown.log.LogQuery;
 import net.forthecrown.user.User;
-import net.forthecrown.utils.Time;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.*;
 import net.forthecrown.utils.text.Text;
@@ -21,6 +20,7 @@ import org.bukkit.inventory.ItemFlag;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -206,43 +206,34 @@ public @UtilityClass class Challenges {
     }
 
     public OptionalInt queryStreak(StreakCategory category, User viewer) {
-        LocalDate queryStart = LocalDate.MIN;
-
-        var query = LogQuery.builder(ChallengeLogs.STREAK_SCHEMA)
-                .queryRange(Range.between(queryStart, LocalDate.now()))
-                .maxResults(ChallengeConfig.maxStreak)
-
-                .field(ChallengeLogs.S_CATEGORY)
-                .add(c -> Objects.equals(category, c))
-
-                .field(ChallengeLogs.S_PLAYER)
-                .add(uuid -> Objects.equals(viewer.getUniqueId(), uuid))
-
-                .build();
-
-        var results = DataLogs.query(query);
-
-        if (results.isEmpty()) {
+        if (viewer == null) {
             return OptionalInt.empty();
         }
 
+        UUID uuid = viewer.getUniqueId();
+        LocalDate start = LocalDate.now();
+        Range<ChronoLocalDate> range = null;
+
         int streak = 0;
-        LocalDate lastDate = LocalDate.now();
 
-        for (int i = results.size() - 1; i >= 0; i--) {
-            var entry = results.get(i);
+        while (streak < ChallengeConfig.maxStreak) {
+            if (range == null) {
+                range = category.searchRange(start);
 
-            LocalDate eDate = Time.localTime(entry.getDate())
-                    .toLocalDate();
+                if (hasStreak(range, category, uuid)) {
+                    ++streak;
+                }
 
-            if (eDate.compareTo(lastDate) != 0
-                    && !category.areNeighboring(lastDate, eDate)
-            ) {
-                break;
+                continue;
             }
 
-            streak++;
-            lastDate = eDate;
+            range = category.moveRange(range);
+
+            if (hasStreak(range, category, uuid)) {
+                ++streak;
+            } else {
+                break;
+            }
         }
 
         return streak == 0
@@ -258,5 +249,26 @@ public @UtilityClass class Challenges {
                         .set(ChallengeLogs.S_CATEGORY, category)
                         .set(ChallengeLogs.S_PLAYER, uuid)
         );
+    }
+
+    private boolean hasStreak(Range<ChronoLocalDate> dateRange,
+                              StreakCategory category,
+                              UUID uuid
+    ) {
+        var result = DataLogs.query(
+                LogQuery.builder(ChallengeLogs.STREAK_SCHEMA)
+                        .queryRange(dateRange)
+                        .maxResults(1)
+
+                        .field(ChallengeLogs.S_PLAYER)
+                        .add(uuid1 -> Objects.equals(uuid1, uuid))
+
+                        .field(ChallengeLogs.S_CATEGORY)
+                        .add(category1 -> Objects.equals(category, category1))
+
+                        .build()
+        );
+
+        return result.size() >= 1;
     }
 }

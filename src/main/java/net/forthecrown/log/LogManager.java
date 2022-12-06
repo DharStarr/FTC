@@ -1,5 +1,6 @@
 package net.forthecrown.log;
 
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.module.OnDayChange;
@@ -55,12 +56,11 @@ public class LogManager {
     }
 
     public List<LogEntry> queryLogs(LogQuery query) {
-        // Clamp query's search range to existing logs to
-        // prevent unnecessary loops
-        Range<ChronoLocalDate> searchRange = Range.between(
-                logRange.fit(query.getSearchRange().getMinimum()),
-                logRange.fit(query.getSearchRange().getMaximum())
-        );
+        var searchRange = query.getSearchRange();
+
+        if (!logRange.isOverlappedBy(searchRange)) {
+            return ObjectLists.emptyList();
+        }
 
         ChronoLocalDate d = searchRange.getMaximum();
         short safeGuard = 512;

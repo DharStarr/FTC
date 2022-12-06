@@ -9,6 +9,8 @@ import net.forthecrown.core.registry.Holder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+
 @EqualsAndHashCode
 @RequiredArgsConstructor
 public class LogEntry {
@@ -34,5 +36,10 @@ public class LogEntry {
 
     public <T> @Nullable T get(@NotNull SchemaField<T> field) {
         return (T) values[field.id()];
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + Arrays.toString(values);
     }
 }

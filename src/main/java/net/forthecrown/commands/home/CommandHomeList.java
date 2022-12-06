@@ -77,7 +77,7 @@ public class CommandHomeList extends FtcCommand {
         builder.append(Component.text(": ", NamedTextColor.GOLD));
 
         String prefix = self ? "" : user.getName() + ":";
-        builder.append(Messages.listHomes(homes, "/homes " + prefix));
+        builder.append(Messages.listHomes(homes, "/home " + prefix));
 
         source.sendMessage(builder.build());
         return 0;

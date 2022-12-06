@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.core.Messages;
 import net.forthecrown.core.registry.Holder;
@@ -24,6 +25,9 @@ public class ChallengeEntry {
 
     private final Object2FloatMap<Challenge>
             progress = new Object2FloatOpenHashMap<>();
+
+    @Setter
+    private int highestStreak = 0;
 
     /* ------------------------------ METHODS ------------------------------- */
 
@@ -49,13 +53,7 @@ public class ChallengeEntry {
         var challenge = holder.getValue();
         float current = progress.getFloat(challenge);
 
-        LOGGER.debug(
-                "addProgress called, current={}, challenge={}",
-                current, holder.getKey()
-        );
-
         if (Challenges.hasCompleted(holder, id)) {
-            LOGGER.debug("Already completed");
             return;
         }
 
@@ -68,7 +66,6 @@ public class ChallengeEntry {
 
         if (newVal >= challenge.getGoal(user)) {
             if (!challenge.canComplete(user)) {
-                LOGGER.debug("canComplete=false");
                 return;
             }
 
@@ -79,13 +76,8 @@ public class ChallengeEntry {
             Challenges.logCompletion(holder, id);
             challenge.onComplete(user);
 
-            LOGGER.debug("{} completed {}", user.getName(), holder.getKey());
             potentiallyAddStreak(challenge.getStreakCategory());
         }
-
-        LOGGER.debug("Setting progress of {} for {} to {}",
-                holder.getKey(), user.getName(), newVal
-        );
 
         progress.put(challenge, newVal);
     }
@@ -114,7 +106,9 @@ public class ChallengeEntry {
         int streak = Challenges.queryStreak(category, user)
                 .orElse(1);
 
-        new StreakIncreaseEvent(user, category, streak)
+        this.highestStreak = Math.max(highestStreak, streak);
+
+        new StreakIncreaseEvent(user, category, streak, this)
                 .callEvent();
 
         // Find script callbacks for streak increase

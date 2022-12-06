@@ -1,6 +1,7 @@
 package net.forthecrown.commands.manager;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.*;
 import net.forthecrown.commands.admin.*;
@@ -222,5 +223,15 @@ public final class Commands {
         }
 
         return item;
+    }
+
+    public static String findInput(String argument, CommandContext<?> context) {
+        for (var parsedNode: context.getNodes()) {
+            if (parsedNode.getNode().getName().equals(argument)) {
+                return parsedNode.getRange().get(context.getInput());
+            }
+        }
+
+        return null;
     }
 }

@@ -29,6 +29,10 @@ import java.util.function.Function;
 public class ChallengeDataStorage {
     private static final Logger LOGGER = FTC.getLogger();
 
+    private static final String
+            KEY_HIGHEST_STREAK = "highest::streak";
+
+
     private final Path directory;
     private final Path itemDataDirectory;
 
@@ -159,6 +163,15 @@ public class ChallengeDataStorage {
                         UUID uuid = UUID.fromString(e.getKey());
                         ChallengeEntry entry = new ChallengeEntry(uuid);
 
+                        var eObj = JsonWrapper.wrap(e.getValue().getAsJsonObject());
+
+                        if (eObj.has(KEY_HIGHEST_STREAK)) {
+                            int highestStreak = eObj.getInt(KEY_HIGHEST_STREAK);
+                            entry.setHighestStreak(highestStreak);
+
+                            eObj.remove(KEY_HIGHEST_STREAK);
+                        }
+
                         for (var p: e.getValue().getAsJsonObject().entrySet()) {
                             if (!p.getValue().isJsonPrimitive()
                                     || !((JsonPrimitive) p.getValue()).isNumber()
@@ -201,6 +214,10 @@ public class ChallengeDataStorage {
                 for (var p: e.getProgress().object2FloatEntrySet()) {
                     if (p.getFloatValue() <= 0) {
                         continue;
+                    }
+
+                    if (e.getHighestStreak() > 0) {
+                        json.add(KEY_HIGHEST_STREAK, e.getHighestStreak());
                     }
 
                     challenges.getHolderByValue(p.getKey())

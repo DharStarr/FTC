@@ -2,9 +2,12 @@ package net.forthecrown.core.challenge;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Range;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
+import java.time.chrono.ChronoLocalDate;
+import java.time.temporal.*;
 
 /**
  * A category for streaks, each challenge selects its own category.
@@ -13,39 +16,45 @@ import java.time.temporal.ChronoField;
  * in a streak category in an allowed time frame.
  */
 @RequiredArgsConstructor
-public enum StreakCategory {
+public enum StreakCategory implements TemporalAdjuster {
     /** Challenges which reset daily */
-    DAILY ("Daily") {
-        @Override
-        public boolean areNeighboring(LocalDate later, LocalDate earlier) {
-            var matchTest = later.minusDays(1);
-            return matchTest.getDayOfYear() == earlier.getDayOfYear();
-        }
-    },
+    DAILY ("Daily"),
 
     /** Challenges which reset weekly */
     WEEKLY ("Weekly") {
         @Override
-        public boolean areNeighboring(LocalDate later, LocalDate earlier) {
-            var matchTest = later.minusWeeks(1);
+        public Range<ChronoLocalDate> searchRange(LocalDate date) {
+            var start = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            var end = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
-            int week1 = matchTest.get(ChronoField.ALIGNED_WEEK_OF_YEAR);
-            int week2 = earlier.get(ChronoField.ALIGNED_WEEK_OF_YEAR);
+            return Range.between(start, end);
+        }
 
-            return week2 == week1;
+        @Override
+        public Temporal adjustInto(Temporal temporal) {
+            return temporal.minus(7, ChronoUnit.DAYS);
         }
     },
 
     /** /shop challenges, reset daily */
-    ITEMS ("Item") {
-        @Override
-        public boolean areNeighboring(LocalDate later, LocalDate earlier) {
-            return DAILY.areNeighboring(later, earlier);
-        }
-    };
+    ITEMS ("Item");
 
     @Getter
     private final String displayName;
 
-    public abstract boolean areNeighboring(LocalDate later, LocalDate earlier);
+    public Range<ChronoLocalDate> searchRange(LocalDate date) {
+        return Range.is(date);
+    }
+
+    public Range<ChronoLocalDate> moveRange(Range<ChronoLocalDate> dateRange) {
+        return Range.between(
+                dateRange.getMinimum().with(this),
+                dateRange.getMaximum().with(this)
+        );
+    }
+
+    @Override
+    public Temporal adjustInto(Temporal temporal) {
+        return temporal.minus(1L, ChronoUnit.DAYS);
+    }
 }

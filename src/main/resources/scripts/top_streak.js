@@ -9,30 +9,38 @@ const StreakCategory = Java.type("net.forthecrown.core.challenge.StreakCategory"
 
 // Constants
 const STAND_POSITION = Vector3d.from(207.5, 73.15, 188.5);
+const NO_STREAK = 0;
 
 // Fields
 let greatestId = null;
-let greatestStreak = -1;
+let greatestStreak = NO_STREAK;
 
 let standId = null;
+let standArea = null;
 
 events.register("onStreakIncrease", StreakIncreaseEvent);
 scanInitial();
 spawnStand();
 
 function onStreakIncrease(/* StreakIncreaseEvent */ event) {
-    if (greatestId != null && greatestStreak >= event.getStreak()) {
+    if (event.getCategory() != StreakCategory.ITEMS) {
         return;
     }
 
-    updateStreak(event.getUser().getUniqueId(), event.getStreak());
+    let highestStreak = event.getEntry().getHighestStreak();
+
+    if (greatestId != null && greatestStreak >= highestStreak) {
+        return;
+    }
+
+    updateStreak(event.getUser().getUniqueId(), highestStreak);
 }
 
 function updateStreak(playerId, streak) {
-    let stand = findStand();
-
     greatestId = playerId;
     greatestStreak = streak;
+
+    let stand = findStand();
 
     if (stand == null) {
         return;
@@ -45,9 +53,9 @@ function scanInitial() {
     let entries = C_Manager.getInstance().getEntries();
 
     entries.forEach(e => {
-        const streak = Challenges.queryStreak(StreakCategory.ITEMS, e.getUser()).orElse(0);
+        let streak = e.getHighestStreak();
 
-        if (streak <= 0) {
+        if (streak <= NO_STREAK) {
             return;
         }
 
@@ -59,12 +67,26 @@ function scanInitial() {
 }
 
 function findStand() {
-    if (standId == null) {
-        spawnStand();
+    let stand = null;
+
+    if (standId != null) {
+        stand = Worlds.overworld().getEntity(standId);
     }
 
-    return Worlds.overworld()
-            .getEntity(standId);
+    if (stand == null && standArea != null && standId != null) {
+        let entities = Worlds.overworld()
+                .getNearbyEntities(standArea, entity => entity.getUniqueId().equals(standId));
+
+        if (!entities.isEmpty()) {
+            stand = entities.iterator().next();
+        }
+    }
+
+    if (stand != null) {
+        return stand;
+    }
+
+    return spawnStand();
 }
 
 // Called when the script is closed
@@ -81,12 +103,12 @@ function __onClose() {
 }
 
 function spawnStand() {
-    if (greatestStreak == -1 || greatestId == null) {
+    if (greatestStreak == NO_STREAK || greatestId == null) {
         return;
     }
 
     let location = new Location(Worlds.overworld(), STAND_POSITION.x(), STAND_POSITION.y(), STAND_POSITION.z());
-    let marker =  Worlds.overworld().spawn(location, ArmorStand, stand => {
+    let marker =  Worlds.overworld().spawn(location, ArmorStand.class, stand => {
         stand.setMarker(true);
         stand.setBasePlate(false);
         stand.setInvisible(true);
@@ -98,6 +120,9 @@ function spawnStand() {
     });
 
     standId = marker.getUniqueId();
+    standArea = marker.getBoundingBox();
+
+    return marker;
 }
 
 // Formats the armor stand's name

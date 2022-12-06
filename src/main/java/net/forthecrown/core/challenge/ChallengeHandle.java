@@ -25,17 +25,9 @@ public class ChallengeHandle {
     }
 
     public void givePoints(Object playerObject, double score) {
-        LOGGER.debug("givePoints invoked, plr={}, score={}",
-                playerObject, score
-        );
-
         if (hasCompleted(playerObject)) {
-            LOGGER.debug("Already completed");
-
             return;
         }
-
-        LOGGER.debug("Giving points!");
 
         var player = getPlayer(playerObject);
         var manager = ChallengeManager.getInstance();

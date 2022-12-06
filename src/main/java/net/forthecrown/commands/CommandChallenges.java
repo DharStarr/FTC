@@ -179,6 +179,16 @@ public class CommandChallenges extends FtcCommand {
                         )
                 )
 
+                .then(literal("complete_all")
+                        .requires(IS_ADMIN)
+
+                        .then(argument("category", EnumArgument.of(StreakCategory.class))
+                                .then(argument("user", Arguments.ONLINE_USER)
+                                        .executes(this::completeAll)
+                                )
+                        )
+                )
+
                 .then(literal("give_points")
                         .requires(IS_ADMIN)
 
@@ -257,6 +267,35 @@ public class CommandChallenges extends FtcCommand {
                         holder.getValue().displayName(user)
                 )
         );
+        return 0;
+    }
+
+    private int completeAll(CommandContext<CommandSource> c)
+            throws CommandSyntaxException
+    {
+        var user = Arguments.getUser(c, "user");
+        var manager = ChallengeManager.getInstance();
+        var streak = c.getArgument("category", StreakCategory.class);
+
+        var entry = manager.getOrCreateEntry(user.getUniqueId());
+
+        for (var chal: manager.getActiveChallenges()) {
+            if (chal.getStreakCategory() != streak) {
+                continue;
+            }
+
+            Challenges.apply(chal, holder -> {
+                entry.addProgress(holder, chal.getGoal(user));
+            });
+        }
+
+        c.getSource().sendAdmin(
+                Text.format("Completed all {0} challenges for {1, user}",
+                        streak,
+                        user
+                )
+        );
+
         return 0;
     }
 
