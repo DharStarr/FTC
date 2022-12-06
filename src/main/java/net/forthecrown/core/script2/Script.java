@@ -79,6 +79,17 @@ public class Script implements AutoCloseable {
 
     /* ------------------------ STATIC CONSTRUCTORS ------------------------- */
 
+    public static Script of(String name) {
+        return of(
+                ScriptManager.getInstance()
+                        .getScriptFile(name)
+        );
+    }
+
+    public static Script of(Path path) {
+        return new Script(path);
+    }
+
     /**
      * Reads the script file with the given name.
      * <p>
@@ -104,10 +115,7 @@ public class Script implements AutoCloseable {
     public static Script read(String file)
             throws ScriptLoadException, IllegalArgumentException
     {
-        return read(
-                ScriptManager.getInstance()
-                        .getScriptFile(file)
-        );
+        return of(file).load();
     }
 
     /**
@@ -130,7 +138,7 @@ public class Script implements AutoCloseable {
     public static Script read(Path file)
             throws ScriptLoadException, IllegalArgumentException
     {
-        return new Script(file).load();
+        return of(file).load();
     }
 
     /**
@@ -316,6 +324,10 @@ public class Script implements AutoCloseable {
         return this;
     }
 
+    public boolean isLoaded() {
+        return mirror != null;
+    }
+
     public boolean hasMethod(String name) {
         if (mirror == null) {
             return false;
@@ -344,6 +356,10 @@ public class Script implements AutoCloseable {
         engine = null;
         mirror = null;
         evalResult = null;
+    }
+
+    public Path getWorkingDirectory() {
+        return file.getParent();
     }
 
     /* -------------------------- OBJECT OVERRIDES -------------------------- */

@@ -1,0 +1,24 @@
+All earned EXP is doubled @guilds +GlobalGuildExpMultiplier
+Multipliers stack +GlobalGuildExpMultiplier @guilds 
+Display on join +GlobalGuildExpMultiplier @guilds 
+Display on state change @guilds +GlobalGuildExpMultiplier 
+Display in challenge book @guilds +GlobalGuildExpMultiplier 
+Automatically trigger x2 on weekends @guilds +GlobalGuildExpMultiplier 
+Name linked to variable +DynamicallyNamedArmorStands @challenges
+Display HighestStreak +DynamicallyNamedArmorStands @challenges 
+Top voters in bank +DynamicallyNamedArmorStands 
+`/g` opens menu, if no guild found, as well as button on `/g list` +GuildDiscovery @guilds 
+Create inv menu with item per guild (guild banner) @guilds +GuildDiscovery 
+Clicking item opens stats menu @guilds +GuildDiscovery 
+Sorting options, byMembers, byExp, byCreationDate, byName @guilds +GuildDiscovery 
+(C) guild name below player name tag @guilds
+(C) Custom guild name format, only ublockable via purchase @guilds 
+x 2022-12-05 NPC that lets you buy a new sword for x rhines +RoyalSword
+SwordAbility that activates when you right click +RoyalSword 
+onAbilityActivate triggers item cooldown +RoyalSword 
+lower level = longer cooldown +RoyalSword 
+OverGrowthGenerator +Dungeons
+Replace `NormalAttackPhase` with `VexSwormPhase` +Dungeons @Level5
+Add custom enchant +Dungeons @Level5 
+Faster guardian firing, if at a certain distance +Dungeons @Level5 
+Potion phase lame, either drop potions faster or make the phase last longer @Level5 +Dungeons 

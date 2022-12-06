@@ -134,24 +134,7 @@ public class ChallengeManager {
             return;
         }
 
-        List<Holder<Challenge>> challenges = challengeRegistry.entries()
-                .stream()
-                .filter(h -> {
-                    var c = h.getValue();
-                    return c.getResetInterval() == interval;
-                })
-                .collect(ObjectArrayList.toList());
-
-        challenges.removeIf(holder -> {
-            var c = holder.getValue();
-
-            if (!(c instanceof ItemChallenge)) {
-                return false;
-            }
-
-            activate(holder, true);
-            return true;
-        });
+        List<Holder<Challenge>> challenges = selectRandom(interval);
 
         if (interval.getMax() != -1
                 && challenges.size() > interval.getMax()
@@ -160,6 +143,10 @@ public class ChallengeManager {
             challenges.removeIf(holder -> {
                 return current.contains(holder.getValue());
             });
+
+            if (challenges.size() < interval.getMax()) {
+                challenges = selectRandom(interval);
+            }
         }
 
         if (challenges.isEmpty()) {
@@ -187,6 +174,29 @@ public class ChallengeManager {
         );
     }
 
+    private List<Holder<Challenge>> selectRandom(ResetInterval interval) {
+        List<Holder<Challenge>> challenges = challengeRegistry.entries()
+                .stream()
+                .filter(h -> {
+                    var c = h.getValue();
+                    return c.getResetInterval() == interval;
+                })
+                .collect(ObjectArrayList.toList());
+
+        challenges.removeIf(holder -> {
+            var c = holder.getValue();
+
+            if (c instanceof ItemChallenge) {
+                activate(holder, true);
+                return true;
+            }
+
+            return false;
+        });
+
+        return challenges;
+    }
+
     public void activate(Holder<Challenge> holder, boolean resetting) {
         var extra = holder.getValue().activate(resetting);
         activeChallenges.add(holder.getValue());
@@ -201,6 +211,10 @@ public class ChallengeManager {
         activeChallenges.clear();
 
         entries.clear();
+    }
+
+    public Collection<ChallengeEntry> getEntries() {
+        return Collections.unmodifiableCollection(entries.values());
     }
 
     /* --------------------------- SERIALIZATION ---------------------------- */

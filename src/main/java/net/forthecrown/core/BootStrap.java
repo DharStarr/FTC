@@ -11,6 +11,7 @@ import net.forthecrown.core.holidays.ServerHolidays;
 import net.forthecrown.core.module.ModuleServices;
 import net.forthecrown.core.resource.ResourceWorld;
 import net.forthecrown.core.resource.ResourceWorldTracker;
+import net.forthecrown.core.script2.ScriptManager;
 import net.forthecrown.cosmetics.Cosmetics;
 import net.forthecrown.datafix.Transformers;
 import net.forthecrown.dungeons.Bosses;
@@ -117,6 +118,7 @@ final class BootStrap {
         init(Commands.class);
         init(Events.class);
 
+        init(ScriptManager::getInstance);
         init(ServerIcons::getInstance);
 
         // Save and load the banner words list

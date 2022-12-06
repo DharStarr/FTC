@@ -218,7 +218,10 @@ public class ShulkerController {
 
     Vector3d findTarget() {
         Player target = PotionPhase.findTarget(boss);
-        if(target == null) return null;
+
+        if (target == null) {
+            return null;
+        }
 
         Vector3d pos = Vectors.doubleFrom(target.getLocation());
         Vector3d vel = Vectors.doubleFrom(target.getVelocity());

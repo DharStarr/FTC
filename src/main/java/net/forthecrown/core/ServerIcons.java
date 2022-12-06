@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.core.holidays.MonthDayPeriod;
+import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.core.module.OnLoad;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registries;
@@ -21,12 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.MonthDay;
-import java.time.Year;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.SignStyle;
-import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -45,12 +39,6 @@ public class ServerIcons {
             KEY_DEFAULT = "default",
             KEY_DEBUG = "debug_mode",
             KEY_WHITELIST = "maintenance";
-
-    private static final DateTimeFormatter PARSER = new DateTimeFormatterBuilder()
-            .appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NORMAL)
-            .appendLiteral('.')
-            .appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL)
-            .toFormatter();
 
     private final Registry<ServerIcon> icons = Registries.newRegistry();
 
@@ -130,11 +118,16 @@ public class ServerIcons {
                     icon = new ServerIcon(null, readIconList(element));
                 } else {
                     var json = JsonWrapper.wrap(element.getAsJsonObject());
-                    MonthDayPeriod period = parsePeriod(json.get("period"));
 
                     List<CachedServerIcon> icons11 = readIconList(
                             json.get("icons")
                     );
+
+                    MonthDayPeriod period = null;
+
+                    if (json.has("period")) {
+                        period = MonthDayPeriod.load(json.get("period"));
+                    }
 
                     icon = new ServerIcon(period, icons11);
                 }
@@ -146,32 +139,6 @@ public class ServerIcons {
                 icons.register(e.getKey(), icon);
             }
         });
-    }
-
-    private MonthDayPeriod parsePeriod(JsonElement element) {
-        if (element == null || !element.isJsonArray()) {
-            return null;
-        }
-
-        var array = element.getAsJsonArray();
-        if (array.size() > 2 || array.isEmpty()) {
-            LOGGER.warn("Expected array with size 2, found {}", array.size());
-            return null;
-        }
-
-        String startString = array.get(0).getAsString();
-
-        MonthDay start = MonthDay.parse(startString, PARSER);
-        MonthDay end = start.withDayOfMonth(
-                start.getMonth().length(Year.now().isLeap())
-        );
-
-        if (array.size() == 2) {
-            String endString = array.get(1).getAsString();
-            end = MonthDay.parse(endString, PARSER);
-        }
-
-        return MonthDayPeriod.between(start, end);
     }
 
     private List<CachedServerIcon> readIconList(JsonElement element) {

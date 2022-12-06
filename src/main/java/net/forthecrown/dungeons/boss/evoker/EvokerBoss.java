@@ -20,9 +20,11 @@ import net.forthecrown.dungeons.boss.components.TargetUpdateComponent;
 import net.forthecrown.dungeons.boss.evoker.phases.AttackPhase;
 import net.forthecrown.dungeons.boss.evoker.phases.AttackPhases;
 import net.forthecrown.dungeons.boss.evoker.phases.SummonPhase;
-import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.user.Users;
 import net.forthecrown.utils.TickSequence;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -321,7 +323,24 @@ public class EvokerBoss extends KeyedBossImpl implements SingleEntityBoss {
 
     @Override
     protected void giveRewards(Player player) {
-        Util.giveOrDropItem(player.getInventory(), player.getLocation(), BossItems.EVOKER.item());
+        Util.giveOrDropItem(
+                player.getInventory(),
+                player.getLocation(),
+                BossItems.EVOKER.item()
+        );
+
+        int rhines = EvokerConfig.rhineReward;
+
+        if (rhines > 0) {
+            Users.get(player).addBalance(EvokerConfig.rhineReward);
+
+            player.sendMessage(
+                    Text.format("You've received &e{0, rhines}",
+                            NamedTextColor.GOLD,
+                            rhines
+                    )
+            );
+        }
     }
 
     public EvokerState getState() {

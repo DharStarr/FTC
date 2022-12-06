@@ -235,6 +235,11 @@ public class Usables implements SerializableObject {
             v.save();
         }
 
+        loadedBlocks.entrySet().removeIf(entry -> {
+            var block = entry.getKey().getBlock();
+            return !(block.getState() instanceof TileState);
+        });
+
         for (var v: loadedBlocks.values()) {
             v.save();
         }

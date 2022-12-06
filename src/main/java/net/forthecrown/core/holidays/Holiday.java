@@ -7,6 +7,7 @@ import lombok.Setter;
 import net.forthecrown.core.script2.Script;
 import net.forthecrown.inventory.FtcInventory;
 import net.forthecrown.user.User;
+import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.text.Text;
@@ -372,11 +373,9 @@ public class Holiday implements InventoryHolder {
                     .invoke("renderTags", rendered, user, this, time)
                     .result();
 
-            if (result.isEmpty()) {
-                return null;
+            if (result.isPresent()) {
+                rendered = Text.valueOf(result.get());
             }
-
-            return Text.valueOf(result.get());
         }
 
         return rendered;

@@ -110,19 +110,20 @@ public class ChallengeEntry {
         // Log streak
         Challenges.logStreak(category, id);
 
+        var user = getUser();
+        int streak = Challenges.queryStreak(category, user)
+                .orElse(1);
+
+        new StreakIncreaseEvent(user, category, streak)
+                .callEvent();
+
         // Find script callbacks for streak increase
-        var scripts = ChallengeManager.getInstance()
-                .getStorage()
-                .getScripts(category);
+        var scripts = manager.getStorage().getScripts(category);
 
         // If there are scripts to execute
         if (scripts.isEmpty()) {
             return;
         }
-
-        var user = getUser();
-        int streak = Challenges.queryStreak(category, user)
-                .orElse(1);
 
         // Run all scripts for each category
         scripts.forEach(scriptName -> {

@@ -11,9 +11,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-/**
- * Main class that does all the dirty internal stuff
- */
 public final class Main extends JavaPlugin implements Namespaced {
     public static final String
             NAME            = "ForTheCrown",

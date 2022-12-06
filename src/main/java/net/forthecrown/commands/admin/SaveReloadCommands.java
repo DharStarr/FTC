@@ -1,6 +1,7 @@
 package net.forthecrown.commands.admin;
 
 import lombok.RequiredArgsConstructor;
+import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
 import net.forthecrown.core.Announcer;
 import net.forthecrown.core.Permissions;
@@ -10,6 +11,7 @@ import net.forthecrown.core.config.ConfigManager;
 import net.forthecrown.core.holidays.ServerHolidays;
 import net.forthecrown.core.module.ModuleServices;
 import net.forthecrown.core.resource.ResourceWorldTracker;
+import net.forthecrown.core.script2.ScriptManager;
 import net.forthecrown.economy.Economy;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
@@ -54,6 +56,21 @@ public class SaveReloadCommands extends FtcCommand {
                 .then(argument("section", SECTION_ARGUMENT)
                         .executes(c -> {
                             var section = c.getArgument("section", Section.class);
+
+                            if (save) {
+                                if (section.onSave == null) {
+                                    throw Exceptions.format(
+                                            "{0} cannot be saved!",
+                                            section
+                                    );
+                                }
+                            } else if (section.onLoad == null) {
+                                throw Exceptions.format(
+                                        "{0} cannot be loaded!",
+                                        section
+                                );
+                            }
+
                             section.run(save);
 
                             c.getSource().sendAdmin(format(save, section.getViewerName()));
@@ -184,6 +201,11 @@ public class SaveReloadCommands extends FtcCommand {
         DATA_LOG (
                 LogManager.getInstance()::save,
                 LogManager.getInstance()::load
+        ),
+
+        SCRIPTS (
+                null,
+                ScriptManager.getInstance()::load
         ),
 
         CONFIG (

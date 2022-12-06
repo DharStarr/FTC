@@ -18,6 +18,7 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.command.BrigadierCommand;
 import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.user.User;
+import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.writer.TextWriter;
@@ -104,7 +105,8 @@ public class CommandHolidays extends FtcCommand {
                                                     int day = c.getArgument("day", Integer.class);
 
                                                     Holiday created = new Holiday(name);
-                                                    created.setPeriod(MonthDayPeriod.exact(month, day));
+                                                    created.setPeriod(
+                                                            MonthDayPeriod.exact(month, day));
 
                                                     holidays.addHoliday(created);
 

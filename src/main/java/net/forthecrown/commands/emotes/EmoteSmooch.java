@@ -1,6 +1,6 @@
 package net.forthecrown.commands.emotes;
 
-import net.forthecrown.core.holidays.MonthDayPeriod;
+import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.user.User;
 import org.bukkit.GameMode;
 import org.bukkit.Location;

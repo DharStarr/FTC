@@ -6,6 +6,7 @@ import net.forthecrown.events.Events;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Tasks;
 import net.kyori.adventure.util.Ticks;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -71,7 +72,15 @@ public class HulkSmashListener implements Listener {
 
         event.setCancelled(true);
         unregister();
-        user.playSound(Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+        user.playSound(Sound.ENTITY_GENERIC_EXPLODE, 0.7F, 1);
+
+        Particle.EXPLOSION_LARGE.builder()
+                .location(user.getLocation())
+                .allPlayers()
+                .count(5)
+                .extra(0.0D)
+                .offset(1, 1, 1)
+                .spawn();
 
         if (effect != null) {
             effect.onHulkLand(user, user.getLocation());

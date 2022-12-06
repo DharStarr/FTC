@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.io.TagUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -32,8 +33,8 @@ public class RewardContainer {
             TAG_LORE = "lore";
 
     public static final Component
-            DEF_NAME = text("&6%year %name Rewards"),
-            DEF_LORE = text("&eA special %type full of goodies!");
+            DEF_NAME = text("%year %name Rewards", NamedTextColor.GOLD),
+            DEF_LORE = text("A special %type full of goodies!", NamedTextColor.YELLOW);
 
     /**
      * True, if the items should be given in a chest, false for a shulker

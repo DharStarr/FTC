@@ -349,9 +349,9 @@ public interface Messages {
 
                 // Optionally add world name, only if
                 // not in overworld
-                l.getWorld().equals(Worlds.overworld()) ?
-                        "!" :
-                        "world: " + Text.formatWorldName(l.getWorld()) + "!"
+                l.getWorld().equals(Worlds.overworld())
+                        ? "!"
+                        : "world: " + Text.formatWorldName(l.getWorld()) + "!"
         );
     }
 
@@ -1594,7 +1594,7 @@ public interface Messages {
         return format("{0} {1} for &e{2, user}",
                 NamedTextColor.GRAY,
 
-                state ? "Disabled" : "Enabled",
+                !state ? "Disabled" : "Enabled",
                 display, user
         );
     }
