@@ -1,30 +1,15 @@
+
 # FTC Challenges Documentation
 # challenges.json
 The `plugins/ForTheCrown/challenges/challenges.json` file is where all challenges are loaded from. This section documents the format this file uses to read challenges.
   
-First of all, it's a JSON object file, where each entry's key is the ID they will be registered with and where the values are the challenge data. The following is a list of valid keys for challenge data, optional entries will have an `*` after their name
+First of all, it's a JSON object file, where each entry's key is the ID they will be registered with and where the values are the challenge data. The following is a list of valid keys for challenge data, optional entries will have an `*` after their name.  
   
----
-### `displayName`
-This is the name that's used to display the challenge to users in chat and the challenge book.
-This can be either a string or a more complex Chat Component.
+Some of the possible values accepted in the challenges json are based on 'streak-based values', which means they can dynamically change for each users based on their current streak for the challenge in question.  
   
----
-### `description`*
-An array of elements that's used as a description of the challenge, displayed in the `displayName` hover event. As such, it's accepted input is similar to `displayName`. If no value is set for this, then the description will simply be empty.
-  
----
-### `reward`*
-Specifies data of rewards given to a user when they complete the challenge, accepts the following entries:
-- `guildExp`: The amount of guildExp given to users that complete the challenge, if user is not a guild, no exp is given.
-- `rhines`: Rhine reward given to the player.
-- `gems`: Gem reward given to the player.
-- `item`: Item given to the player upon completion.
-- `claimScript`: The script called when a player claims the reward, the system will call the `onRewardClaim` method with the user as the parameter
-  
-Of these rewards, the first 3 accept 3 different types of input and will behave
-differently depending on said input. Accepted inputs are:  
-**Fixed value**
+Accepted inputs for streak-based values are:  
+**Fixed value**  
+The returned value is a constant which doesn't change
 ```json
 "rhines": 200
 ```
@@ -43,12 +28,30 @@ would return 400 and so on
 ```json
 "rhines": [ 200, 300, 400, 600, 1200 ]
 ```
+  
+---
+### `displayName`
+This is the name that's used to display the challenge to users in chat and the challenge book.
+This can be either a string or a more complex Chat Component.
+  
+---
+### `description`*
+An array of elements that's used as a description of the challenge, displayed in the `displayName` hover event. As such, it's accepted input is similar to `displayName`. If no value is set for this, then the description will simply be empty.
+  
+---
+### `reward`*
+Specifies data of rewards given to a user when they complete the challenge, accepts the following entries:
+- `guildExp`: The amount of guildExp given to users that complete the challenge, if user is not a guild, no exp is given (streak-based).
+- `rhines`: Rhine reward given to the player (streak-based).
+- `gems`: Gem reward given to the player (streak-based).
+- `item`: Item given to the player upon completion.
+- `claimScript`: The script called when a player claims the reward, the system will call the `onRewardClaim` method with the user as the parameter
 
 If no value is set for this, then no reward will be given.
   
 ---
 ### `goal`*
-A float specifying the amount of 'points' required to complete a challenge, if not specified, defaults to `1`.
+A streak-based value specifying how many points are required to complete a challenge, If no goal is set, it defaults to `1`
   
 ---
 ### `type`*
