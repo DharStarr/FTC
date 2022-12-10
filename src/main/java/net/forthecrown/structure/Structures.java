@@ -50,7 +50,7 @@ public final class Structures {
             return;
         }
 
-        PathUtil.findAllFiles(directory, false, false)
+        PathUtil.findAllFiles(directory, false)
                 .resultOrPartial(FTC.getLogger()::error)
 
                 .ifPresent(strings -> {

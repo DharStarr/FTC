@@ -3,20 +3,14 @@ package net.forthecrown.utils.io;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.forthecrown.core.FTC;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -24,37 +18,6 @@ public final class PathUtil {
     private PathUtil() {}
 
     private static final Logger LOGGER = FTC.getLogger();
-
-    /** The ZIP file system of the plugin jar */
-    public static final FileSystem JAR_FILE_SYSTEM;
-
-    static {
-        try {
-            URI jarUri = PathUtil.class
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI();
-
-            URI uri = new URI("jar", jarUri.toString(), null);
-
-            Map<String, String> env = new HashMap<>();
-            env.put("create", "true");
-
-            try {
-                JAR_FILE_SYSTEM = FileSystems.newFileSystem(
-                        uri,
-                        env,
-                        PathUtil.class.getClassLoader()
-                );
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (URISyntaxException exc) {
-            throw new RuntimeException(exc);
-        }
-    }
 
     /** Gets the plugin's data folder */
     public static Path getPluginDirectory() {
@@ -64,82 +27,6 @@ public final class PathUtil {
     /** Creates a path inside the plugin's data folder */
     public static Path pluginPath(String first, String... others) {
         return getPluginDirectory().resolve(Paths.get(first, others));
-    }
-
-    /* ---------------------- JAR FILE SYSTEM ACCESS ------------------------ */
-
-    /** Gets a path to a file inside the plugin jar */
-    public static Path jarPath(String s, String... others) {
-        return JAR_FILE_SYSTEM.getPath(s, others);
-    }
-
-    /**
-     * Saves a file/directory from the plugin jar resources to the FTC
-     * data folder
-     *
-     * @param sourceDir The path to the directory/file inside the jar,
-     *                  will also act as the path the file/directory is
-     *                  saved to.
-     * @param overwrite True, to overwrite if the file already exists, false
-     *                  otherwise
-     *
-     * @throws IOException If an IO error occurred
-     * @see #saveJarPath(String, Path, boolean)
-     */
-    public static void saveJarPath(String sourceDir, boolean overwrite)
-            throws IOException
-    {
-        saveJarPath(
-                sourceDir,
-                pluginPath(sourceDir),
-                overwrite
-        );
-    }
-
-    /**
-     * Saves a file/directory from the plugin jar resources to the provided
-     * path.
-     * <p>
-     * If the provided path is a file, it will simply write its contents to
-     * provided path
-     * @param sourceDir The path to the source file/directory
-     * @param dest The destination path to save to
-     * @param overwrite True to overwrite any existing files, false to skip
-     *                  existing files
-     *
-     * @throws IOException If an IO error occurrs
-     */
-    public static void saveJarPath(String sourceDir,
-                                   Path dest,
-                                   boolean overwrite
-    ) throws IOException {
-        Path jarDir = jarPath(sourceDir);
-
-        if (!Files.exists(jarDir)) {
-            LOGGER.warn("Cannot save plugin path {}! Doesn't exist", jarDir);
-            return;
-        }
-
-        if (Files.isDirectory(jarDir)) {
-            DirectoryCopyWalker walker = new DirectoryCopyWalker(
-                    jarDir, dest, overwrite
-            );
-
-            Files.walkFileTree(jarDir, walker);
-            return;
-        }
-
-        if (Files.exists(dest) && !overwrite) {
-            return;
-        }
-
-        // Ensure the destination directory exists
-        SerializationHelper.ensureParentExists(dest);
-
-        var input = Files.newInputStream(jarDir);
-        var output = Files.newOutputStream(dest);
-
-        IOUtils.copy(input, output);
     }
 
     /**
@@ -160,7 +47,9 @@ public final class PathUtil {
      *                          the path was not a folder and couldn't
      *                          be deleted.
      */
-    public static Path getPluginDirectory(String first, String... others) throws RuntimeException {
+    public static Path getPluginDirectory(String first, String... others)
+            throws RuntimeException
+    {
         return ensureDirectoryExists(pluginPath(first, others)).orThrow();
     }
 
@@ -389,11 +278,10 @@ public final class PathUtil {
     }
 
     public static DataResult<List<String>> findAllFiles(Path directory,
-                                                        boolean includeFileFormats,
-                                                        boolean includeRoot
+                                                        boolean includeFileFormats
     ) {
         FileFinderWalker walker = new FileFinderWalker(
-                includeFileFormats, includeRoot, directory
+                includeFileFormats, directory
         );
 
         try {
@@ -410,118 +298,34 @@ public final class PathUtil {
     /* ---------------------------- SUB CLASSES ----------------------------- */
 
     @RequiredArgsConstructor
-    private static class FileFinderWalker implements FileVisitor<Path> {
+    private static class FileFinderWalker extends SimpleFileVisitor<Path> {
         private final boolean includeFormats;
-        private final boolean includeRoot;
         private final Path root;
 
         private final List<String> results = new ObjectArrayList<>();
-        private String prefix = "";
-
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-            if (!includeRoot && root.equals(dir)) {
-                return FileVisitResult.CONTINUE;
-            }
-
-            if (!prefix.isEmpty()) {
-                prefix += "/";
-            }
-
-            prefix += fileName(dir);
-            return FileVisitResult.CONTINUE;
-        }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-            String fName = prefix;
-
-            if (!fName.isEmpty()) {
-                fName += "/";
-            }
-
-            fName += fileName(file);
-            results.add(fName);
-
+            results.add(fileName(root.relativize(file).toString()));
             return FileVisitResult.CONTINUE;
         }
 
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            throw exc;
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-            if (!includeRoot && root.equals(dir)) {
-                return FileVisitResult.CONTINUE;
+        private String fileName(String path) {
+            if (path.startsWith("/")) {
+                path = path.substring(1);
             }
-
-            var dirPrefix = fileName(dir);
-            int l = dirPrefix.length();
-
-            if (prefix.endsWith("/" + dirPrefix)) {
-                prefix = prefix.substring(0, prefix.length() - l - 1);
-            } else if (prefix.endsWith(dirPrefix)) {
-                prefix = prefix.substring(0, prefix.length() - l);
-            }
-
-            return FileVisitResult.CONTINUE;
-        }
-
-        private String fileName(Path path) {
-            String fileName = path.getFileName()
-                    .toString();
 
             if (includeFormats) {
-                return fileName;
+                return path;
             }
 
-            int dotIndex = fileName.indexOf('.');
+            int dotIndex = path.indexOf('.');
 
             if (dotIndex == -1) {
-                return fileName;
+                return path;
             }
 
-            return fileName.substring(0, dotIndex);
-        }
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    private static class DirectoryCopyWalker extends SimpleFileVisitor<Path> {
-        private final Path source;
-        private final Path dest;
-        private final boolean overwrite;
-
-        private Path resolveRelativeAsString(final Path directory) {
-            return dest.resolve(source.relativize(directory).toString());
-        }
-
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir,
-                                                 BasicFileAttributes attrs
-        ) throws IOException {
-            var destDir = resolveRelativeAsString(dir);
-            if (Files.notExists(destDir)) {
-                Files.createDirectories(destDir);
-            }
-
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException
-        {
-            var destDir = resolveRelativeAsString(file);
-
-            if (Files.exists(destDir) && !overwrite) {
-                return FileVisitResult.CONTINUE;
-            }
-
-            Files.copy(file, destDir);
-            return FileVisitResult.CONTINUE;
+            return path.substring(0, dotIndex);
         }
     }
 }

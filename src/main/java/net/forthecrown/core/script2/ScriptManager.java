@@ -11,6 +11,7 @@ import net.forthecrown.core.registry.Registry;
 import net.forthecrown.events.Events;
 import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.utils.Tasks;
+import net.forthecrown.utils.io.FtcJar;
 import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.commons.lang.Validate;
@@ -28,6 +29,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static net.forthecrown.utils.io.FtcJar.ALLOW_OVERWRITE;
+import static net.forthecrown.utils.io.FtcJar.OVERWRITE_IF_NEWER;
 
 @Getter
 public class ScriptManager {
@@ -61,7 +65,11 @@ public class ScriptManager {
 
         // Save default scripts
         try {
-            PathUtil.saveJarPath("scripts", directory, false);
+            FtcJar.saveResources(
+                    "scripts",
+                    directory,
+                    ALLOW_OVERWRITE | OVERWRITE_IF_NEWER
+            );
         } catch (IOException exc) {
             LOGGER.error("Couldn't save default scripts! {}", exc);
         }
@@ -145,7 +153,7 @@ public class ScriptManager {
     }
 
     public List<String> findExistingScripts() {
-        return PathUtil.findAllFiles(directory, true, false)
+        return PathUtil.findAllFiles(directory, true)
                 .resultOrPartial(LOGGER::error)
                 .orElseGet(ObjectLists::emptyList)
                 .stream()

@@ -4,14 +4,14 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.core.module.OnLoad;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
+import net.forthecrown.utils.MonthDayPeriod;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.io.FtcJar;
 import net.forthecrown.utils.io.JsonWrapper;
-import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
@@ -54,7 +54,7 @@ public class ServerIcons {
 
     void saveDefaults() {
         try {
-            PathUtil.saveJarPath("icons", directory, false);
+            FtcJar.saveResources("icons", directory);
             LOGGER.debug("Saved default server icon directory");
         } catch (IOException exc) {
             LOGGER.error("Couldn't save default icons!", exc);

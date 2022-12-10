@@ -1,6 +1,6 @@
 // Imports
-const ArmorStandLeaderboard = Java.type("net.forthecrown.utils.ArmorStandLeaderboard");
-const LineFormatter = Java.type("net.forthecrown.utils.ArmorStandLeaderboard.LineFormatter");
+const ArmorStandLeaderboard = Java.type("net.forthecrown.utils.stand.ArmorStandLeaderboard");
+const LineFormatter = Java.type("net.forthecrown.utils.stand.ArmorStandLeaderboard.LineFormatter");
 const UnitFormat = Java.type("net.forthecrown.utils.text.format.UnitFormat");
 const Worlds = Java.type("net.forthecrown.core.Worlds");
 const U_Manager = Java.type("net.forthecrown.user.UserManager");

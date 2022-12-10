@@ -1,6 +1,8 @@
 package net.forthecrown.core.challenge;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.ObjectIntPair;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -15,13 +17,15 @@ import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class ItemChallenge implements Challenge {
@@ -144,10 +148,29 @@ public class ItemChallenge implements Challenge {
         var item = getTargetItem()
                 .orElseThrow();
 
-        var inventory = player.getInventory();
+        final int targetAmount = item.getAmount();
 
-        Validate.isTrue(inventory.containsAtLeast(item.clone(), item.getAmount()));
-        inventory.removeItemAnySlot(item.clone());
+        var inventory = player.getInventory();
+        var found = findContained(inventory);
+
+        if (found.rightInt() < targetAmount) {
+            throw Util.newException(
+                    "Not enough items, required %s, found %s",
+                    targetAmount, found.rightInt()
+            );
+        }
+
+        int remaining = targetAmount;
+
+        for (ItemStack n : found.left()) {
+            if (n.getAmount() < remaining) {
+                remaining -= n.getAmount();
+                n.setAmount(0);
+            } else {
+                n.subtract(remaining);
+                break;
+            }
+        }
 
         Challenges.apply(this, holder -> {
             ChallengeManager.getInstance()
@@ -226,11 +249,9 @@ public class ItemChallenge implements Challenge {
                     }
 
                     var inventory = user.getInventory();
+                    var found = findContained(inventory);
 
-                    if (!inventory.containsAtLeast(
-                            targetItem,
-                            targetItem.getAmount())
-                    ) {
+                    if (found.rightInt() < targetItem.getAmount()) {
                         throw Exceptions.dontHaveItemForShop(targetItem);
                     }
 
@@ -239,6 +260,81 @@ public class ItemChallenge implements Challenge {
                 })
 
                 .build();
+    }
+
+    private ObjectIntPair<Set<ItemStack>> findContained(Inventory inv) {
+        Set<ItemStack> found = new ObjectOpenHashSet<>();
+        int foundCount = 0;
+
+        var it = ItemStacks.nonEmptyIterator(inv);
+
+        while (it.hasNext()) {
+            var n = it.next();
+
+            if (!matches(n)) {
+                continue;
+            }
+
+            foundCount += n.getAmount();
+            found.add(n);
+        }
+
+        return ObjectIntPair.of(found, foundCount);
+    }
+
+    private boolean matches(ItemStack item) {
+        return getTargetItem()
+                .map(target -> {
+                    if (target.getType() != item.getType()
+                            || item.getAmount() < target.getAmount()
+                    ) {
+                        return false;
+                    }
+
+                    // We already ensured that the items are of the exact same
+                    // type, so we only need to check target item
+                    var typeName = target.getType().name();
+
+                    // Axolotl and fish buckets need to be singled out
+                    // due to material being able to represent different
+                    // variants of the mob
+                    if (typeName.contains("BUCKET")
+                            && !typeName.contains("AXOLOTL")
+                            && !typeName.contains("TROPICAL")
+                    ) {
+                        return true;
+                    }
+
+                    var sMeta = target.getItemMeta();
+                    var iMeta = item.getItemMeta();
+
+                    // I doubt this could happen, but
+                    // better safe than sorry lol
+                    if (sMeta.getClass() != iMeta.getClass()) {
+                        return false;
+                    }
+
+                    // Skull items just need to the same texture,
+                    // nothing else matters
+                    if (sMeta instanceof SkullMeta skullMeta) {
+                        SkullMeta iSkullMeta = (SkullMeta) iMeta;
+                        var itemProfile = iSkullMeta.getPlayerProfile();
+                        var targetProfile = skullMeta.getPlayerProfile();
+
+                        if (itemProfile == null || targetProfile == null) {
+                            return false;
+                        }
+
+                        var itemTextures = itemProfile.getTextures();
+                        var targetTextures = targetProfile.getTextures();
+
+                        return Objects.equals(targetTextures, itemTextures);
+                    }
+
+                    return target.isSimilar(item);
+                })
+
+                .orElse(false);
     }
 
     /* -------------------------- OBJECT OVERRIDES -------------------------- */

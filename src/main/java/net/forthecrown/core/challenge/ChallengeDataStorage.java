@@ -11,10 +11,7 @@ import net.forthecrown.core.FTC;
 import net.forthecrown.core.registry.Holder;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.core.registry.Registry;
-import net.forthecrown.utils.io.JsonUtils;
-import net.forthecrown.utils.io.JsonWrapper;
-import net.forthecrown.utils.io.PathUtil;
-import net.forthecrown.utils.io.SerializationHelper;
+import net.forthecrown.utils.io.*;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -56,7 +53,7 @@ public class ChallengeDataStorage {
 
     void ensureDefaultsExist() {
         try {
-            PathUtil.saveJarPath("challenges", false);
+            FtcJar.saveResources("challenges");
             // Default scripts are saved by ScriptManager
         } catch (IOException exc) {
             LOGGER.error("Error trying to save challenge defaults!", exc);

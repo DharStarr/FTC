@@ -9,10 +9,10 @@ import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.pos.Position;
 import net.forthecrown.grenadier.types.pos.PositionArgument;
-import net.forthecrown.utils.text.Text;
 import net.forthecrown.useables.UsableBlock;
 import net.forthecrown.useables.Usables;
 import net.forthecrown.utils.math.WorldVec3i;
+import net.forthecrown.utils.text.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -21,7 +21,8 @@ import org.bukkit.block.TileState;
 
 class UsableBlockNode extends BukkitUsableNode<UsableBlock> {
     public UsableBlockNode() {
-        super("block");
+        super("usable_block");
+        argumentName = "block";
     }
 
     @Override

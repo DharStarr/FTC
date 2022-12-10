@@ -9,8 +9,8 @@ import net.forthecrown.core.registry.Registry;
 import net.forthecrown.utils.inventory.menu.Menu;
 import net.forthecrown.utils.inventory.menu.Menus;
 import net.forthecrown.utils.inventory.menu.Slot;
+import net.forthecrown.utils.io.FtcJar;
 import net.forthecrown.utils.io.JsonWrapper;
-import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 
 import java.io.IOException;
@@ -85,7 +85,7 @@ public class SellShop {
 
     public void createDefaults() {
         try {
-            PathUtil.saveJarPath("economy", false);
+            FtcJar.saveResources("economy");
         } catch (IOException exc) {
             throw new IllegalArgumentException(exc);
         }

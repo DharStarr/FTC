@@ -31,10 +31,7 @@ public final class SerializationHelper {
         }
 
         var parent = file.getParent();
-
-        if (!Files.exists(parent)) {
-            Files.createDirectories(parent);
-        }
+        PathUtil.ensureDirectoryExists(parent).orThrow();
     }
 
     public static <T> DataResult<T> readFileObject(Path file, IoReader<T> reader) {

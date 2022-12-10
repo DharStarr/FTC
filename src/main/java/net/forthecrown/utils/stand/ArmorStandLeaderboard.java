@@ -1,10 +1,9 @@
-package net.forthecrown.utils;
+package net.forthecrown.utils.stand;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.forthecrown.core.registry.Keys;
@@ -14,7 +13,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 
 import java.lang.ref.Reference;
@@ -26,8 +24,7 @@ import java.util.Objects;
 
 @Getter
 @Accessors(chain = true)
-@RequiredArgsConstructor
-public class ArmorStandLeaderboard<T> {
+public class ArmorStandLeaderboard<T> extends AbstractDynamicStand {
     public static final NamespacedKey
             STAND_KEY = Keys.forthecrown("leaderboard");
 
@@ -37,8 +34,6 @@ public class ArmorStandLeaderboard<T> {
 
     private final List<Reference<ArmorStand>>
             armorStands = new ObjectArrayList<>();
-
-    private final Location location;
 
     private Reference<World> world;
     private BoundingBox bounds;
@@ -64,14 +59,17 @@ public class ArmorStandLeaderboard<T> {
     private final List<Component> header = new ObjectArrayList<>();
     private final List<Component> footer = new ObjectArrayList<>();
 
+    public ArmorStandLeaderboard(Location location) {
+        super(location);
+    }
+
     public void spawn() {
         if (isSpawned()) {
             kill();
         }
 
         Objects.requireNonNull(lineFormatter, "No line formatter");
-        Objects.requireNonNull(location, "No set location");
-        Objects.requireNonNull(location.getWorld(), "No world in location");
+        Objects.requireNonNull(getLocation().getWorld(), "No world in location");
 
         int size = Math.min(maxSize, values.size());
 
@@ -80,7 +78,7 @@ public class ArmorStandLeaderboard<T> {
         double fSeparation = footer.isEmpty() ? 0 : footerSeparation;
         double yOffset = (totalSize * lineDistance) + hSeparation + fSeparation;
 
-        Location l = location.clone();
+        Location l = getLocation();
         l.add(0, yOffset, 0);
 
         spawnList(l, header);
@@ -129,18 +127,7 @@ public class ArmorStandLeaderboard<T> {
             var next = it.next();
 
             if (!Objects.equals(next, Component.empty())) {
-                var entity = l.getWorld().spawn(l, ArmorStand.class, stand -> {
-                    stand.setMarker(true);
-                    stand.setBasePlate(false);
-                    stand.setInvisible(true);
-                    stand.setInvulnerable(true);
-                    stand.setCustomNameVisible(true);
-                    stand.setCanTick(false);
-                    stand.getPersistentDataContainer()
-                            .set(STAND_KEY, PersistentDataType.INTEGER, 1);
-
-                    stand.customName(next);
-                });
+                var entity = spawn(l, STAND_KEY, next);
 
                 armorStands.add(new WeakReference<>(entity));
                 world = new WeakReference<>(entity.getWorld());
@@ -152,7 +139,7 @@ public class ArmorStandLeaderboard<T> {
                 }
             }
 
-            l.subtract(0, LINE_DISTANCE, 0);
+            l.subtract(0, lineDistance, 0);
         }
     }
 
@@ -164,11 +151,15 @@ public class ArmorStandLeaderboard<T> {
         armorStands.forEach(reference -> reference.get().remove());
         armorStands.clear();
 
-        world.get().getNearbyEntities(bounds, entity -> entity.getPersistentDataContainer().has(STAND_KEY))
-                .forEach(Entity::remove);
+        world.get().getNearbyEntities(
+                bounds.clone().expand(1D),
+                entity -> entity.getPersistentDataContainer().has(STAND_KEY)
+        ).forEach(Entity::remove);
 
         world = null;
         bounds = null;
+
+        kill(STAND_KEY);
     }
 
     public boolean isSpawned() {
