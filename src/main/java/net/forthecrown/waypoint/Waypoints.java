@@ -42,6 +42,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.Snow;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -718,7 +719,7 @@ public @UtilityClass class Waypoints {
         }
 
         if (!waypoint.getResidents().isEmpty()
-                || waypoint.getType() != WaypointTypes.ADMIN
+                || waypoint.getType() == WaypointTypes.ADMIN
                 || waypoint.get(WaypointProperties.INVULNERABLE)
                 || waypoint.get(WaypointProperties.GUILD_OWNER) != null
                 || !Strings.isNullOrEmpty(waypoint.get(WaypointProperties.NAME))
@@ -730,7 +731,18 @@ public @UtilityClass class Waypoints {
                 .removeWaypoint(waypoint);
     }
 
-    public String getEffectiveName(Waypoint waypoint) {
+    /**
+     * Gets the effective name of the waypoint.
+     * <p>
+     * What effective in this case means, is the name that should be displayed
+     * on the waypoint. If the given waypoint is owned by a guild, but has no
+     * custom name set, then this will return the guild's name. If a name is
+     * set, then it is returned always, even if the waypoint has a name,
+     *
+     * @param waypoint The waypoint to get the name of
+     * @return The gotten name, may be null
+     */
+    public @Nullable String getEffectiveName(@NotNull Waypoint waypoint) {
         if (!Strings.isNullOrEmpty(waypoint.get(WaypointProperties.NAME))) {
             return waypoint.get(WaypointProperties.NAME);
         }
@@ -749,6 +761,12 @@ public @UtilityClass class Waypoints {
         }
     }
 
+    /**
+     * Updates the given waypoint's dynmap marker, if and only if, the dynmap
+     * plugin is installed.
+     * @param waypoint The waypoint to update the marker of
+     * @see WaypointDynmap#updateMarker(Waypoint)
+     */
     public void updateDynmap(Waypoint waypoint) {
         if (!DynmapUtil.isInstalled()) {
             return;

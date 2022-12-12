@@ -1,20 +1,24 @@
 package net.forthecrown.events.player;
 
-import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.adventure.ChatDecorationProcessor;
+import net.forthecrown.core.FTC;
 import net.forthecrown.user.packet.PacketCall;
 import net.forthecrown.user.packet.PacketHandler;
 import net.forthecrown.user.packet.PacketListener;
-import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.VanillaAccess;
 import net.kyori.adventure.text.Component;
-import net.minecraft.network.chat.ChatMessageContent;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import org.bukkit.Bukkit;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.event.player.PlayerKickEvent;
 
+import java.util.Objects;
+
 public class ChatPacketListener implements PacketListener {
+    private static final Logger LOGGER = FTC.getLogger();
+
     @PacketHandler
     public void onChat(ServerboundChatPacket packet, PacketCall call) {
         call.setCancelled(true);
@@ -31,19 +35,30 @@ public class ChatPacketListener implements PacketListener {
             return;
         }
 
-        // Vanilla object
-        PlayerChatMessage chatMessage = PlayerChatMessage.system(new ChatMessageContent(
-                packet.message(),
-                PaperAdventure.asVanilla(
-                        Text.renderString(call.getPlayer(), packet.message())
-                )
-        ));
-
-        call.getPacketListener().chat(
-                packet.message(),
-                chatMessage,
-                !Bukkit.isPrimaryThread()
+        var decoProcessor = new ChatDecorationProcessor(
+                VanillaAccess.getServer(),
+                VanillaAccess.getPlayer(call.getPlayer()),
+                null,
+                net.minecraft.network.chat.Component.literal(packet.message())
         );
+
+        decoProcessor.process().whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                LOGGER.error("Chat decoration error!", throwable);
+                return;
+            }
+
+            try {
+                call.getPacketListener().chat(
+                        packet.message(),
+                        PlayerChatMessage.system(packet.message())
+                                .withResult(Objects.requireNonNull(result)),
+                        true
+                );
+            } catch (Throwable t) {
+                LOGGER.error("Couldn't process chat!", t);
+            }
+        });
     }
 
     @PacketHandler

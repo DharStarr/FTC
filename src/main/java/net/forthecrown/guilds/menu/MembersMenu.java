@@ -34,7 +34,7 @@ public class MembersMenu extends ListPage<GuildMember> {
     private static final Style MEMBER_INFO_STYLE = Style.style(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false);
 
     public MembersMenu(MenuPage parent) {
-        super(parent);
+        super(parent, PAGE);
 
         initMenu(Menus.builder(Menus.MAX_INV_SIZE, "Guild members"), true);
     }
@@ -82,16 +82,6 @@ public class MembersMenu extends ListPage<GuildMember> {
         );
 
         return builder.build();
-    }
-
-    @Override
-    protected int getPage(InventoryContext context) {
-        return context.get(PAGE);
-    }
-
-    @Override
-    protected void setPage(int page, InventoryContext context) {
-        context.set(PAGE, page);
     }
 
     @Override

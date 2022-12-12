@@ -4,6 +4,7 @@ import net.forthecrown.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,27 +100,39 @@ public final class Menus {
         return size;
     }
 
-    /**
-     * Places the given node on the borders of the given menu.
-     * @param builder The builder to place the node in
-     * @param node The node to place
-     */
-    public static void placeBorder(MenuBuilder builder, MenuNode node) {
-        var finalRow = builder.getSize() - COLUMN_SIZE - 1;
+    public static void placeBorder(Inventory in, ItemStack item) {
+        var finalRow = in.getSize() - COLUMN_SIZE - 1;
 
-        for (int i = 0; i < builder.getSize(); i++) {
+        for (int i = 0; i < in.getSize(); i++) {
             // If we're on the first or last row
             // then just place item
             if (i < COLUMN_SIZE || i > finalRow) {
-                builder.add(i, node);
+                setIfEmpty(in, i, item);
             } else if (i % COLUMN_SIZE == 0) {
                 // We're on the left side of the inventory
                 // Place item and move to the right, place
                 // and then continue loop
-                builder.add(i, node);
-                builder.add(i += (COLUMN_SIZE - 1), node);
+                setIfEmpty(in, i, item);
+                setIfEmpty(in, i += (COLUMN_SIZE - 1), item);
             }
         }
+    }
+
+    private static void setIfEmpty(Inventory i, int slot, ItemStack item) {
+        var existing = i.getItem(slot);
+
+        if (ItemStacks.notEmpty(existing)) {
+            return;
+        }
+
+        i.setItem(slot, item);
+    }
+
+    public static boolean isBorderSlot(Slot slot, int size) {
+        return slot.getRow() == 0
+                || slot.getRow() == (size / COLUMN_SIZE)
+                || slot.getColumn() == 0
+                || slot.getColumn() == (COLUMN_SIZE - 1);
     }
 
     /**

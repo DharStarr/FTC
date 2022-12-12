@@ -11,7 +11,7 @@ import net.forthecrown.inventory.ExtendedItems;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Tasks;
-import net.forthecrown.utils.text.Text;
+import net.forthecrown.utils.text.ChatParser;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -53,10 +53,13 @@ public class CoreListener implements Listener {
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
 
-        event.line(0, Text.renderString(player, event.getLine(0)));
-        event.line(1, Text.renderString(player, event.getLine(1)));
-        event.line(2, Text.renderString(player, event.getLine(2)));
-        event.line(3, Text.renderString(player, event.getLine(3)));
+        // Disable case checking on signs
+        ChatParser parser = ChatParser.of(player)
+                .addFlags(ChatParser.FLAG_IGNORE_CASE);
+
+        for (int i = 0; i < 4; i++) {
+            event.line(i, parser.render(event.getLine(i)));
+        }
     }
 
     @EventHandler(ignoreCancelled = true)

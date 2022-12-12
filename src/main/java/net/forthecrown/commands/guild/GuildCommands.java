@@ -28,6 +28,8 @@ public class GuildCommands {
             new GuildCreateNode(),
             new GuildDeleteNode(),
 
+            new GuildDiscoveryNode(),
+
             new GuildChangeRankNode("guildpromote", "promote", true),
             new GuildChangeRankNode("guilddemote", "demote", false),
     };
@@ -75,13 +77,22 @@ public class GuildCommands {
 
             command
                     .executes(context -> {
-                        var guild = GuildProvider.SENDERS_GUILD.get(context);
+                        var user = getUserSender(context);
+
+                        if (user.getGuild() == null) {
+                            GuildMenus.open(
+                                    GuildMenus.DISCOVERY_MENU,
+                                    user,
+                                    null
+                            );
+                            return 0;
+                        }
+
                         GuildMenus.open(
                                 GuildMenus.MAIN_MENU,
-                                getUserSender(context),
-                                guild
+                                user,
+                                user.getGuild()
                         );
-
                         return 0;
                     });
         }

@@ -185,6 +185,18 @@ public abstract class BaseItemBuilder<T extends BaseItemBuilder<T>>
         return getThis();
     }
 
+    public T clearEnchants() {
+        if (!baseMeta.hasEnchants()) {
+            return getThis();
+        }
+
+        for (var e: baseMeta.getEnchants().keySet()) {
+            baseMeta.removeEnchant(e);
+        }
+
+        return getThis();
+    }
+
     public T ignoreEnchantRestrictions(boolean ignoreEnchantRestrictions) {
         this.ignoreEnchantRestrictions = ignoreEnchantRestrictions;
         return getThis();

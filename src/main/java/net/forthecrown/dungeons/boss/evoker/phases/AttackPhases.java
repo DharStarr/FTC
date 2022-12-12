@@ -40,7 +40,7 @@ public final class AttackPhases {
                 Class<? extends Monster> spawnClass = Util.RANDOM.nextInt(100) < EvokerConfig.zombies_skeletonChance ?
                         Skeleton.class : Zombie.class;
 
-                return world.spawn(new Location(world, pos.x, pos.y, pos.z), spawnClass, zombie -> {
+                return world.spawn(new Location(world, pos.x(), pos.y(), pos.z()), spawnClass, zombie -> {
                    modifyHealth(zombie, 20.0D, context);
                    clearAllDrops(zombie);
                    getMobTeam().addEntity(zombie);
@@ -63,7 +63,7 @@ public final class AttackPhases {
                 Class<? extends Raider> clazz = ravager ? Ravager.class : (Util.RANDOM.nextBoolean() ? Pillager.class : Vindicator.class);
 
                 return world.spawn(
-                        new Location(world, pos.x, pos.y, pos.z),
+                        new Location(world, pos.x(), pos.y(), pos.z()),
                         clazz,
                         raider -> {
                             modifyHealth(raider, ravager ? 100 : 24.0D, context);

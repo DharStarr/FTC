@@ -16,7 +16,7 @@ import static net.forthecrown.utils.Util.getDataVersion;
 
 @RequiredArgsConstructor
 public class BlockStructure {
-    /* ----------------------------- TAG KEYS ------------------------------ */
+    /* ----------------------------- TAG KEYS ------------------------------- */
 
     public static final String
             TAG_DATA_VERSION = "data_version",
@@ -26,7 +26,7 @@ public class BlockStructure {
 
             DEFAULT_PALETTE_NAME = "default";
 
-    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
+    /* -------------------------- INSTANCE FIELDS --------------------------- */
 
     /** A broad header for storing any data */
     @Getter
@@ -47,7 +47,7 @@ public class BlockStructure {
     @Getter
     Vector3i defaultSize = Vector3i.ZERO;
 
-    /* ----------------------------- METHODS ------------------------------ */
+    /* ------------------------------ METHODS ------------------------------- */
 
     /**
      * Clears this structure completely, removing all functions,
@@ -68,7 +68,7 @@ public class BlockStructure {
         return Collections.unmodifiableList(functions);
     }
 
-    /* ----------------------------- PLACEMENT AND FILLING ------------------------------ */
+    /* ----------------------- PLACEMENT AND FILLING ------------------------ */
 
     public void place(StructurePlaceConfig config) {
         var palette = getPalette(config.getPaletteName());
@@ -96,7 +96,10 @@ public class BlockStructure {
                     && !scanSize.equals(getDefaultSize())
             ) {
                 throw new IllegalArgumentException(
-                        String.format("Palette size mismatch given: %s, required: %s", scanSize, defaultSize)
+                        String.format(
+                                "Palette size mismatch given: %s, required: %s",
+                                scanSize, defaultSize
+                        )
                 );
             }
         } else {
@@ -106,7 +109,7 @@ public class BlockStructure {
         palette.fill(config);
     }
 
-    /* ----------------------------- SERIALIZATION ------------------------------ */
+    /* --------------------------- SERIALIZATION ---------------------------- */
 
     public void save(CompoundTag tag) {
         tag.putInt(TAG_DATA_VERSION, getDataVersion());
@@ -129,7 +132,10 @@ public class BlockStructure {
         }
 
         if (!functions.isEmpty()) {
-            tag.put(TAG_FUNCTIONS, TagUtil.writeCollection(functions, FunctionInfo::save));
+            tag.put(
+                    TAG_FUNCTIONS,
+                    TagUtil.writeCollection(functions, FunctionInfo::save)
+            );
         }
     }
 

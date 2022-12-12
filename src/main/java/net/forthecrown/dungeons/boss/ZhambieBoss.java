@@ -47,7 +47,7 @@ public class ZhambieBoss extends SimpleBoss {
         MinionSpawnerComponent comp = MinionSpawnerComponent.create(
                 (pos, world, context) -> {
                     return world.spawn(
-                            new Location(world, pos.x, pos.y, pos.z),
+                            new Location(world, pos.x(), pos.y(), pos.z()),
                             Husk.class,
                             husk -> {
                                 // Give minion gold armor that cannot drop

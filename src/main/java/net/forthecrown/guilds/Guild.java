@@ -251,7 +251,9 @@ public class Guild implements ForwardingAudience, InventoryHolder {
             }
         }
 
-        throw new IllegalStateException("No leader???");
+        throw new IllegalStateException(
+                "No leader for guild " + getName() + " or " + getId()
+        );
     }
 
     public Component getMemberPrefix(UUID id) {

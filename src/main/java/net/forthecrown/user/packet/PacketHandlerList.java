@@ -23,7 +23,7 @@ public class PacketHandlerList<T extends Packet> {
         executors.removeIf(executor -> c == executor.getExecutorClass());
     }
 
-    public boolean run(T packet, Player player) {
+    public PacketCall run(T packet, Player player) {
         PacketCall call = new PacketCall(player);
 
         for (var v : executors) {
@@ -48,7 +48,7 @@ public class PacketHandlerList<T extends Packet> {
             }
         }
 
-        return call.isCancelled();
+        return call;
     }
 
     public boolean isEmpty() {

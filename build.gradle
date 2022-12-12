@@ -8,7 +8,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
-String minecraftVersion = "1.19.2"
+String minecraftVersion = "1.19.3"
 boolean devBuild = isDebugBuild()
 String nashornDependency = 'org.openjdk.nashorn:nashorn-core:15.4'
 
@@ -65,7 +65,6 @@ dependencies {
 
     //LuckPerms and WorldGuard
     compileOnly 'net.luckperms:api:5.4'
-    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.5-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.5-SNAPSHOT'
 
     // DiscordSRV

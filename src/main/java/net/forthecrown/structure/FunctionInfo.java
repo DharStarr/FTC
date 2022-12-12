@@ -17,7 +17,6 @@ import net.forthecrown.utils.io.TagUtil;
 import net.forthecrown.utils.math.Vectors;
 import net.minecraft.commands.arguments.CompoundTagArgument;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.block.CommandBlock;
@@ -108,8 +107,6 @@ public class FunctionInfo {
 
     public static FunctionInfo parse(Vector3d origin, CommandBlock cmd) throws CommandSyntaxException {
         String command = cmd.getCommand();
-        LOGGER.info("cmd='{}'", command);
-
         StringReader reader = new StringReader(command);
 
         if (reader.peek() == '/') {
@@ -121,15 +118,10 @@ public class FunctionInfo {
         Readers.skip(reader, COMMAND_NAME);
         reader.skipWhitespace();
 
-        var arg = PARSER.getArg(FUNCTION_CMD_PREFIX);
-
-        if (arg == null) {
-            LOGGER.error("Missing arg '{}' from parser... HOWWWWWW", FUNCTION_CMD_PREFIX);
-            LOGGER.error("ArgName='{}'", FUNC_ARG.getName());
-        }
-
         ParsedArgs args = PARSER.parse(reader);
-        var direction = Direction.fromBukkit(((Directional) cmd.getBlockData()).getFacing());
+        var direction = Direction.fromBukkit(
+                ((Directional) cmd.getBlockData()).getFacing()
+        );
 
         return new FunctionInfo(
                 args.get(FUNC_ARG),
@@ -153,8 +145,8 @@ public class FunctionInfo {
         if (turnsInto != null) {
             tag.put(
                     TAG_TURNS_INTO,
-                    NbtUtils.writeBlockState(VanillaAccess.getState(turnsInto)))
-            ;
+                    TagUtil.writeBlockData(turnsInto)
+            );
         }
 
         if (this.tag != null && !this.tag.isEmpty()) {
@@ -169,8 +161,7 @@ public class FunctionInfo {
         BlockData data = null;
 
         if (tag.contains(TAG_TURNS_INTO)) {
-            data = NbtUtils.readBlockState(tag.getCompound(TAG_TURNS_INTO))
-                    .createCraftBlockData();
+            data = TagUtil.readBlockData(tag.get(TAG_TURNS_INTO));
         }
 
         return new FunctionInfo(

@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_19_R1.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_19_R2.util.CraftNamespacedKey;
 
 import java.util.Objects;
 

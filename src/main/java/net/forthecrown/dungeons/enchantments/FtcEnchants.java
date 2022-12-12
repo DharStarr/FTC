@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -29,7 +30,9 @@ public class FtcEnchants {
             f.setAccessible(true);
             f.set(null, true);
 
-            MappedRegistry<net.minecraft.world.item.enchantment.Enchantment> enchantRegistry = (MappedRegistry) Registry.ENCHANTMENT;
+            MappedRegistry<net.minecraft.world.item.enchantment.Enchantment>
+                    enchantRegistry = (MappedRegistry) BuiltInRegistries.ENCHANTMENT;
+
             VanillaAccess.unfreeze(enchantRegistry);
 
             register(DOLPHIN_SWIMMER);
@@ -45,7 +48,7 @@ public class FtcEnchants {
     }
 
     private static <T extends FtcEnchant> T register(final T enchant) {
-        Registry.register(Registry.ENCHANTMENT, enchant.getKey().asString(), enchant.getHandle());
+        Registry.register(BuiltInRegistries.ENCHANTMENT, enchant.getKey().asString(), enchant.getHandle());
 
         if (Enchantment.getByKey(enchant.getKey()) == null) {
             Enchantment.registerEnchantment(enchant);

@@ -19,8 +19,22 @@ public class PacketListenerChannelHandler extends ChannelDuplexHandler {
     public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) throws Exception {
         // Call packet listeners, if call() returns true
         // packet shouldn't be read
-        if (msg instanceof Packet<?> packet && call(packet, player)) {
-            return;
+        if (msg instanceof Packet<?> packet) {
+            var call = call(packet, player);
+
+            if (call == null) {
+                super.channelRead(ctx, msg);
+                return;
+            }
+
+            if (call.isCancelled()) {
+                return;
+            }
+
+            if (call.getReplacementPacket() != null) {
+                super.channelRead(ctx, call.getReplacementPacket());
+                return;
+            }
         }
 
         super.channelRead(ctx, msg);
@@ -31,10 +45,24 @@ public class PacketListenerChannelHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         // Call packet listeners, if call() returns true
         // packet shouldn't be written
-        if (msg instanceof Packet<?> packet && call(packet, player)) {
-            return;
+        if (msg instanceof Packet<?> packet) {
+            var call = call(packet, player);
+
+            if (call == null) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (call.isCancelled()) {
+                return;
+            }
+
+            if (call.getReplacementPacket() != null) {
+                super.write(ctx, call.getReplacementPacket(), promise);
+                return;
+            }
         }
 
-        ctx.write(msg, promise);
+        super.write(ctx, msg, promise);
     }
 }

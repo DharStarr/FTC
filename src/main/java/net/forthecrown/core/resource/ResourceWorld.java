@@ -35,8 +35,8 @@ import net.forthecrown.utils.world.WorldReCreator;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -46,13 +46,13 @@ import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.RandomState;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Orientable;
-import org.bukkit.craftbukkit.v1_19_R1.CraftHeightMap;
+import org.bukkit.craftbukkit.v1_19_R2.CraftHeightMap;
 import org.mcteam.ancientgates.Gate;
 import org.mcteam.ancientgates.Gates;
 import org.spongepowered.math.vector.Vector3i;
@@ -496,15 +496,16 @@ public class ResourceWorld {
         }
 
         // Create chunk generator for given seed
-        WorldGenSettings settings = WorldPresets.createNormalWorldFromPreset(
-                DedicatedServer.getServer().registryHolder,
-                seed
+        WorldDimensions dimensions = WorldPresets.createNormalWorldDimensions(
+                VanillaAccess.getServer().registryAccess()
         );
 
-        NoiseBasedChunkGenerator gen = (NoiseBasedChunkGenerator) settings.overworld();
+        NoiseBasedChunkGenerator gen
+                = (NoiseBasedChunkGenerator) dimensions.overworld();
+
         RandomState randomState = RandomState.create(
-                gen.settings.value(),
-                gen.noises,
+                gen.generatorSettings().value(),
+                VanillaAccess.getServer().registryAccess().lookupOrThrow(Registries.NOISE),
                 seed
         );
 
@@ -580,7 +581,18 @@ public class ResourceWorld {
             for (int z = min; z < max; z += 8) {
                 // Remove all this biome's tags from the set of
                 // tags that haven't been found yet
-                var holder = gen.getBiomeSource().getNoiseBiome(x, y, z, randomState.sampler());
+                var holder = gen.getBiomeSource()
+                        .getNoiseBiome(x, y, z, randomState.sampler());
+
+                if (holder.kind() == Holder.Kind.DIRECT) {
+                    LOGGER.warn(
+                            "Found direct holder while looking for " +
+                                    "biomes, cannot access tags"
+                    );
+
+                    continue;
+                }
+
                 holder.tags().forEach(requiredTags::remove);
 
                 // set is empty, means we've found biomes with

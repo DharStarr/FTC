@@ -5,6 +5,7 @@ import lombok.Setter;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.VanillaAccess;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.entity.Player;
 
@@ -45,6 +46,10 @@ public class PacketCall {
      * main thread, as packets are handled over async IO threads
      */
     private final Executor executor;
+
+    /** Packet that will be sent instead of the original packet */
+    @Setter
+    private Packet<?> replacementPacket;
 
     PacketCall(Player player) {
         this.player = player;

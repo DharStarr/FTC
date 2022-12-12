@@ -16,8 +16,6 @@ import net.forthecrown.utils.io.PathUtil;
 import net.forthecrown.utils.io.SerializationHelper;
 import org.apache.commons.lang.Validate;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.craftbukkit.v1_19_R1.scheduler.CraftAsyncScheduler;
-import org.bukkit.craftbukkit.v1_19_R1.scheduler.CraftScheduler;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
@@ -39,8 +37,6 @@ public class ScriptManager {
 
     private static final Set<String> ILLEGAL_CLASSES = Set.of(
             BukkitScheduler.class.getName(),
-            CraftScheduler.class.getName(),
-            CraftAsyncScheduler.class.getName(),
             Tasks.class.getName(),
             Events.class.getName()
     );

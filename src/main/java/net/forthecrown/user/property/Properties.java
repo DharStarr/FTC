@@ -3,6 +3,7 @@ package net.forthecrown.user.property;
 import net.forthecrown.core.module.OnEnable;
 import net.forthecrown.core.registry.Registries;
 import net.forthecrown.core.registry.Registry;
+import net.forthecrown.guilds.DiscoverySort;
 import net.forthecrown.guilds.MemberSort;
 import net.forthecrown.user.User;
 import net.forthecrown.user.data.SellAmount;
@@ -24,6 +25,9 @@ public class Properties {
 
     public static final EnumProperty<MemberSort>
     MEMBER_SORT             = new EnumProperty<>("memberSort",       MemberSort.BY_RANK);
+
+    public static final EnumProperty<DiscoverySort>
+    DISCOVERY_SORT          = new EnumProperty<>("guildDiscovery",   DiscoverySort.BY_NAME);
 
     /**
      * Determines whether a user is allowed to send
@@ -171,7 +175,13 @@ public class Properties {
     RANKED_NAME_TAGS        = new BoolProperty("rankedNameTags",     false),
 
     /** Determines if the user sees other users' guild ranks in guild chat */
-    GUILD_RANKED_TAGS       = new BoolProperty("guildRankedNameTags",false);
+    GUILD_RANKED_TAGS       = new BoolProperty("guildRankedNameTags",false),
+
+    /**
+     * Determines whether the user's guild discovery sorting option
+     * is inverted
+     */
+    G_DISC_SORT_INVERTED    = new BoolProperty("guildDiscoverySortInverted", false);
 
     /**
      * Determines a player's TAB prefix.

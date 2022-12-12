@@ -174,11 +174,11 @@ public class MobHealthBar implements Listener {
     public void onMobDamage(EntityDamageByEntityEvent event) {
         // Check damager is player or arrow shot by player
         if (!(event.getDamager() instanceof Player)) {
-            if (!(event.getDamager() instanceof Arrow)) {
+            if (!(event.getDamager() instanceof Projectile proj)) {
                 return;
             }
 
-            if (!(((Arrow) event.getDamager()).getShooter() instanceof Player)) {
+            if (!(proj.getShooter() instanceof Player)) {
                 return;
             }
         }
@@ -189,20 +189,18 @@ public class MobHealthBar implements Listener {
         }
 
         // Must be alive
-        if (!(event.getEntity() instanceof LivingEntity)) {
+        if (!(event.getEntity() instanceof LivingEntity damaged)) {
             return;
         }
 
         // But not another player, armor stand or Boss mob
         if (event.getEntity() instanceof Player
                 || event.getEntity() instanceof ArmorStand
-                || event.getEntity() instanceof EnderDragon
-                || event.getEntity() instanceof Wither
+                || event.getEntity() instanceof Boss
         ) {
             return;
         }
 
-        LivingEntity damaged = (LivingEntity) event.getEntity();
         var finalDamage = event.getFinalDamage();
 
         showHealthbar(damaged, finalDamage, DEF_HEART, true);

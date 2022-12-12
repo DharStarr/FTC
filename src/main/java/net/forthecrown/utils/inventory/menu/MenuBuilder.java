@@ -46,6 +46,10 @@ public class MenuBuilder {
     @Setter
     MenuCloseConsumer closeCallback;
 
+    /** The border node that is placed on all empty border slots */
+    @Setter
+    MenuNode border;
+
     /* ----------------------------- METHODS ------------------------------ */
 
     /**
@@ -99,8 +103,7 @@ public class MenuBuilder {
                 .setItem(item)
                 .build();
 
-        Menus.placeBorder(this, option);
-        return this;
+        return setBorder(option);
     }
 
     public MenuBuilder setTitle(Component title) {

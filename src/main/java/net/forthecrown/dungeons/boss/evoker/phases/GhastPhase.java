@@ -5,11 +5,12 @@ import net.forthecrown.dungeons.boss.evoker.BossMessage;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
 import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.VanillaAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftGhast;
 import org.bukkit.entity.Ghast;
 
 public class GhastPhase implements AttackPhase {
@@ -33,9 +34,8 @@ public class GhastPhase implements AttackPhase {
         for (double[] pos: SPAWNS) {
             Location l = new Location(boss.getWorld(), pos[0], pos[1], pos[2]);
 
-            boss.getWorld().spawn(l, Ghast.class, ghast1 -> {
-                CraftGhast ghast = (CraftGhast) ghast1;
-                net.minecraft.world.entity.monster.Ghast nms = ghast.getHandle();
+            boss.getWorld().spawn(l, Ghast.class, ghast -> {
+                Entity nms = VanillaAccess.getEntity(ghast);
 
                 // explosionPower cannot be changed by setters, Bukkit doesn't
                 // change this, so instead of using reflection, I just save
@@ -43,6 +43,7 @@ public class GhastPhase implements AttackPhase {
                 // from that same NBT
                 CompoundTag saved = new CompoundTag();
                 nms.save(saved);
+
                 saved.putByte("ExplosionPower", (byte) 3);
                 nms.load(saved);
 

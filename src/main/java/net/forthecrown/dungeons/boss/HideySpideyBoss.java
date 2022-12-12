@@ -13,12 +13,11 @@ import net.forthecrown.user.Users;
 import net.forthecrown.user.data.RankTier;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
+import net.forthecrown.utils.math.Vectors;
 import net.kyori.adventure.text.Component;
-import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.craftbukkit.v1_19_R1.util.CraftVector;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -27,14 +26,15 @@ import org.bukkit.loot.LootTables;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.Vector;
+import org.spongepowered.math.vector.Vector3d;
 
 import java.util.Set;
 
 public class HideySpideyBoss extends SimpleBoss {
-    public static Vec3 SPAWN_VEC = new Vec3(-78.5, 55, 284.5);
+    public static Vector3d SPAWN_VEC = Vector3d.from(-78.5, 55, 284.5);
 
     public HideySpideyBoss() {
-        super("Hidey Spidey", new Location(Worlds.voidWorld(), SPAWN_VEC.x, SPAWN_VEC.y, SPAWN_VEC.z), DungeonAreas.SPIDEY_ROOM,
+        super("Hidey Spidey", new Location(Worlds.voidWorld(), SPAWN_VEC.x(), SPAWN_VEC.y(), SPAWN_VEC.z()), DungeonAreas.SPIDEY_ROOM,
 
                 DungeonUtils.makeDungeonItem(Material.SPIDER_EYE, 45, (Component) null),
                 DungeonUtils.makeDungeonItem(Material.FERMENTED_SPIDER_EYE, 20, (Component) null),
@@ -54,11 +54,11 @@ public class HideySpideyBoss extends SimpleBoss {
         c.add(
                 MinionSpawnerComponent.create(
                         (pos, world, context) -> {
-                            Vec3 dif = SPAWN_VEC.subtract(pos).normalize();
-                            Vector velocity = CraftVector.toBukkit(dif).multiply(1.5f);
+                            Vector3d dif = SPAWN_VEC.sub(pos).normalize();
+                            Vector velocity = Vectors.toVec(dif).multiply(1.5f);
 
                             return world.spawn(
-                                    new Location(world, pos.x, pos.y, pos.z),
+                                    new Location(world, pos.x(), pos.y(), pos.z()),
                                     CaveSpider.class,
                                     caveSpider -> {
                                         caveSpider.setVelocity(velocity);

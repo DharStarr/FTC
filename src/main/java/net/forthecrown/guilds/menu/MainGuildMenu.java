@@ -1,7 +1,9 @@
 package net.forthecrown.guilds.menu;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
+import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.core.challenge.ChallengeBook;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -9,6 +11,7 @@ import net.forthecrown.utils.inventory.menu.MenuBuilder;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.Menus;
 import net.forthecrown.utils.inventory.menu.Slot;
+import net.forthecrown.utils.inventory.menu.context.ClickContext;
 import net.forthecrown.utils.inventory.menu.context.InventoryContext;
 import net.forthecrown.utils.inventory.menu.page.MenuPage;
 import net.kyori.adventure.text.Component;
@@ -20,6 +23,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 import static net.forthecrown.guilds.menu.GuildMenus.GUILD;
 
@@ -110,6 +115,19 @@ public class MainGuildMenu extends MenuPage {
         formattedBanner.setItemMeta(meta);
 
         return formattedBanner;
+    }
+
+    @Override
+    public void onClick(User user, InventoryContext context, ClickContext click)
+            throws CommandSyntaxException
+    {
+        var guild = context.getOrThrow(GUILD);
+
+        if (!Objects.equals(user.getGuild(), guild)) {
+            throw Exceptions.NOT_IN_GUILD;
+        }
+
+        super.onClick(user, context, click);
     }
 
     @Override

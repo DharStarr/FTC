@@ -49,6 +49,9 @@ public class Menu implements InventoryHolder, MenuCloseConsumer {
     /** Callback for when this menu is closed */
     private final MenuCloseConsumer closeCallback;
 
+    /** Border node placed on all empty border slots */
+    private final MenuNode border;
+
     /* ----------------------------- CONSTRUCTOR ------------------------------ */
 
     Menu(MenuBuilder builder) {
@@ -61,6 +64,7 @@ public class Menu implements InventoryHolder, MenuCloseConsumer {
 
         this.openCallback = builder.openCallback;
         this.closeCallback = builder.closeCallback;
+        this.border = builder.border;
     }
 
     /* ----------------------------- FUNCTIONS ------------------------------ */
@@ -101,6 +105,14 @@ public class Menu implements InventoryHolder, MenuCloseConsumer {
                     inv.setItem(slot, item);
                 });
 
+        if (border != null) {
+            var item = border.createItem(user, context);
+
+            if (ItemStacks.notEmpty(item)) {
+                Menus.placeBorder(inv, item);
+            }
+        }
+
         return inv;
     }
 
@@ -124,11 +136,21 @@ public class Menu implements InventoryHolder, MenuCloseConsumer {
             click.cancelEvent(true);
         }
 
+        if (Cooldown.contains(user, COOLDOWN_CATEGORY)) {
+            return;
+        }
+
         try {
             var node = nodes.get(click.getSlot());
 
-            if (node == null || Cooldown.contains(user, COOLDOWN_CATEGORY)) {
-                return;
+            if (node == null) {
+                if (border != null
+                        && Menus.isBorderSlot(Slot.of(click.getSlot()), size)
+                ) {
+                    node = border;
+                } else {
+                    return;
+                }
             }
 
             node.onClick(user, context, click);

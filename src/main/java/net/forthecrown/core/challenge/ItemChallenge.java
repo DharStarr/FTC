@@ -287,17 +287,7 @@ public class ItemChallenge implements Challenge {
     private boolean matches(ItemStack item) {
         return getTargetItem()
                 .map(target -> {
-                    LOGGER.debug("target.type={} target.amount={}",
-                            target.getType(), target.getAmount()
-                    );
-                    LOGGER.debug("item.type={}, item.amount={}",
-                            item.getType(), item.getAmount()
-                    );
-
-                    if (target.getType() != item.getType()
-                            || item.getAmount() < target.getAmount()
-                    ) {
-                        LOGGER.debug("Failed on type/amount check");
+                    if (target.getType() != item.getType()) {
                         return false;
                     }
 
@@ -312,7 +302,6 @@ public class ItemChallenge implements Challenge {
                             && !typeName.contains("AXOLOTL")
                             && !typeName.contains("TROPICAL")
                     ) {
-                        LOGGER.debug("Failed on bucket check");
                         return true;
                     }
 
@@ -339,14 +328,9 @@ public class ItemChallenge implements Challenge {
                         var itemTextures = itemProfile.getTextures();
                         var targetTextures = targetProfile.getTextures();
 
-                        LOGGER.debug("Testing textures");
-                        LOGGER.debug("targetText={}", targetTextures);
-                        LOGGER.debug("itemText={}", itemTextures);
-
                         return Objects.equals(targetTextures, itemTextures);
                     }
 
-                    LOGGER.debug("Testing isSimilar()");
                     return target.isSimilar(item);
                 })
 

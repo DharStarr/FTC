@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.DungeonBoss;
 import net.forthecrown.utils.Util;
-import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -12,6 +11,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.math.vector.Vector3d;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +22,12 @@ import java.util.List;
 public class MinionSpawnerComponent implements BossComponent<DungeonBoss> {
     private final MinionSpawner spawner;
     private final int spawnTickInterval, maxMinions;
-    private final Vec3[] spawns;
+    private final Vector3d[] spawns;
 
     private final List<Entity> spawnedMinions = new ObjectArrayList<>();
     private int tick;
 
-    public MinionSpawnerComponent(MinionSpawner spawner, int spawnTickInterval, int maxMinions, Vec3... spawns) {
+    public MinionSpawnerComponent(MinionSpawner spawner, int spawnTickInterval, int maxMinions, Vector3d... spawns) {
         this.spawns = spawns;
         this.spawner = spawner;
         this.spawnTickInterval = spawnTickInterval;
@@ -36,7 +36,7 @@ public class MinionSpawnerComponent implements BossComponent<DungeonBoss> {
 
     // It's easier to type new 'double[][] { asdjkhaldsaa }' than to type 'new Vec3(asd, asd, asd)' a million times
     public static MinionSpawnerComponent create(MinionSpawner spawner, int tickInterval, int maxMinions, double[][] spawns) {
-        Vec3[] vecSpawns = new Vec3[spawns.length];
+        Vector3d[] vecSpawns = new Vector3d[spawns.length];
 
         for (int i = 0; i < spawns.length; i++) {
             double[] spawn = spawns[i];
@@ -44,14 +44,14 @@ public class MinionSpawnerComponent implements BossComponent<DungeonBoss> {
             // Ensure it has correct length
             Validate.isTrue(spawn.length == 3, "Size of vector %s at index %s is not 3", Arrays.toString(spawn), i);
 
-            Vec3 vec = new Vec3(spawn[0], spawn[1], spawn[2]);
+            Vector3d vec = new Vector3d(spawn[0], spawn[1], spawn[2]);
             vecSpawns[i] = vec;
         }
 
         return new MinionSpawnerComponent(spawner, tickInterval, maxMinions, vecSpawns);
     }
 
-    public static MinionSpawnerComponent create(MinionSpawner spawner, int tickInterval, int maxMinions, Vec3... spawns) {
+    public static MinionSpawnerComponent create(MinionSpawner spawner, int tickInterval, int maxMinions, Vector3d... spawns) {
         return new MinionSpawnerComponent(spawner, tickInterval, maxMinions, spawns);
     }
 
@@ -68,7 +68,7 @@ public class MinionSpawnerComponent implements BossComponent<DungeonBoss> {
 
             // Pick random spawn and spawn there with the
             // given spawner
-            Vec3 random = spawns[Util.RANDOM.nextInt(spawns.length)];
+            Vector3d random = spawns[Util.RANDOM.nextInt(spawns.length)];
 
             Entity e = spawner.create(random, boss.getWorld(), context);
             spawnedMinions.add(e);
@@ -107,6 +107,6 @@ public class MinionSpawnerComponent implements BossComponent<DungeonBoss> {
          *
          * @return The spawned minion
          */
-        @NotNull Entity create(Vec3 pos, World world, BossContext context);
+        @NotNull Entity create(Vector3d pos, World world, BossContext context);
     }
 }

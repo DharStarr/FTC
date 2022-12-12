@@ -7,27 +7,31 @@ import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;
 import net.forthecrown.utils.inventory.menu.MenuNode;
-import net.forthecrown.utils.inventory.menu.Menus;
 import net.forthecrown.utils.inventory.menu.Slot;
 import net.forthecrown.utils.inventory.menu.context.ClickContext;
+import net.forthecrown.utils.inventory.menu.context.ContextOption;
 import net.forthecrown.utils.inventory.menu.context.InventoryContext;
 import net.forthecrown.utils.text.format.page.PageEntryIterator;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Objects;
 
 public abstract class ListPage<T> extends MenuPage {
     @Getter
     private final Slot startSlot;
 
-    public ListPage(MenuPage parent, Slot startSlot) {
+    private final ContextOption<Integer> page;
+
+    public ListPage(MenuPage parent, ContextOption<Integer> page, Slot startSlot) {
         super(parent);
         this.startSlot = startSlot;
+        this.page = Objects.requireNonNull(page);
     }
 
-    public ListPage(MenuPage parent) {
-        this(parent, Slot.of(1, 1));
+    public ListPage(MenuPage parent, ContextOption<Integer> page) {
+        this(parent, page, Slot.of(1, 1));
     }
 
     @Override
@@ -115,8 +119,12 @@ public abstract class ListPage<T> extends MenuPage {
 
     }
 
-    protected abstract int getPage(InventoryContext context);
-    protected abstract void setPage(int page, InventoryContext context);
+    protected int getPage(InventoryContext context) {
+        return context.getOrThrow(page);
+    }
+    protected void setPage(int page, InventoryContext context) {
+        context.set(this.page, page);
+    }
 
     protected int getMaxPage(User user, InventoryContext context, int pageSize) {
         return PageEntryIterator.getMaxPage(pageSize, getList(user, context).size());
@@ -144,7 +152,7 @@ public abstract class ListPage<T> extends MenuPage {
                     // Page change would result in invalid page
                     // Don't add item
                     if (newPage <= 0 || newPage >= maxPage) {
-                        return Menus.defaultBorderItem();
+                        return null;
                     }
 
                     return ItemStacks.builder(Material.PAPER)

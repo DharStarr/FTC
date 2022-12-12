@@ -36,7 +36,7 @@ import static net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializ
 @Getter
 public class ChatParser {
 
-    /* ----------------------------- FLAG CONSTANTS ------------------------------ */
+    /* --------------------------- FLAG CONSTANTS --------------------------- */
 
     /**
      * Flag for determining if color codes should be translated.
@@ -102,14 +102,17 @@ public class ChatParser {
      * @see #FLAG_IGNORE_CASE
      * @see #FLAG_LINKS
      */
-    public static final int COLOR_FLAGS         = FLAG_LINKS | FLAG_COLOR_CODES | FLAG_CLEAN_LINKS | FLAG_IGNORE_CASE;
+    public static final int COLOR_FLAGS         = FLAG_LINKS | FLAG_COLOR_CODES
+                                                             | FLAG_CLEAN_LINKS
+                                                             | FLAG_IGNORE_CASE;
 
     /**
      * A constant value with all flags set
      * @see #COLOR_FLAGS
      * @see #FLAG_EMOTES
      */
-    public static final int ALL_FLAGS           = COLOR_FLAGS | FLAG_EMOTES | FLAG_GRADIENTS;
+    public static final int ALL_FLAGS           = COLOR_FLAGS | FLAG_EMOTES
+                                                              | FLAG_GRADIENTS;
 
     /* ----------------------------- CONSTANTS ------------------------------ */
 
@@ -135,7 +138,7 @@ public class ChatParser {
     /** A renderer which renders input with the {@link #COLOR_FLAGS} flags */
     public static final ChatParser COLOR_RENDERER = new ChatParser(FLAG_COLOR_CODES);
 
-    /* ----------------------------- INSTANCE FIELDS ------------------------------ */
+    /* -------------------------- INSTANCE FIELDS --------------------------- */
 
     /** This renderer's parameters */
     private final int flags;
@@ -143,7 +146,7 @@ public class ChatParser {
     /** This renderer's legacy serializer */
     private final LegacyComponentSerializer serializer;
 
-    /* ----------------------------- CONSTRUCTOR ------------------------------ */
+    /* ---------------------------- CONSTRUCTOR ----------------------------- */
 
     public ChatParser(int flags) {
         this.flags = flags;
@@ -166,7 +169,7 @@ public class ChatParser {
         this.serializer = builder.build();
     }
 
-    /* ----------------------------- STATIC CONSTRUCTORS ------------------------------ */
+    /* ------------------------ STATIC CONSTRUCTORS ------------------------- */
 
     /**
      * Creates a renderer tailored to the given sender.
@@ -253,7 +256,11 @@ public class ChatParser {
         return of(sender).render(message);
     }
 
-    /* ----------------------------- METHODS ------------------------------ */
+    /* ------------------------------ METHODS ------------------------------- */
+
+    public ChatParser addFlags(int flags) {
+        return new ChatParser(flags | this.flags);
+    }
 
     /**
      * Renders the given input into a component using this
@@ -397,5 +404,21 @@ public class ChatParser {
 
         // Not a hex code -> get by color name
         return NamedTextColor.NAMES.value(s);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChatParser parser)) {
+            return false;
+        }
+        return getFlags() == parser.getFlags();
+    }
+
+    @Override
+    public int hashCode() {
+        return getFlags();
     }
 }

@@ -6,14 +6,14 @@ import net.forthecrown.dungeons.boss.BossContext;
 import net.forthecrown.dungeons.boss.components.MinionSpawnerComponent;
 import net.forthecrown.dungeons.boss.evoker.BossMessage;
 import net.forthecrown.dungeons.boss.evoker.EvokerBoss;
-import net.forthecrown.dungeons.boss.evoker.EvokerEffects;
 import net.forthecrown.dungeons.boss.evoker.EvokerConfig;
-import net.forthecrown.utils.math.Vectors;
+import net.forthecrown.dungeons.boss.evoker.EvokerEffects;
 import net.forthecrown.utils.Util;
-import net.minecraft.world.phys.Vec3;
+import net.forthecrown.utils.math.Vectors;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.spongepowered.math.vector.Vector3d;
 
 import java.util.List;
 
@@ -111,7 +111,7 @@ public class SummonPhase implements AttackPhase {
 
         spawning = currentIndex < SPAWNS.length;
 
-        Vec3 pos = new Vec3(
+        Vector3d pos = new Vector3d(
                 rawPos[0] + xOffset,
                 rawPos[1],
                 rawPos[2] + zOffset

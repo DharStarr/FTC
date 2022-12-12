@@ -27,7 +27,7 @@ public class MessageBoardMenu extends ListPage<GuildMessage> {
     private final MessageCreationMenu messageCreation;
 
     public MessageBoardMenu(MenuPage parent) {
-        super(parent);
+        super(parent, PAGE);
 
         messageCreation = new MessageCreationMenu(this);
 
@@ -54,16 +54,6 @@ public class MessageBoardMenu extends ListPage<GuildMessage> {
     @Override
     protected ItemStack getItem(User user, GuildMessage entry, InventoryContext context) {
         return entry.toMenuNode().createItem(user, context);
-    }
-
-    @Override
-    protected int getPage(InventoryContext context) {
-        return context.get(PAGE);
-    }
-
-    @Override
-    protected void setPage(int page, InventoryContext context) {
-        context.set(PAGE, page);
     }
 
     @Override

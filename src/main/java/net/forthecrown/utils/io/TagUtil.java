@@ -1,12 +1,14 @@
 package net.forthecrown.utils.io;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.forthecrown.core.Worlds;
 import net.forthecrown.core.registry.Keys;
 import net.forthecrown.utils.VanillaAccess;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.*;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
@@ -14,8 +16,8 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_19_R1.persistence.CraftPersistentDataContainer;
-import org.bukkit.craftbukkit.v1_19_R1.persistence.CraftPersistentDataTypeRegistry;
+import org.bukkit.craftbukkit.v1_19_R2.persistence.CraftPersistentDataContainer;
+import org.bukkit.craftbukkit.v1_19_R2.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 
@@ -169,7 +171,11 @@ public final class TagUtil {
     }
 
     public static BlockData readBlockData(Tag t) {
-        return NbtUtils.readBlockState((CompoundTag) t).createCraftBlockData();
+        var lookup = VanillaAccess.getLevel(Worlds.overworld())
+                .holderLookup(BuiltInRegistries.BLOCK.key());
+
+        return NbtUtils.readBlockState(lookup, (CompoundTag) t)
+                .createCraftBlockData();
     }
 
     public static CompoundTag writeBlockData(BlockData data) {

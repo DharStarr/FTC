@@ -3,7 +3,6 @@ package net.forthecrown.structure;
 import lombok.experimental.UtilityClass;
 import net.forthecrown.utils.VanillaAccess;
 import net.forthecrown.utils.math.Transform;
-import org.bukkit.craftbukkit.v1_19_R1.block.data.CraftBlockData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

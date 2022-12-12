@@ -38,7 +38,7 @@ public enum MemberSort {
 
                     var builder = ItemStacks.builder(guild.getSettings().getPrimaryColor().toGlassPane())
                             .setName(Component.text("Sort by " + text).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.AQUA))
-                            .addLore(Component.text("Set in the order in which").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY))
+                            .addLore(Component.text("Set the order in which").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY))
                             .addLore(Component.text("the members are displayed.").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY))
                             .setFlags(ItemFlag.HIDE_ENCHANTS);
 

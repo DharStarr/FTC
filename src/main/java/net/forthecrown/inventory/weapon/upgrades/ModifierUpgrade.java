@@ -2,12 +2,12 @@ package net.forthecrown.inventory.weapon.upgrades;
 
 import net.forthecrown.inventory.weapon.RoyalSword;
 import net.kyori.adventure.text.Component;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SwordItem;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_19_R1.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_19_R2.util.CraftNamespacedKey;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -21,7 +21,8 @@ public record ModifierUpgrade(double speed, double attack) implements WeaponUpgr
         // Thank you Bukkit, for not providing an API for this
         // Good lord, all this for some base attribute values
         // This was a pain to figure out btw
-        Item type = Registry.ITEM.get(CraftNamespacedKey.toMinecraft(item.getType().getKey()));
+        Item type = BuiltInRegistries.ITEM
+                .get(CraftNamespacedKey.toMinecraft(item.getType().getKey()));
         SwordItem swordItem = (SwordItem) type;
 
         double speedBase = -2.1D;

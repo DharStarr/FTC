@@ -15,10 +15,13 @@ public class GuildMenus {
     public static final ContextOption<Integer>
             PAGE = SET.newOption(0);
 
-    public static final ContextOption<Boolean>
-            PRIMARY_COLOR = SET.newOption(true);
+    public static final ContextOption<Integer>
+            DISC_PAGE = SET.newOption(0);
 
     public static final MainGuildMenu MAIN_MENU = new MainGuildMenu();
+
+    public static final GuildDiscoveryMenu
+            DISCOVERY_MENU = new GuildDiscoveryMenu();
 
     public static void open(MenuPage page, User viewer, Guild guild) {
         var context = SET.createContext();

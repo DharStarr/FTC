@@ -132,11 +132,11 @@ public class PacketListeners {
      * @param player The player the packet affects
      * @return True, if the packet was cancelled, false otherwise
      */
-    static boolean call(Packet packet, Player player) {
+    static PacketCall call(Packet packet, Player player) {
         PacketHandlerList list = HANDLER_LISTS.get(packet.getClass());
 
         if (list == null) {
-            return false;
+            return null;
         }
 
         return list.run(packet, player);

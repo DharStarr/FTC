@@ -28,7 +28,7 @@ import net.minecraft.nbt.TextComponentTagVisitor;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permissible;
@@ -364,6 +364,17 @@ public final class Text {
      */
     public static Component formatDate(long time) {
         return formatDate(new Date(time));
+    }
+
+    /**
+     * Formats a number, by adding decimals, commas and so on, making the given
+     * number more human-readable
+     *
+     * @param number The number to format
+     * @return The formatted number
+     */
+    public static Component formatNumber(Number number) {
+        return text(NUMBER_FORMAT.format(number));
     }
 
     /**

@@ -8,12 +8,16 @@ import net.forthecrown.structure.Rotation;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
+/**
+ * A transformation applied to vectors
+ */
 @Getter @With
 @AllArgsConstructor
 @ToString
 public class Transform {
     /* ----------------------------- CONSTANTS ------------------------------ */
 
+    /** Transformation which returns the input */
     public static final Transform IDENTITY = new Transform(
             Rotation.NONE,
             Vector3d.ZERO,

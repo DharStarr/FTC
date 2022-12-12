@@ -1,13 +1,11 @@
 package net.forthecrown.guilds.menu;
 
 import lombok.Getter;
-import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.inventory.menu.MenuBuilder;
 import net.forthecrown.utils.inventory.menu.MenuNode;
 import net.forthecrown.utils.inventory.menu.Menus;
-import net.forthecrown.utils.inventory.menu.Slot;
 import net.forthecrown.utils.inventory.menu.context.InventoryContext;
 import net.forthecrown.utils.inventory.menu.page.MenuPage;
 import net.kyori.adventure.text.Component;
@@ -22,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static net.forthecrown.guilds.menu.GuildMenus.GUILD;
 
@@ -47,21 +44,6 @@ public class StatisticsMenu extends MenuPage {
 
     @Override
     protected void createMenu(MenuBuilder builder) {
-        builder.add(Slot.ZERO,
-                MenuNode.builder()
-                        .setItem(getParent())
-                        .setRunnable((user, context, click) -> {
-                            var guild = context.getOrThrow(GUILD);
-
-                            if (!Objects.equals(user.getGuild(), guild)) {
-                                throw Exceptions.NOT_IN_GUILD;
-                            }
-
-                            getParent().onClick(user, context, click);
-                        })
-                        .build()
-        );
-
         builder.add(SLOT_MEMBERS, members);
 
         builder.add(SLOT_BANNER,
