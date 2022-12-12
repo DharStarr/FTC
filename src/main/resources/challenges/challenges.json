@@ -45,12 +45,12 @@
     }
   },
   "daily/walk_1000_blocks": {
-    "displayName": "Walk 1,000 blocks",
+    "displayName": "Walk %goal blocks",
     "goal": 1000,
     "eventClass": "org.bukkit.event.player.PlayerMoveEvent",
     "script": "challenges/on_walk.js",
     "description": [
-      "Walk 1,000 blocks on the ground"
+      "Walk %goal blocks on the ground"
     ],
     "reward": {
       "guildExp": 10
@@ -74,7 +74,7 @@
     "eventClass": "custom",
     "script": "challenges/on_sell.js",
     "description": [
-      "Sell items in /shop worth 10,000 Rhines"
+      "Sell items in /shop worth %goal Rhines"
     ],
     "reward": {
       "guildExp": 15
@@ -86,7 +86,7 @@
     "eventClass": "custom",
     "script": "challenges/on_buy.js",
     "description": [
-      "Buy items from 3 different shop buildings in Hazelguard"
+      "Buy items from %goal different shop buildings in Hazelguard"
     ],
     "reward": {
       "guildExp": 15
@@ -99,7 +99,7 @@
     "type": "weekly",
     "goal": 5,
     "description": [
-      "Kill 5 withers"
+      "Kill %goal withers"
     ],
     "reward": {
       "guildExp": 20
@@ -147,7 +147,7 @@
     "type": "weekly",
     "goal": 2,
     "description": [
-      "Complete 2 elite bank runs"
+      "Complete %goal elite bank runs"
     ],
     "reward": {
       "guildExp": 45
@@ -159,7 +159,7 @@
     "eventClass": "custom",
     "script": "challenges/playtime.js",
     "description": [
-      "Play for 30 minutes"
+      "Play for %goal minutes"
     ],
     "reward": {
       "guildExp": 25
@@ -170,7 +170,7 @@
     "eventClass": "custom",
     "goal": 2,
     "description": [
-      "Complete 2 of the daily challenges in /shop"
+      "Complete %goal of the daily challenges in /shop"
     ],
     "reward": {
       "guildExp": 40

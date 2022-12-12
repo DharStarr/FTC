@@ -28,6 +28,7 @@ public class DynamicArmorStand extends AbstractDynamicStand {
         });
     }
 
+    @Override
     public void kill() {
         if (armorStand != null && armorStand.get() != null) {
             armorStand.get().remove();

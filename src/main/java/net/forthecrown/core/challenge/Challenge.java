@@ -32,9 +32,10 @@ public interface Challenge {
      */
     default Component displayName(@Nullable User viewer) {
         TextWriter writer = TextWriters.newWriter();
+        var formatter = getPlaceholderFormatter();
 
         for (Component component : getDescription()) {
-            writer.line(component);
+            writer.line(formatter.format(component, viewer));
         }
 
         int streak = Challenges.queryStreak(this, viewer)
@@ -51,7 +52,7 @@ public interface Challenge {
             reward.write(writer, streak);
         }
 
-        return getName()
+        return formatter.format(getName(), viewer)
                 .color(NamedTextColor.YELLOW)
                 .hoverEvent(writer.asComponent());
     }
@@ -80,6 +81,11 @@ public interface Challenge {
         return getResetInterval() == ResetInterval.DAILY
                 ? StreakCategory.DAILY
                 : StreakCategory.WEEKLY;
+    }
+
+    /** Gets the placeholder tag formatter for this challenge */
+    default ChallengePlaceholders getPlaceholderFormatter() {
+        return ChallengePlaceholders.of(this);
     }
 
     /** Gets the challenge's goal */

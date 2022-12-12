@@ -113,6 +113,7 @@ public class ChallengeParser {
 
         return build(builder, Script.read(builder.script()));
     }
+
     static DataResult<JsonChallenge> build(JsonChallenge.Builder builder,
                                            Script script
     ) {

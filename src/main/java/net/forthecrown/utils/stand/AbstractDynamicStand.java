@@ -19,6 +19,8 @@ public abstract class AbstractDynamicStand {
 
         this.chunk = location.getChunk();
         chunk.addPluginChunkTicket(FTC.getPlugin());
+
+        kill();
     }
 
     public Location getLocation() {
@@ -54,4 +56,6 @@ public abstract class AbstractDynamicStand {
             stand.customName(displayName);
         });
     }
+
+    public abstract void kill();
 }

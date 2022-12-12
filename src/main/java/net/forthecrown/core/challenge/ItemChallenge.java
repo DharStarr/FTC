@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.forthecrown.commands.manager.Exceptions;
+import net.forthecrown.core.FTC;
 import net.forthecrown.user.User;
 import net.forthecrown.utils.Util;
 import net.forthecrown.utils.inventory.ItemStacks;
@@ -17,6 +18,7 @@ import net.forthecrown.utils.text.writer.TextWriters;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -188,6 +190,7 @@ public class ItemChallenge implements Challenge {
                         return null;
                     }
 
+                    var formatter = getPlaceholderFormatter();
                     var builder = ItemStacks.toBuilder(baseItem)
                             .setName(getName())
                             .clearLore()
@@ -208,10 +211,7 @@ public class ItemChallenge implements Challenge {
                         builder.addLore("");
 
                         for (var c: getDescription()) {
-                            builder.addLoreRaw(
-                                    Text.wrapForItems(c)
-                                            .color(NamedTextColor.DARK_GRAY)
-                            );
+                            builder.addLore(formatter.format(c, user));
                         }
                     }
 
@@ -282,12 +282,22 @@ public class ItemChallenge implements Challenge {
         return ObjectIntPair.of(found, foundCount);
     }
 
+    private static final Logger LOGGER = FTC.getLogger();
+
     private boolean matches(ItemStack item) {
         return getTargetItem()
                 .map(target -> {
+                    LOGGER.debug("target.type={} target.amount={}",
+                            target.getType(), target.getAmount()
+                    );
+                    LOGGER.debug("item.type={}, item.amount={}",
+                            item.getType(), item.getAmount()
+                    );
+
                     if (target.getType() != item.getType()
                             || item.getAmount() < target.getAmount()
                     ) {
+                        LOGGER.debug("Failed on type/amount check");
                         return false;
                     }
 
@@ -302,6 +312,7 @@ public class ItemChallenge implements Challenge {
                             && !typeName.contains("AXOLOTL")
                             && !typeName.contains("TROPICAL")
                     ) {
+                        LOGGER.debug("Failed on bucket check");
                         return true;
                     }
 
@@ -328,9 +339,14 @@ public class ItemChallenge implements Challenge {
                         var itemTextures = itemProfile.getTextures();
                         var targetTextures = targetProfile.getTextures();
 
+                        LOGGER.debug("Testing textures");
+                        LOGGER.debug("targetText={}", targetTextures);
+                        LOGGER.debug("itemText={}", itemTextures);
+
                         return Objects.equals(targetTextures, itemTextures);
                     }
 
+                    LOGGER.debug("Testing isSimilar()");
                     return target.isSimilar(item);
                 })
 

@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static net.forthecrown.utils.io.FtcJar.ALLOW_OVERWRITE;
+import static net.forthecrown.utils.io.FtcJar.OVERWRITE_IF_NEWER;
+
 @Getter
 public class ChallengeDataStorage {
     private static final Logger LOGGER = FTC.getLogger();
@@ -53,7 +56,11 @@ public class ChallengeDataStorage {
 
     void ensureDefaultsExist() {
         try {
-            FtcJar.saveResources("challenges");
+            FtcJar.saveResources(
+                    "challenges",
+                    ALLOW_OVERWRITE | OVERWRITE_IF_NEWER
+            );
+
             // Default scripts are saved by ScriptManager
         } catch (IOException exc) {
             LOGGER.error("Error trying to save challenge defaults!", exc);
@@ -127,6 +134,7 @@ public class ChallengeDataStorage {
                     continue;
                 }
 
+                ++loaded;
                 registry.register(
                         e.getKey(),
 

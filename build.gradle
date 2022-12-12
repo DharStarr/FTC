@@ -1,11 +1,10 @@
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import java.nio.file.*
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.function.Consumer
 
 plugins {
     id 'java'
-    id 'io.papermc.paperweight.userdev' version '1.3.7'
+    id 'io.papermc.paperweight.userdev' version '1.3.11'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -72,8 +71,6 @@ dependencies {
     // DiscordSRV
     compileOnly 'com.discordsrv:discordsrv:1.26.0'
 
-    // Voting plugin for VoteEvent
-
     testImplementation 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
 
@@ -100,11 +97,6 @@ java {
 }
 
 processResources {
-    File pluginYml = new File('build/resources/main/plugin.yml')
-    if (pluginYml.exists()) {
-        pluginYml.delete()
-    }
-
     def props = [
             version: version,
             buildID : buildID() + "",
@@ -118,10 +110,27 @@ processResources {
     filesMatching('plugin.yml') {
         expand props
     }
+
+    // Work around to ensure all resource files keep their file
+    // attributes during compilation, otherwise they all have their
+    // modifiedDate set to the build time
+    def copyDetails = []
+    eachFile { copyDetails << it }
+
+    doLast {
+        copyDetails.each { FileCopyDetails details ->
+            def target = new File(destinationDir, details.path)
+            target.setLastModified(details.lastModified)
+        }
+    }
+}
+
+String getJarName() {
+    return 'ForTheCrown-' + (isDebugBuild() ? "Debug" : "Plugin")
 }
 
 assemble {
-    archivesBaseName = 'ForTheCrown-' + (devBuild ? "Debug" : "Plugin")
+    archivesBaseName = getJarName()
     dependsOn(reobfJar)
 }
 
@@ -130,11 +139,32 @@ build {
         if (!devBuild) {
             incrementBuildID()
         }
+
+        syncJarAttributes();
+    }
+}
+
+reobfJar {
+    doLast {
+        syncJarAttributes();
     }
 }
 
 test {
     useJUnitPlatform()
+}
+
+void syncJarAttributes() {
+    JarAttributeSync.sync(
+            projectDir.toPath()
+                    .resolve("src")
+                    .resolve("main")
+                    .resolve("resources"),
+
+            buildDir.toPath()
+                    .resolve("libs")
+                    .resolve(getJarName() + "-" + getVersion() + ".jar"),
+    );
 }
 
 /* ------------- Custom Task ------------- */
@@ -163,8 +193,8 @@ task build_to_test_server(dependsOn: build) {
             printf("Moving plugin to dir: '%s'", dir)
         }
 
-        java.nio.file.Path path = Paths.get(dir)
-        java.nio.file.Path pluginsDir = path.resolve("plugins")
+        Path path = Paths.get(dir)
+        Path pluginsDir = path.resolve("plugins")
 
         String fileSuffix = String.format(
                 "ForTheCrown-%s-%s.jar",
@@ -172,11 +202,12 @@ task build_to_test_server(dependsOn: build) {
                 version
         )
 
-        java.nio.file.Path dest = pluginsDir.resolve(fileSuffix)
-        java.nio.file.Path source = getBuildDir().toPath()
+        Path dest = pluginsDir.resolve(fileSuffix)
+        Path source = getBuildDir().toPath()
                 .resolve("libs")
                 .resolve(fileSuffix)
 
+        syncJarAttributes()
 
         Files.copy(
                 source, dest,
@@ -237,4 +268,57 @@ void consumeProperties(Consumer<Properties> propertiesConsumer) {
     propertiesConsumer.accept(properties)
 
     properties.store(new FileOutputStream(f), "Saves the last build ID and the debug build state, last build:")
+}
+
+public class JarAttributeSync {
+    public static void sync(Path resourceDirectory, Path jarFile)
+            throws IOException
+    {
+        URI uri = new URI("jar", jarFile.toUri().toString(), null);
+
+        FileSystem fs;
+
+        try {
+            fs = FileSystems.getFileSystem(uri);
+        } catch (FileSystemNotFoundException exc) {
+            fs = FileSystems.newFileSystem(uri, Collections.singletonMap("create", "true"));
+        }
+
+        var walker = new AttributeWalker(resourceDirectory, fs);
+        Files.walkFileTree(resourceDirectory, walker)
+        fs.close()
+
+        Files.copy(jarFile, jarFile.getParent().resolve("attributes_updated.jar"),
+                StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES
+        )
+    }
+
+    private static class AttributeWalker extends SimpleFileVisitor<Path> {
+        private final Path resourcesSource;
+        private final FileSystem jarFileSystem;
+
+        public AttributeWalker(Path resourcesSource,
+                               FileSystem jarFileSystem
+        ) {
+            this.resourcesSource = resourcesSource;
+            this.jarFileSystem = jarFileSystem;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                throws IOException
+        {
+            var relative = resourcesSource.relativize(file).toString();
+            var dest = jarFileSystem.getPath(relative)
+
+            if (!Files.exists(dest)) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            var time = attrs.lastModifiedTime();
+            Files.setLastModifiedTime(dest, time)
+
+            return FileVisitResult.CONTINUE;
+        }
+    }
 }

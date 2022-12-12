@@ -197,13 +197,17 @@ public final class Commands {
 
     /* ----------------------------- UTILITY ------------------------------ */
 
-    public static void ensureIndexValid(int index, int size) throws CommandSyntaxException {
+    public static void ensureIndexValid(int index, int size)
+            throws CommandSyntaxException
+    {
         if (index > size) {
             throw Exceptions.invalidIndex(index, size);
         }
     }
 
-    public static void ensurePageValid(int page, int pageSize, int size) throws CommandSyntaxException {
+    public static void ensurePageValid(int page, int pageSize, int size)
+            throws CommandSyntaxException
+    {
         if (size == 0) {
             throw Exceptions.NOTHING_TO_LIST;
         }
@@ -215,7 +219,9 @@ public final class Commands {
         }
     }
 
-    public static ItemStack getHeldItem(Player player) throws CommandSyntaxException {
+    public static ItemStack getHeldItem(Player player)
+            throws CommandSyntaxException
+    {
         var item = player.getInventory().getItemInMainHand();
 
         if (ItemStacks.isEmpty(item)) {

@@ -64,6 +64,8 @@ final class BootStrap {
         init(Properties.class);
 
         // Transformers
+        // Transformers.runCurrent() actually calls all the data updaters,
+        // and it should always be the last method call in this method
         init(Transformers.class);
 
         // Waypoints

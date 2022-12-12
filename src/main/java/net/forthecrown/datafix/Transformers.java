@@ -73,7 +73,7 @@ public class Transformers {
 
         try {
             if (COMPLETED_TRANSFORMERS.isEmpty()) {
-                Files.delete(p);
+                Files.deleteIfExists(p);
                 return;
             }
 

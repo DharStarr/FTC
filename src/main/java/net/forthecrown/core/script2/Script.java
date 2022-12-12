@@ -3,6 +3,7 @@ package net.forthecrown.core.script2;
 import lombok.Getter;
 import net.forthecrown.core.FTC;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.io.PathUtil;
 import org.apache.logging.log4j.Logger;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
@@ -360,6 +361,17 @@ public class Script implements AutoCloseable {
 
     public Path getWorkingDirectory() {
         return file.getParent();
+    }
+
+    public Path getDataDirectory() {
+        var path = getWorkingDirectory().resolve(
+                file.getFileName()
+                        .toString()
+                        .replaceAll(".js", "")
+        );
+
+        PathUtil.ensureDirectoryExists(path).orThrow();
+        return path;
     }
 
     /* -------------------------- OBJECT OVERRIDES -------------------------- */

@@ -143,21 +143,24 @@ public class ArmorStandLeaderboard<T> extends AbstractDynamicStand {
         }
     }
 
+    @Override
     public void kill() {
-        if (!isSpawned()) {
-            return;
+        // Final field yes, but this is called in the super class' constructor
+        // before the field is initialized
+        if (armorStands != null) {
+            armorStands.forEach(reference -> reference.get().remove());
+            armorStands.clear();
         }
 
-        armorStands.forEach(reference -> reference.get().remove());
-        armorStands.clear();
+        if (world != null && bounds != null) {
+            world.get().getNearbyEntities(
+                    bounds.clone().expand(1D),
+                    entity -> entity.getPersistentDataContainer().has(STAND_KEY)
+            ).forEach(Entity::remove);
 
-        world.get().getNearbyEntities(
-                bounds.clone().expand(1D),
-                entity -> entity.getPersistentDataContainer().has(STAND_KEY)
-        ).forEach(Entity::remove);
-
-        world = null;
-        bounds = null;
+            world = null;
+            bounds = null;
+        }
 
         kill(STAND_KEY);
     }

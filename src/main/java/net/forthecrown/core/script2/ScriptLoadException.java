@@ -10,7 +10,7 @@ public class ScriptLoadException extends RuntimeException {
         super(
                 String.format(
                         "Couldn't load script '%s' reason: %s",
-                        script.getFile(),
+                        script.getName(),
                         cause.getMessage()
                 ),
                 cause

@@ -1,13 +1,14 @@
 package net.forthecrown.commands;
 
 import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.forthecrown.commands.arguments.Arguments;
 import net.forthecrown.commands.arguments.RegistryArguments;
+import net.forthecrown.commands.manager.Commands;
 import net.forthecrown.commands.manager.Exceptions;
 import net.forthecrown.commands.manager.FtcCommand;
-import net.forthecrown.core.FTC;
 import net.forthecrown.core.Permissions;
 import net.forthecrown.core.challenge.*;
 import net.forthecrown.core.registry.Holder;
@@ -17,11 +18,12 @@ import net.forthecrown.grenadier.types.EnumArgument;
 import net.forthecrown.user.User;
 import net.forthecrown.user.Users;
 import net.forthecrown.utils.Util;
+import net.forthecrown.utils.inventory.ItemStacks;
 import net.forthecrown.utils.text.Text;
 import net.forthecrown.utils.text.writer.TextWriter;
 import net.forthecrown.utils.text.writer.TextWriters;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.logging.log4j.Logger;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.util.function.Predicate;
@@ -138,6 +140,20 @@ public class CommandChallenges extends FtcCommand {
                         .requires(IS_ADMIN)
 
                         .then(argument("challenge", RegistryArguments.CHALLENGE)
+                                .then(literal("list")
+                                        .executes(c -> itemsList(c, false))
+
+                                        .then(literal("-with_nbt")
+                                                .executes(c -> itemsList(c, true))
+                                        )
+                                )
+
+                                .then(literal("remove")
+                                        .then(argument("index", IntegerArgumentType.integer(1))
+                                                .executes(this::itemsRemove)
+                                        )
+                                )
+
                                 .then(literal("fill")
                                         .executes(this::itemsFill)
                                 )
@@ -217,8 +233,6 @@ public class CommandChallenges extends FtcCommand {
                 );
     }
 
-    private static final Logger LOGGER = FTC.getLogger();
-
     private int trigger(CommandContext<CommandSource> c)
             throws CommandSyntaxException
     {
@@ -228,8 +242,6 @@ public class CommandChallenges extends FtcCommand {
         if (!Challenges.isActive(holder.getValue())) {
             throw Exceptions.nonActiveChallenge(holder.getValue());
         }
-
-        LOGGER.debug("holder.getValue().trigger()");
 
         holder.getValue()
                 .trigger(user.getPlayer());
@@ -252,8 +264,6 @@ public class CommandChallenges extends FtcCommand {
         if (!Challenges.isActive(holder.getValue())) {
             throw Exceptions.nonActiveChallenge(holder.getValue());
         }
-
-        LOGGER.debug("addProgress, points={}", points);
 
         ChallengeManager.getInstance()
                 .getOrCreateEntry(user.getUniqueId())
@@ -301,7 +311,78 @@ public class CommandChallenges extends FtcCommand {
 
     /* ------------------------------- ITEMS -------------------------------- */
 
-    public int itemsFill(CommandContext<CommandSource> c)
+    private static void ensureItemChallenge(Holder<Challenge> holder)
+            throws CommandSyntaxException
+    {
+        if (holder.getValue() instanceof ItemChallenge) {
+            return;
+        }
+
+        throw Exceptions.format("{0} is not an item challenge",
+                holder.getKey()
+        );
+    }
+
+    private int itemsRemove(CommandContext<CommandSource> c)
+            throws CommandSyntaxException
+    {
+        int index = IntegerArgumentType.getInteger(c, "index");
+        Holder<Challenge> holder = c.getArgument("challenge", Holder.class);
+        ensureItemChallenge(holder);
+
+        ChallengeItemContainer container = ChallengeManager.getInstance()
+                .getStorage()
+                .loadContainer(holder);
+
+        Commands.ensureIndexValid(index, container.getPotentials().size());
+
+        var removed = container.getPotentials().remove(index - 1);
+
+        c.getSource().sendAdmin(
+                Text.format(
+                        "Removed challenge item {0, item} at index {1, number}",
+                        removed, index
+                )
+        );
+        return 0;
+    }
+
+    private int itemsList(CommandContext<CommandSource> c, boolean addNbtTag)
+            throws CommandSyntaxException
+    {
+        Holder<Challenge> holder = c.getArgument("challenge", Holder.class);
+        ensureItemChallenge(holder);
+
+        ChallengeItemContainer container = ChallengeManager.getInstance()
+                .getStorage()
+                .loadContainer(holder);
+
+        if (container.isEmpty()) {
+            throw Exceptions.NOTHING_TO_LIST;
+        }
+
+        var it = container.getPotentials().listIterator();
+        while (it.hasNext()) {
+            var n = it.next();
+
+            Component line = Text.format(
+                    "{0, number}) {1, item}",
+                    it.nextIndex(), n
+            );
+
+            if (addNbtTag) {
+                line = line
+                        .append(Component.text(": "))
+                        .append(Text.displayTag(ItemStacks.save(n), false));
+            }
+
+            c.getSource().sendMessage(line);
+        }
+
+        return 0;
+    }
+
+    private int itemsFill(CommandContext<CommandSource> c)
             throws CommandSyntaxException
     {
         var player = c.getSource().asPlayer();
@@ -314,12 +395,8 @@ public class CommandChallenges extends FtcCommand {
         }
 
         Holder<Challenge> holder = c.getArgument("challenge", Holder.class);
-
-        if (!(holder.getValue() instanceof ItemChallenge item)) {
-            throw Exceptions.format("{0} is not an item challenge",
-                    holder.getKey()
-            );
-        }
+        ensureItemChallenge(holder);
+        ItemChallenge item = (ItemChallenge) holder.getValue();
 
         var storage = ChallengeManager.getInstance().getStorage();
         var container = storage.loadContainer(holder);
@@ -341,16 +418,11 @@ public class CommandChallenges extends FtcCommand {
         return 0;
     }
 
-    public int itemsClear(CommandContext<CommandSource> c)
+    private int itemsClear(CommandContext<CommandSource> c)
             throws CommandSyntaxException
     {
         Holder<Challenge> holder = c.getArgument("challenge", Holder.class);
-
-        if (!(holder.getValue() instanceof ItemChallenge)) {
-            throw Exceptions.format("{0} is not an item challenge",
-                    holder.getKey()
-            );
-        }
+        ensureItemChallenge(holder);
 
         var storage = ChallengeManager.getInstance()
                 .getStorage();

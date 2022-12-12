@@ -25,12 +25,12 @@ public class FtcJar {
      * Note that this flag still requires {@link #ALLOW_OVERWRITE} to be set in
      * order for any files to be overwritten.
      */
-    public static final int OVERWRITE_IF_NEWER = 0x1;
+    public static final int OVERWRITE_IF_NEWER = 0x2;
 
     /**
      * Flag which tells the resource save operation to overwrite existing files
      */
-    public static final int ALLOW_OVERWRITE = 0x2;
+    public static final int ALLOW_OVERWRITE = 0x1;
 
     /** The ZIP file system of the plugin jar */
     public static final FileSystem JAR_FILE_SYSTEM;
@@ -180,8 +180,7 @@ public class FtcJar {
 
             Files.copy(
                     file, destDir,
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.COPY_ATTRIBUTES
+                    StandardCopyOption.REPLACE_EXISTING
             );
             return FileVisitResult.CONTINUE;
         }
@@ -206,8 +205,14 @@ public class FtcJar {
             var sLastModified = sourceAttr.lastModifiedTime().toInstant();
             var dLastModified = destAttr.lastModifiedTime().toInstant();
 
-            return sLastModified.isAfter(dLastModified);
+            LOGGER.debug("sourceLastModified={}", sLastModified);
+            LOGGER.debug("  destLastModified={}", dLastModified);
 
+            LOGGER.debug("dif={}",
+                    sLastModified.toEpochMilli() - dLastModified.toEpochMilli()
+            );
+
+            return sLastModified.isAfter(dLastModified);
         }
     }
 }

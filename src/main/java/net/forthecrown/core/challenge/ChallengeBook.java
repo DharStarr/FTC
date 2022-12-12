@@ -129,7 +129,7 @@ public class ChallengeBook {
             builder
                     .addEmptyLine()
                     .addField(
-                    text(e.getKey().getDisplayName() + " challenges"),
+                    text(e.getKey().getDisplayName() + "challenges"),
 
                     Text.format("{0, number}/{1, number}",
                             completed >= total
