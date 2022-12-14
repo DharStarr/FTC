@@ -4,7 +4,7 @@ function canComplete(user) {
 
 function onEvent(event, handle) {
     // PlayerPostVoteEvent
-    handle.givePoint(event.getUser().getPlayer());
+    // handle.givePoint(event.getUser().getPlayer());
 }
 
 function onComplete(user) {
